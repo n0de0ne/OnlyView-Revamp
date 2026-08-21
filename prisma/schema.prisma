@@ -1,0 +1,429 @@
+// Villa ONLY VIEW — data model
+// Ported and modernized from the PHP/PostgreSQL version.
+//
+// Dev runs on SQLite (zero-config). For production PostgreSQL:
+//   1. change `provider` below to "postgresql"
+//   2. set DATABASE_URL accordingly
+//   3. run `prisma migrate dev` / `prisma db push`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────── Admin users
+
+model User {
+  id                 Int       @id @default(autoincrement())
+  username           String    @unique
+  email              String    @unique
+  passwordHash       String
+  firstname          String?
+  lastname           String?
+  /// owner | manager | viewer
+  role               String    @default("viewer")
+  isActive           Boolean   @default(true)
+  mustChangePassword Boolean   @default(false)
+  lastLogin          DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  sessions  Session[]
+  auditLogs AuditLog[]
+}
+
+model Session {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
+}
+
+model AuditLog {
+  id         Int      @id @default(autoincrement())
+  action     String
+  entityType String?
+  entityId   Int?
+  details    String? // JSON
+  userId     Int?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  username   String?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────────── Clients
+
+model Client {
+  id             Int       @id @default(autoincrement())
+  firstname      String
+  lastname       String
+  email          String?   @unique
+  phone          String?
+  country        String?
+  language       String    @default("en")
+  address        String?
+  city           String?
+  postalCode     String?
+  notes          String?
+  /// standing discount granted to this client, in %
+  discountPercent Float    @default(0)
+  discountReason String?
+  isVip          Boolean   @default(false)
+  blacklisted    Boolean   @default(false)
+  blacklistReason String?
+  tags           String?
+  source         String    @default("direct")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  reservations Reservation[]
+  loyalty      LoyaltyAccount?
+  authTokens   ClientAuthToken[]
+}
+
+/// Passwordless login for the guest portal (magic links)
+model ClientAuthToken {
+  id        Int      @id @default(autoincrement())
+  tokenHash String   @unique
+  clientId  Int
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+}
+
+// ────────────────────────────────────────────────────────────────── Agencies
+
+model Agency {
+  id                Int      @id @default(autoincrement())
+  name              String   @unique
+  code              String?  @unique
+  contactName       String?
+  email             String?
+  phone             String?
+  commissionPercent Float    @default(15)
+  isActive          Boolean  @default(true)
+  notes             String?
+  createdAt         DateTime @default(now())
+
+  reservations Reservation[]
+}
+
+// ────────────────────────────────────────────────────────────── Reservations
+
+model Reservation {
+  id     Int    @id @default(autoincrement())
+  /// option | confirmed | pending | cancelled | blocked
+  status String @default("option")
+
+  startDate DateTime
+  endDate   DateTime
+
+  clientId   Int?
+  client     Client? @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  /// denormalized display name (kept even if client record is removed)
+  clientName String?
+  email      String?
+  phone      String?
+
+  bedrooms Int @default(4)
+  guests   Int @default(8)
+
+  agencyId  Int?
+  agency    Agency? @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+  /// commission % charged by the agency on this reservation (copied at creation)
+  agencyFeePercent Float @default(0)
+
+  // ── Pricing options (ported from the PHP admin) ──
+  /// per-stay override of the weekly rate (friend rate on mixed-season stays)
+  customWeeklyRate Float?
+  /// manual final price HT — overrides every calculation when set
+  finalPriceOverride Float?
+  /// computed price HT at last save (source of truth for reports)
+  priceHT   Float @default(0)
+  taxAmount Float @default(0)
+  priceTTC  Float @default(0)
+  discountPercent Float   @default(0)
+  /// "offer 1 bedroom": bill n-1 bedrooms (4→3, 3→2)
+  offerOneRoom Boolean @default(false)
+  freeNights   Int     @default(0)
+  /// offer the 5% tourist tax
+  noTax        Boolean @default(false)
+  promoCode    String?
+
+  // ── Option handling ──
+  optionExpires DateTime?
+
+  // ── Payments ──
+  /// expected deposit (defaults to 30% of TTC for direct bookings)
+  depositAmount   Float   @default(0)
+  depositReceived Boolean @default(false)
+  balanceReceived Boolean @default(false)
+  payments        Payment[]
+
+  // ── Stay details ──
+  earlyCheckin  Boolean @default(false)
+  arrivalTime   String?
+  lateCheckout  Boolean @default(false)
+  departureTime String?
+  notes         String?
+
+  // ── Guest portal ──
+  portalToken     String?   @unique
+  portalEmailSent Boolean   @default(false)
+
+  // ── Lifecycle ──
+  isArchived Boolean   @default(false)
+  archivedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  periods            ReservationPeriod[]
+  contracts          Contract[]
+  loyaltyTransactions LoyaltyTransaction[]
+  bookingRequest     BookingRequest?
+
+  @@index([startDate, endDate])
+  @@index([status])
+}
+
+/// Variable bedrooms / custom rate per period inside a single stay
+/// ("Chambres variables par période" in the PHP admin).
+model ReservationPeriod {
+  id            Int         @id @default(autoincrement())
+  reservationId Int
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  startDate     DateTime
+  endDate       DateTime
+  bedrooms      Int         @default(4)
+  /// weekly rate override for this period; null = seasonal rate
+  weeklyRate    Float?
+  sortOrder     Int         @default(0)
+
+  @@index([reservationId])
+}
+
+/// Money actually received — the finance ledger.
+model Payment {
+  id            Int         @id @default(autoincrement())
+  reservationId Int
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  /// deposit | balance | extra | refund
+  kind          String      @default("deposit")
+  amount        Float
+  currency      String      @default("USD")
+  /// wire | card | cash | check | other
+  method        String      @default("wire")
+  receivedAt    DateTime    @default(now())
+  notes         String?
+  createdAt     DateTime    @default(now())
+
+  @@index([reservationId])
+  @@index([receivedAt])
+}
+
+// ─────────────────────────────────────────────────────────── Booking requests
+
+/// Inquiry submitted from the public booking module.
+model BookingRequest {
+  id        Int      @id @default(autoincrement())
+  startDate DateTime
+  endDate   DateTime
+  bedrooms  Int      @default(4)
+  guests    Int      @default(8)
+  name      String
+  email     String
+  phone     String?
+  message   String?
+  language  String   @default("en")
+  /// quote shown to the guest at submission time (JSON snapshot)
+  quoteJson String?
+  promoCode String?
+  /// new | answered | converted | declined
+  status    String   @default("new")
+  adminNotes String?
+  reservationId Int?         @unique
+  reservation   Reservation? @relation(fields: [reservationId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ───────────────────────────────────────────────────────────────── Contracts
+
+model Contract {
+  id            Int         @id @default(autoincrement())
+  reservationId Int
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  token         String      @unique
+  /// pending | signed | expired | void
+  status        String      @default("pending")
+  language      String      @default("en")
+  clientName    String
+  clientEmail   String?
+  totalPrice    Float
+  depositAmount Float
+  /// contract body snapshot (HTML) at generation time
+  bodyHtml      String
+  signatureData String? // data-URL PNG drawn by the client
+  signedAt      DateTime?
+  signerIp      String?
+  signerUserAgent String?
+  pdfPath       String?
+  viewCount     Int       @default(0)
+  firstViewedAt DateTime?
+  lastViewedAt  DateTime?
+  expiresAt     DateTime?
+  createdAt     DateTime  @default(now())
+
+  @@index([reservationId])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────────────────────────── Loyalty
+
+model LoyaltyAccount {
+  id        Int      @id @default(autoincrement())
+  clientId  Int      @unique
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  points    Int      @default(0)
+  /// lifetime earned points (never decreases — drives tier)
+  lifetimePoints Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactions LoyaltyTransaction[]
+}
+
+model LoyaltyTransaction {
+  id        Int            @id @default(autoincrement())
+  accountId Int
+  account   LoyaltyAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  /// earn | redeem | adjust | expire
+  kind      String
+  points    Int
+  reason    String?
+  reservationId Int?
+  reservation   Reservation? @relation(fields: [reservationId], references: [id], onDelete: SetNull)
+  createdBy String?
+  createdAt DateTime @default(now())
+
+  @@index([accountId])
+}
+
+// ──────────────────────────────────────────────────────────────── Promotions
+
+model Promotion {
+  id            Int       @id @default(autoincrement())
+  name          String
+  description   String?
+  /// percent | fixed | free_nights
+  discountType  String    @default("percent")
+  discountValue Float     @default(0)
+  minNights     Int?
+  maxNights     Int?
+  validFrom     DateTime?
+  validUntil    DateTime?
+  stayStartFrom  DateTime?
+  stayStartUntil DateTime?
+  mustIncludeDate DateTime?
+  promoCode     String?
+  isActive      Boolean   @default(true)
+  priority      Int       @default(0)
+  firstTimeOnly Boolean   @default(false)
+  showOnWebsite Boolean   @default(false)
+  maxUses       Int?
+  usedCount     Int       @default(0)
+  combinable    Boolean   @default(false)
+  notes         String?
+  createdAt     DateTime  @default(now())
+}
+
+// ────────────────────────────────────────────────────────────────── Expenses
+
+model Expense {
+  id          Int       @id @default(autoincrement())
+  date        DateTime
+  /// jardinier | electricite | eau | menage | piscine | entretien | assurance | taxe | internet | autre
+  category    String    @default("autre")
+  amount      Float
+  currency    String    @default("EUR")
+  description String?
+  notes       String?
+  isFixed     Boolean   @default(false)
+  /// monthly | bimonthly | quarterly | yearly
+  frequency   String?
+  endDate     DateTime?
+  paymentDay  Int       @default(1)
+  createdAt   DateTime  @default(now())
+
+  @@index([date])
+  @@index([category])
+}
+
+// ────────────────────────────────────────────────────────────── Site content
+
+model Photo {
+  id        Int      @id @default(autoincrement())
+  /// pool-terrace | living | kitchen | bedroom1..4 | night | exterior
+  category  String
+  url       String
+  alt       String?
+  width     Int?
+  height    Int?
+  sortOrder Int      @default(0)
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@index([category])
+}
+
+model Testimonial {
+  id         Int      @id @default(autoincrement())
+  name       String
+  country    String?
+  rating     Int      @default(5)
+  message    String
+  language   String   @default("en")
+  isApproved Boolean  @default(false)
+  isFeatured Boolean  @default(false)
+  stayDate   DateTime?
+  createdAt  DateTime @default(now())
+}
+
+model Setting {
+  key   String @id
+  value String
+}
+
+model EmailLog {
+  id             Int      @id @default(autoincrement())
+  templateSlug   String?
+  recipientEmail String
+  recipientName  String?
+  subject        String?
+  body           String?
+  reservationId  Int?
+  clientId       Int?
+  /// sent | queued | failed
+  status         String   @default("sent")
+  errorMessage   String?
+  sentAt         DateTime @default(now())
+
+  @@index([sentAt])
+}

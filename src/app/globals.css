@@ -1,0 +1,134 @@
+@import "tailwindcss";
+
+@theme {
+  /* Brand */
+  --color-gold: #c9a962;
+  --color-gold-light: #d4bc7d;
+  --color-gold-dark: #b3924e;
+  --color-navy: #1b4965;
+  --color-navy-deep: #12324a;
+  --color-ink: #101820;
+  --color-sand: #faf8f4;
+  --color-sand-dark: #f1ede5;
+  --color-ocean: #5a8fa8;
+  --color-night: #0c141b;
+
+  /* Status colors (admin calendar — same language as the PHP admin) */
+  --color-st-option: #f59e0b;
+  --color-st-confirmed: #dc2626;
+  --color-st-free: #059669;
+  --color-st-blocked: #64748b;
+  --color-st-pending: #8b5cf6;
+
+  --font-serif: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
+  --font-sans: var(--font-montserrat), "Montserrat", ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-sand text-ink font-sans antialiased;
+}
+
+/* Typographic rhythm for luxury feel */
+.font-display {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.eyebrow {
+  @apply text-[0.7rem] font-semibold uppercase tracking-[0.35em] text-gold;
+}
+
+.section-title {
+  font-family: var(--font-serif);
+  @apply text-4xl md:text-5xl leading-[1.08] text-ink;
+}
+
+.btn-gold {
+  @apply inline-flex items-center justify-center gap-2 bg-gold text-white px-7 py-3.5 text-[0.78rem] font-semibold uppercase tracking-[0.22em] transition-all duration-300 hover:bg-gold-dark hover:shadow-lg hover:shadow-gold/25 focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2;
+}
+
+.btn-outline {
+  @apply inline-flex items-center justify-center gap-2 border border-ink/25 px-7 py-3.5 text-[0.78rem] font-semibold uppercase tracking-[0.22em] text-ink transition-all duration-300 hover:border-gold hover:text-gold focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2;
+}
+
+.btn-outline-light {
+  @apply inline-flex items-center justify-center gap-2 border border-white/40 px-7 py-3.5 text-[0.78rem] font-semibold uppercase tracking-[0.22em] text-white transition-all duration-300 hover:border-gold hover:text-gold;
+}
+
+/* Reveal-on-scroll (progressive enhancement, CSS only) */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .reveal {
+    animation: rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 38%;
+  }
+}
+
+/* Thin elegant scrollbar for horizontal strips */
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-gold) transparent;
+}
+
+/* Admin app resets */
+.admin-body {
+  @apply bg-slate-100 text-slate-900;
+}
+
+/* Form primitives (shared) */
+.field label {
+  @apply block text-xs font-semibold uppercase tracking-wider text-ink/60 mb-1.5;
+}
+.field input,
+.field select,
+.field textarea {
+  @apply w-full border border-ink/15 bg-white px-3.5 py-2.5 text-sm text-ink outline-none transition focus:border-gold focus:ring-1 focus:ring-gold;
+}
+
+.afield label {
+  @apply block text-xs font-medium text-slate-500 mb-1;
+}
+.afield input,
+.afield select,
+.afield textarea {
+  @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-navy focus:ring-1 focus:ring-navy disabled:bg-slate-50 disabled:text-slate-400;
+}
+.abtn,
+.abtn-primary,
+.abtn-gold,
+.abtn-ghost,
+.abtn-danger {
+  @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+.abtn-primary {
+  @apply bg-navy text-white hover:bg-navy-deep focus:ring-navy;
+}
+.abtn-gold {
+  @apply bg-gold text-white hover:bg-gold-dark focus:ring-gold;
+}
+.abtn-ghost {
+  @apply border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 focus:ring-slate-300;
+}
+.abtn-danger {
+  @apply bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
+}

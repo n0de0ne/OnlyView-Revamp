@@ -1,0 +1,119 @@
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { getDict, isLocale, localePath, type Locale } from "@/lib/i18n";
+import { altLanguages, jsonLd, lodgingBusinessJsonLd } from "@/lib/seo";
+import { getPhotos, firstOf } from "@/lib/photos";
+import { PageHero } from "@/components/site/PageHero";
+
+export const revalidate = 3600;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = getDict(locale);
+  return {
+    title: t.meta.titleLocation,
+    description: t.meta.descLocation,
+    alternates: altLanguages("/location"),
+  };
+}
+
+export default async function LocationPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale: raw } = await params;
+  const locale = (isLocale(raw) ? raw : "en") as Locale;
+  const t = getDict(locale);
+  const fr = locale === "fr";
+  const photos = await getPhotos();
+
+  const distances: Array<[string, string]> = fr
+    ? [
+        ["Aéroport Gustaf III (SBH)", "10 min"],
+        ["Gustavia (port, boutiques)", "12 min"],
+        ["Plage de Lorient", "5 min"],
+        ["Plage de St-Jean", "8 min"],
+        ["Supermarché (Oasis, Lorient)", "5 min"],
+        ["Restaurants de Pointe Milou", "2 min"],
+        ["Grand Cul-de-Sac (sports nautiques)", "7 min"],
+        ["Saline / Gouverneur", "15–18 min"],
+      ]
+    : [
+        ["Gustaf III Airport (SBH)", "10 min"],
+        ["Gustavia (harbor, shopping)", "12 min"],
+        ["Lorient Beach", "5 min"],
+        ["St-Jean Beach", "8 min"],
+        ["Supermarket (Oasis, Lorient)", "5 min"],
+        ["Pointe Milou restaurants", "2 min"],
+        ["Grand Cul-de-Sac (water sports)", "7 min"],
+        ["Saline / Gouverneur beaches", "15–18 min"],
+      ];
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(lodgingBusinessJsonLd(locale)) }}
+      />
+      <PageHero
+        eyebrow={t.location.label}
+        title={t.location.title}
+        intro={t.location.text}
+        image={firstOf(photos, "night")}
+      />
+      <section className="mx-auto max-w-6xl px-5 py-16 lg:px-8">
+        <div className="grid gap-12 lg:grid-cols-2">
+          <div>
+            <h2 className="section-title mb-8 !text-3xl">
+              {fr ? "Distances depuis la villa" : "Distances from the villa"}
+            </h2>
+            <ul className="divide-y divide-ink/10 border-y border-ink/10">
+              {distances.map(([place, time]) => (
+                <li key={place} className="flex items-center justify-between py-3.5 text-sm">
+                  <span className="text-ink/80">{place}</span>
+                  <span className="font-semibold text-gold">{time}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-8 flex flex-wrap gap-4">
+              <a
+                href="https://www.google.com/maps/search/?api=1&query=Pointe+Milou+Saint-Barthelemy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-outline"
+              >
+                Google Maps ↗
+              </a>
+              <Link href={localePath(locale, "/guide/getting-here")} className="btn-gold">
+                {fr ? "Comment venir" : "Getting here"}
+              </Link>
+            </div>
+          </div>
+          <div className="space-y-4">
+            {firstOf(photos, "exterior") && (
+              <Image
+                src={firstOf(photos, "exterior")!.url}
+                alt={firstOf(photos, "exterior")!.alt}
+                width={900}
+                height={600}
+                sizes="(max-width:1024px) 100vw, 50vw"
+                className="w-full object-cover"
+              />
+            )}
+            <p className="text-sm leading-relaxed text-ink/60">
+              {fr
+                ? "Pointe Milou est une presqu'île résidentielle sur la côte nord de St Barth, connue pour son calme, ses villas de caractère et ses couchers de soleil — les plus beaux de l'île, disent les habitués."
+                : "Pointe Milou is a residential peninsula on St Barth's north shore, known for its calm, its characterful villas and its sunsets — the island's finest, regulars say."}
+            </p>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
