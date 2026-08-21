@@ -84,6 +84,42 @@ Copy `.env.example` → `.env` and fill what you need:
 
 ## Deploying
 
+### Docker (recommended)
+
+Every push to the main branch builds and publishes
+`ghcr.io/n0de0ne/onlyview-revamp` via GitHub Actions
+(`.github/workflows/docker.yml`).
+
+```bash
+docker run -d --name onlyview \
+  -p 3000:3000 \
+  -v /path/to/appdata:/data \
+  ghcr.io/n0de0ne/onlyview-revamp:latest
+```
+
+First boot creates the SQLite schema in `/data/onlyview.db`, seeds the default
+rates and the admin account, and symlinks photo uploads into `/data/uploads` so
+they survive image updates. Optional env vars: `SEED_DEMO=1` (demo dataset on
+an empty database), `SEED_ADMIN_PASSWORD`, `SMTP_*`, `ADMIN_NOTIFY_EMAIL`,
+`ICAL_TOKEN`.
+
+> **Note:** the GHCR package is private by default. After the first workflow
+> run, open the package on GitHub (Packages → onlyview-revamp → Package
+> settings) and set visibility to *Public* — otherwise Docker/Unraid needs a
+> `docker login ghcr.io` with a token first.
+
+### Unraid
+
+An Unraid template ships in [`unraid/onlyview.xml`](unraid/onlyview.xml).
+Install it with **Docker → Add Container → Template repositories** by adding
+this repo URL, or copy the XML to
+`/boot/config/plugins/dockerMan/templates-user/` on your flash drive and pick
+*OnlyView* from the template dropdown. It maps port `3000`, stores everything
+in `/mnt/user/appdata/onlyview`, and exposes the SMTP/loyalty/token settings
+as container variables. WebUI → the site; `/admin` → the back-office.
+
+### Bare Node
+
 `npm run build && npm start` behind any Node host. Two notes:
 
 1. **Photo uploads** from the admin are written to `public/media/photos/uploads/` — perfect on a VPS/Docker/persistent disk. On serverless hosts (Vercel …) the filesystem is ephemeral: keep managing photos via the repo, or wire the upload route to object storage (S3/R2).

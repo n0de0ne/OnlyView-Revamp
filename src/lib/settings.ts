@@ -6,10 +6,15 @@ const TTL = 30_000;
 
 export async function getSettings(): Promise<Record<string, string>> {
   if (cache && Date.now() - cache.at < TTL) return cache.map;
-  const rows = await prisma.setting.findMany();
   const map: Record<string, string> = {};
-  for (const r of rows) map[r.key] = r.value;
-  cache = { at: Date.now(), map };
+  try {
+    const rows = await prisma.setting.findMany();
+    for (const r of rows) map[r.key] = r.value;
+    cache = { at: Date.now(), map };
+  } catch {
+    // DB unavailable (e.g. image build without a database) — callers fall
+    // back to their defaults; don't cache the empty result.
+  }
   return map;
 }
 

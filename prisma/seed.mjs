@@ -3,13 +3,15 @@
  * Rates and business rules ported from the PHP version (PricingService.php).
  */
 import { PrismaClient } from "@prisma/client";
+import { fileURLToPath } from "node:url";
 import bcrypt from "bcryptjs";
 import fs from "node:fs";
 import path from "node:path";
 
 const prisma = new PrismaClient();
+const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
-const SETTINGS: Record<string, string> = {
+const SETTINGS = {
   // Weekly rates (USD) per bedroom count — see src/lib/pricing.ts
   price_summer_2: "12500",
   price_summer_3: "13500",
@@ -92,15 +94,10 @@ async function seedBase() {
   // Photos from the media manifest
   const manifestPath = path.join(__dirname, "..", "src", "data", "photos.json");
   if (fs.existsSync(manifestPath)) {
-    const photos: Array<{
-      category: string;
-      url: string;
-      width: number;
-      height: number;
-    }> = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+    const photos = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
     const count = await prisma.photo.count();
     if (count === 0) {
-      const ALTS: Record<string, string> = {
+      const ALTS = {
         living: "Open-plan living room with panoramic Caribbean sea view",
         "pool-terrace": "Heated private pool and terrace overlooking the ocean",
         kitchen: "Fully equipped gourmet kitchen",
@@ -217,15 +214,7 @@ async function seedDemo() {
   }
   const y = new Date().getFullYear();
 
-  const mkClient = (data: {
-    firstname: string;
-    lastname: string;
-    email: string;
-    phone?: string;
-    country?: string;
-    language?: string;
-    isVip?: boolean;
-  }) => prisma.client.create({ data });
+  const mkClient = (data) => prisma.client.create({ data });
 
   const alice = await mkClient({
     firstname: "Alexandra",
@@ -255,20 +244,7 @@ async function seedDemo() {
 
   const edenRock = await prisma.agency.findUnique({ where: { name: "Eden Rock" } });
 
-  const mk = async (r: {
-    client: { id: number; firstname: string; lastname: string; email: string | null };
-    start: string;
-    end: string;
-    bedrooms: number;
-    guests: number;
-    status: string;
-    priceHT: number;
-    agencyId?: number;
-    agencyFeePercent?: number;
-    depositReceived?: boolean;
-    balanceReceived?: boolean;
-    optionExpires?: string;
-  }) => {
+  const mk = async (r) => {
     const tax = Math.round(r.priceHT * 0.05);
     return prisma.reservation.create({
       data: {

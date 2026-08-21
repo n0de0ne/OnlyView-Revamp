@@ -15,7 +15,7 @@
     "media:prepare": "tsx scripts/prepare-media.ts"
   },
   "prisma": {
-    "seed": "tsx prisma/seed.ts"
+    "seed": "node prisma/seed.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.16.0",

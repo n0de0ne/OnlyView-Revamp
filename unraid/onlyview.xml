@@ -1,0 +1,83 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>OnlyView</Name>
+  <Repository>ghcr.io/n0de0ne/onlyview-revamp:latest</Repository>
+  <Registry>https://github.com/n0de0ne/OnlyView-Revamp/pkgs/container/onlyview-revamp</Registry>
+  <Network>bridge</Network>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/n0de0ne/OnlyView-Revamp/issues</Support>
+  <Project>https://github.com/n0de0ne/OnlyView-Revamp</Project>
+  <Overview>
+    Villa ONLY VIEW (St Barth) — complete rental webapp: public site (EN/FR) with virtual tour,
+    interactive gallery, live availability and instant quotes; guest portal with online contract
+    e-signature and loyalty points; full owner back-office (calendar, reservations with
+    multi-period pricing, contracts, finance, clients CRM, promotions, multi-user accounts).
+    &#xD;&#xD;
+    Everything is self-contained: SQLite database and photo uploads live in /data.
+    First start creates the schema and seeds default rates + the admin account
+    (admin / onlyview2026 — you are forced to change it at first login).
+    &#xD;&#xD;
+    Admin back-office: http://[IP]:[PORT]/admin
+  </Overview>
+  <Category>Productivity: Tools: Other:</Category>
+  <WebUI>http://[IP]:[PORT:3000]/</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/n0de0ne/OnlyView-Revamp/claude/villa-website-nextjs-redesign-74wpb0/unraid/onlyview.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/n0de0ne/OnlyView-Revamp/claude/villa-website-nextjs-redesign-74wpb0/unraid/icon.png</Icon>
+  <ExtraParams/>
+  <PostArgs/>
+  <DonateText/>
+  <DonateLink/>
+
+  <Config Name="WebUI Port" Target="3000" Default="3000" Mode="tcp"
+    Description="Port for the website and admin back-office."
+    Type="Port" Display="always" Required="true" Mask="false">3000</Config>
+
+  <Config Name="Appdata (/data)" Target="/data" Default="/mnt/user/appdata/onlyview" Mode="rw"
+    Description="Persistent storage: SQLite database (onlyview.db) and photo uploads. Back this folder up."
+    Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/onlyview</Config>
+
+  <Config Name="Demo dataset" Target="SEED_DEMO" Default="0"
+    Description="Set to 1 on FIRST start to seed demo reservations, clients, expenses and loyalty data (only applies to an empty database)."
+    Type="Variable" Display="always" Required="false" Mask="false">0</Config>
+
+  <Config Name="Initial admin password" Target="SEED_ADMIN_PASSWORD" Default=""
+    Description="Password for the seeded 'admin' account on first start (default: onlyview2026). A password change is forced at first login either way."
+    Type="Variable" Display="advanced" Required="false" Mask="true"></Config>
+
+  <Config Name="Admin notification email" Target="ADMIN_NOTIFY_EMAIL" Default="contact@onlyviewstbarth.com"
+    Description="Recipient of booking-request / contract-signed notifications."
+    Type="Variable" Display="always" Required="false" Mask="false">contact@onlyviewstbarth.com</Config>
+
+  <Config Name="SMTP host" Target="SMTP_HOST" Default=""
+    Description="SMTP server for outgoing email (booking confirmations, portal links, contracts). Leave empty to store emails in the admin Email log instead of sending."
+    Type="Variable" Display="always" Required="false" Mask="false"></Config>
+
+  <Config Name="SMTP port" Target="SMTP_PORT" Default="587"
+    Description="587 = STARTTLS, 465 = TLS."
+    Type="Variable" Display="advanced" Required="false" Mask="false">587</Config>
+
+  <Config Name="SMTP username" Target="SMTP_USER" Default=""
+    Description="SMTP account username."
+    Type="Variable" Display="advanced" Required="false" Mask="false"></Config>
+
+  <Config Name="SMTP password" Target="SMTP_PASS" Default=""
+    Description="SMTP account password."
+    Type="Variable" Display="advanced" Required="false" Mask="true"></Config>
+
+  <Config Name="SMTP from address" Target="SMTP_FROM" Default="contact@onlyviewstbarth.com"
+    Description="From address on outgoing email."
+    Type="Variable" Display="advanced" Required="false" Mask="false">contact@onlyviewstbarth.com</Config>
+
+  <Config Name="SMTP from name" Target="SMTP_FROM_NAME" Default="Villa ONLY VIEW"
+    Description="From display name on outgoing email."
+    Type="Variable" Display="advanced" Required="false" Mask="false">Villa ONLY VIEW</Config>
+
+  <Config Name="iCal feed token" Target="ICAL_TOKEN" Default=""
+    Description="Secret protecting the private calendar feed (/api/ical?token=...) that shows client names. Any long random string. The public feed stays anonymized."
+    Type="Variable" Display="advanced" Required="false" Mask="true"></Config>
+
+  <Config Name="Public site URL" Target="NEXT_PUBLIC_SITE_URL" Default="https://onlyviewstbarth.com"
+    Description="Absolute URL used in emails and calendar links (e.g. https://onlyviewstbarth.com, or http://TOWER-IP:3000 for LAN-only use). Note: URLs baked into pre-rendered pages are set at image build time; override the NEXT_PUBLIC_SITE_URL build-arg to change those."
+    Type="Variable" Display="always" Required="false" Mask="false">https://onlyviewstbarth.com</Config>
+</Container>

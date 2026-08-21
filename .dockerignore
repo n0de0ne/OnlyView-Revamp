@@ -1,0 +1,13 @@
+node_modules
+.next
+.git
+.env.local
+.env.production
+prisma/*.db
+prisma/*.db-journal
+storage
+npm-debug.log*
+README.md
+unraid
+.github
+scripts/prepare-media.ts
