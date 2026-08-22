@@ -122,12 +122,14 @@ async function main() {
         data: {
           name: a.name,
           code: a.code ?? null,
-          contactName: a.contact_name ?? null,
+          // legacy column is `commission`; `contact` is a free-text field
+          contactName: a.contact || a.contact_name || null,
           email: a.email ?? null,
           phone: a.phone ?? null,
-          commissionPercent: num(a.commission_percent) ?? 15,
-          isActive: bool(a.is_active),
-          notes: a.notes ?? null,
+          commissionPercent: num(a.commission ?? a.commission_percent) ?? 15,
+          // legacy has no is_active column — everything is active
+          isActive: a.is_active == null ? true : bool(a.is_active),
+          notes: a.notes || null,
         },
       }));
     agencyByName.set(a.name.toLowerCase(), found);
@@ -173,7 +175,9 @@ async function main() {
 
   /* ── reservations (ids preserved) ── */
   const reservations = await legacy("reservations");
-  const STATUS_MAP = { libre: "blocked" };
+  // legacy enum: option | confirmed | completed — a completed stay is a
+  // confirmed one in the past; libre (older data) means blocked
+  const STATUS_MAP = { libre: "blocked", completed: "confirmed" };
   for (const r of reservations) {
     if (await prisma.reservation.findUnique({ where: { id: r.id } })) {
       count("reservations (skipped duplicates)");
@@ -219,7 +223,7 @@ async function main() {
       }
     }
 
-    const depositReceived = bool(r.is_paid);
+    const depositReceived = bool(r.is_paid) || r.deposit_status === "received";
     const balanceReceived = bool(r.balance_received);
     const depositAmount = round(r.deposit) || round(priceTTC * 0.3);
 
@@ -311,7 +315,7 @@ async function main() {
       data: {
         reservationId: c.reservation_id,
         token: c.token,
-        status: c.status === "signed" ? "signed" : c.status === "expired" ? "expired" : "void",
+        status: ["pending", "signed", "expired"].includes(c.status) ? c.status : "void",
         language: c.lang === "fr" ? "fr" : "en",
         clientName: c.client_name ?? r.clientName ?? "—",
         clientEmail: c.client_email ?? null,
@@ -398,25 +402,31 @@ async function main() {
     count("expenses");
   }
 
-  /* ── guestbook → testimonials ── */
+  /* ── guestbook → testimonials ──
+     Legacy columns: review (the text) and a status enum pending/approved/rejected. */
   for (const g of await legacy("guestbook")) {
-    if (!g.name || !g.message) {
-      console.log(`  (guestbook entry "${g.name ?? "?"}" skipped — no message)`);
+    const message = g.review ?? g.message ?? null;
+    if (!g.name || !message) {
+      console.log(`  (guestbook entry "${g.name ?? "?"}" skipped — empty review)`);
       count("testimonials skipped (empty)");
       continue;
     }
+    if (g.status === "rejected") {
+      count("testimonials skipped (rejected)");
+      continue;
+    }
     const dupe = await prisma.testimonial.findFirst({
-      where: { name: g.name, message: g.message },
+      where: { name: g.name, message },
     });
     if (dupe) continue;
     await prisma.testimonial.create({
       data: {
         name: g.name,
-        country: g.country ?? null,
+        country: g.country || null,
         rating: num(g.rating) ?? 5,
-        message: g.message,
+        message,
         language: g.language ?? "en",
-        isApproved: bool(g.is_approved),
+        isApproved: g.status ? g.status === "approved" : bool(g.is_approved),
         isFeatured: bool(g.is_featured),
         stayDate: date(g.stay_date),
         createdAt: date(g.created_at) ?? new Date(),
