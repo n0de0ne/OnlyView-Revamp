@@ -1,9 +1,10 @@
 #!/bin/sh
 # First-boot friendly entrypoint:
-#   1. as root: own the /data volume (bind mounts arrive root-owned on
-#      Unraid & co.), wire the uploads symlink, then drop to PUID:PGID
-#   2. create/migrate the SQLite schema in /data
-#   3. seed base configuration (idempotent upserts — never overwrites edits)
+#   1. as root: own the /data volume (photo uploads), then drop to PUID:PGID
+#   2. pin the app to its own PostgreSQL schema namespace (never touches the
+#      legacy PHP tables living in `public`)
+#   3. create/update the app tables (`prisma db push`, additive within the
+#      app schema only) and run the idempotent base seed
 #   4. start the standalone Next.js server
 set -e
 
@@ -24,7 +25,23 @@ if [ "$(id -u)" = "0" ]; then
   exec su-exec "$PUID:$PGID" "$0" "$@"
 fi
 
-echo "[onlyview] database: $DATABASE_URL"
+if [ -z "$DATABASE_URL" ]; then
+  echo "[onlyview] ERROR: DATABASE_URL is required, e.g."
+  echo "  postgresql://user:password@host:5432/onlyview?schema=onlyview_app"
+  exit 1
+fi
+
+# SAFETY: without an explicit schema, Prisma would manage `public` — where the
+# legacy PHP tables live — and `db push` drops tables it doesn't know about.
+# Pin the app to its own namespace unless one was chosen deliberately.
+case "$DATABASE_URL" in
+  *schema=*) : ;;
+  *\?*) DATABASE_URL="${DATABASE_URL}&schema=onlyview_app" ;;
+  *) DATABASE_URL="${DATABASE_URL}?schema=onlyview_app" ;;
+esac
+export DATABASE_URL
+
+echo "[onlyview] database: $(echo "$DATABASE_URL" | sed 's|//[^@]*@|//***@|')"
 node prisma-cli/node_modules/prisma/build/index.js db push --skip-generate --schema prisma/schema.prisma
 
 # Base settings/admin/photos; add SEED_DEMO=1 for a demo dataset

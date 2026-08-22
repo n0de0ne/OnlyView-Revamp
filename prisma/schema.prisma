@@ -1,17 +1,17 @@
 // Villa ONLY VIEW — data model
-// Ported and modernized from the PHP/PostgreSQL version.
+// Ported and modernized from the legacy PHP version.
 //
-// Dev runs on SQLite (zero-config). For production PostgreSQL:
-//   1. change `provider` below to "postgresql"
-//   2. set DATABASE_URL accordingly
-//   3. run `prisma migrate dev` / `prisma db push`
+// Runs on PostgreSQL — typically the same `onlyview` database as the legacy
+// PHP site: the tables here are quoted PascalCase ("Reservation", "Client"…)
+// so they coexist with the legacy lowercase tables (reservations, clients…)
+// without touching them. `scripts/migrate-legacy.mjs` copies legacy → new.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

@@ -6,7 +6,9 @@ Modern rebuild of [onlyviewstbarth.com](https://onlyviewstbarth.com) — the ren
 
 ```bash
 npm install
-npm run setup          # creates the SQLite db + seeds rates/admin/photos
+# a PostgreSQL to point DATABASE_URL at — any of:
+docker run -d --name ov-pg -e POSTGRES_PASSWORD=postgres -p 5432:5432 postgres:16
+npm run setup          # creates the app schema + seeds rates/admin/photos
 npm run dev            # http://localhost:3000
 ```
 
@@ -60,7 +62,7 @@ SEED_DEMO=1 npm run setup
 
 ## Stack
 
-Next.js 15 (App Router, TS) · Tailwind CSS 4 · Prisma (SQLite dev / PostgreSQL prod) · Recharts · pdf-lib · nodemailer · zod · bcryptjs — no auth SaaS, no CMS SaaS: sessions are httpOnly-cookie + hashed DB tokens.
+Next.js 15 (App Router, TS) · Tailwind CSS 4 · Prisma + PostgreSQL · Recharts · pdf-lib · nodemailer · zod · bcryptjs — no auth SaaS, no CMS SaaS: sessions are httpOnly-cookie + hashed DB tokens.
 
 ```
 src/
@@ -70,7 +72,8 @@ src/
   lib/pricing.ts           the quote engine (shared server/client)
   lib/contract-*.ts        contract content EN/FR + PDF renderer
   lib/…                    auth, guest-auth, loyalty, stats, mailer, seo, i18n
-prisma/schema.prisma       full data model  ·  prisma/seed.ts
+prisma/schema.prisma       full data model  ·  prisma/seed.mjs
+scripts/migrate-legacy.mjs legacy PHP data → new schema importer
 scripts/prepare-media.ts   photo pipeline from the legacy repo
 ```
 
@@ -78,7 +81,7 @@ scripts/prepare-media.ts   photo pipeline from the legacy repo
 
 Copy `.env.example` → `.env` and fill what you need:
 
-- `DATABASE_URL` — defaults to SQLite. **PostgreSQL in production:** change `provider = "postgresql"` in `prisma/schema.prisma`, set the URL, run `npx prisma db push && npx prisma db seed`.
+- `DATABASE_URL` — PostgreSQL connection string. **The app manages only its own schema namespace** (`?schema=onlyview_app`, appended automatically when missing), so it can safely share the legacy PHP site's database: the old lowercase tables in `public` are never read, altered, or dropped by the app.
 - `SMTP_*` — without SMTP nothing is lost: every outgoing email is stored in the admin **Email log** with status *queued*.
 - `NEXT_PUBLIC_SITE_URL`, `ADMIN_NOTIFY_EMAIL`, `ICAL_TOKEN` (private calendar feed `/api/ical?token=…`; public feed is anonymized).
 
@@ -97,11 +100,27 @@ docker run -d --name onlyview \
   ghcr.io/n0de0ne/onlyview-revamp:latest
 ```
 
-First boot creates the SQLite schema in `/data/onlyview.db`, seeds the default
-rates and the admin account, and symlinks photo uploads into `/data/uploads` so
-they survive image updates. Optional env vars: `SEED_DEMO=1` (demo dataset on
-an empty database), `SEED_ADMIN_PASSWORD`, `SMTP_*`, `ADMIN_NOTIFY_EMAIL`,
-`ICAL_TOKEN`.
+Required: `-e DATABASE_URL=postgresql://user:pass@host:5432/onlyview` (a
+`?schema=onlyview_app` namespace is enforced so the app never touches other
+tables in that database — it can safely share the legacy PHP site's DB).
+First boot creates the app schema, seeds the default rates and the admin
+account, and persists photo uploads in `/data/uploads`. Optional env vars:
+`SEED_DEMO=1` (demo dataset on an empty database), `SEED_ADMIN_PASSWORD`,
+`SMTP_*`, `ADMIN_NOTIFY_EMAIL`, `ICAL_TOKEN`, `PUID`/`PGID`.
+
+### Migrating the legacy PHP data
+
+With `DATABASE_URL` pointing at the same database as the old site:
+
+```bash
+docker exec -it onlyview node scripts/migrate-legacy.mjs
+```
+
+Read-only on the legacy tables; imports agencies, clients, reservations
+(incl. variable periods and payment history), contracts, promotions,
+expenses, guestbook reviews and admin accounts (old passwords keep
+working), then backfills loyalty points for paid stays. Idempotent —
+safe to re-run with `--force`; duplicates are skipped.
 
 > **Note:** the GHCR package is private by default. After the first workflow
 > run, open the package on GitHub (Packages → onlyview-revamp → Package
@@ -123,7 +142,7 @@ as container variables. WebUI → the site; `/admin` → the back-office.
 `npm run build && npm start` behind any Node host. Two notes:
 
 1. **Photo uploads** from the admin are written to `public/media/photos/uploads/` — perfect on a VPS/Docker/persistent disk. On serverless hosts (Vercel …) the filesystem is ephemeral: keep managing photos via the repo, or wire the upload route to object storage (S3/R2).
-2. SQLite needs a persistent disk too — use PostgreSQL on serverless.
+2. A reachable PostgreSQL is required (`DATABASE_URL`).
 
 ## Legacy migration notes
 

@@ -14,7 +14,7 @@
     e-signature and loyalty points; full owner back-office (calendar, reservations with
     multi-period pricing, contracts, finance, clients CRM, promotions, multi-user accounts).
     &#xD;&#xD;
-    Everything is self-contained: SQLite database and photo uploads live in /data.
+    Data lives in your PostgreSQL server (own 'onlyview_app' schema — legacy PHP tables are never touched); photo uploads persist in /data.
     First start creates the schema and seeds default rates + the admin account
     (admin / onlyview2026 — you are forced to change it at first login).
     &#xD;&#xD;
@@ -34,8 +34,12 @@
     Type="Port" Display="always" Required="true" Mask="false">3000</Config>
 
   <Config Name="Appdata (/data)" Target="/data" Default="/mnt/user/appdata/onlyview" Mode="rw"
-    Description="Persistent storage: SQLite database (onlyview.db) and photo uploads. Back this folder up."
+    Description="Persistent storage for photo uploads (the database lives in your PostgreSQL server)."
     Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/onlyview</Config>
+
+  <Config Name="Database URL (PostgreSQL)" Target="DATABASE_URL" Default=""
+    Description="PostgreSQL connection string, e.g. postgresql://user:password@HOST:5432/onlyview — the app creates its own tables in a separate 'onlyview_app' schema and NEVER touches other tables in the database (your legacy PHP tables are safe)."
+    Type="Variable" Display="always" Required="true" Mask="true"></Config>
 
   <Config Name="PUID" Target="PUID" Default="99"
     Description="User ID the app runs as (99 = nobody, the Unraid default). The /data volume is chown'd to this at startup."

@@ -19,7 +19,7 @@ COPY . .
 ARG NEXT_PUBLIC_SITE_URL=https://onlyviewstbarth.com
 ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
 # No database at build time: pages fall back to bundled defaults/manifest
-ENV DATABASE_URL="file:/tmp/build.db"
+ENV DATABASE_URL="postgresql://build:build@localhost:5432/build"
 RUN npx prisma generate && npx next build
 
 # Standalone Prisma CLI install (own dependency tree, used by the entrypoint
@@ -30,10 +30,12 @@ RUN npm init -y >/dev/null 2>&1 && npm install --omit=dev prisma@^6.16.0 bcryptj
 
 FROM node:22-alpine AS runner
 WORKDIR /app
+# DATABASE_URL must be provided at runtime (PostgreSQL). If it carries no
+# ?schema= parameter, the entrypoint pins schema=onlyview_app so the app
+# NEVER manages tables outside its own namespace (legacy data stays safe).
 ENV NODE_ENV=production \
     PORT=3000 \
-    HOSTNAME=0.0.0.0 \
-    DATABASE_URL="file:/data/onlyview.db"
+    HOSTNAME=0.0.0.0
 
 # Standalone server + assets
 COPY --from=builder /app/.next/standalone ./
@@ -42,6 +44,7 @@ COPY --from=builder /app/public ./public
 
 # Prisma schema + seed + CLI (first-boot `db push` + idempotent seeding)
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/scripts/migrate-legacy.mjs ./scripts/migrate-legacy.mjs
 COPY --from=builder /app/src/data/photos.json ./src/data/photos.json
 COPY --from=prismacli /cli/node_modules ./prisma-cli/node_modules
 # seed.mjs runs with plain node; bcryptjs isn't in the traced standalone tree
