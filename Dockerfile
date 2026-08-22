@@ -48,9 +48,9 @@ COPY --from=prismacli /cli/node_modules ./prisma-cli/node_modules
 COPY --from=prismacli /cli/node_modules/bcryptjs ./node_modules/bcryptjs
 
 COPY scripts/docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh && mkdir -p /data && chown -R node:node /app /data
+# su-exec: start as root to own the /data bind mount, then drop to PUID:PGID
+RUN apk add --no-cache su-exec && chmod +x /docker-entrypoint.sh && mkdir -p /data
 
-USER node
 EXPOSE 3000
 VOLUME /data
 

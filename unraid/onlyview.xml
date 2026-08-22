@@ -37,6 +37,14 @@
     Description="Persistent storage: SQLite database (onlyview.db) and photo uploads. Back this folder up."
     Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/onlyview</Config>
 
+  <Config Name="PUID" Target="PUID" Default="99"
+    Description="User ID the app runs as (99 = nobody, the Unraid default). The /data volume is chown'd to this at startup."
+    Type="Variable" Display="advanced" Required="false" Mask="false">99</Config>
+
+  <Config Name="PGID" Target="PGID" Default="100"
+    Description="Group ID the app runs as (100 = users, the Unraid default)."
+    Type="Variable" Display="advanced" Required="false" Mask="false">100</Config>
+
   <Config Name="Demo dataset" Target="SEED_DEMO" Default="0"
     Description="Set to 1 on FIRST start to seed demo reservations, clients, expenses and loyalty data (only applies to an empty database)."
     Type="Variable" Display="always" Required="false" Mask="false">0</Config>
