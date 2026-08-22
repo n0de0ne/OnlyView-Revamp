@@ -340,12 +340,28 @@ async function main() {
     count("testimonials");
   }
 
-  /* ── admin users (bcrypt $2y$ hashes verify fine with bcryptjs) ── */
-  const ROLE_MAP = { owner: "owner", manager: "manager", housekeeper: "viewer", viewer: "viewer" };
-  for (const u of await legacy("users")) {
+  /* ── admin accounts (bcrypt $2y$ hashes verify fine with bcryptjs) ──
+     The PHP login used `admin_users`; a later `users` table also exists.
+     Import both, admin_users first (those are the live PHP credentials). */
+  const ROLE_MAP = {
+    owner: "owner",
+    admin: "owner",
+    manager: "manager",
+    editor: "manager",
+    housekeeper: "viewer",
+    viewer: "viewer",
+  };
+  const legacyUsers = [...(await legacy("admin_users")), ...(await legacy("users"))].filter(
+    (u) => u && u.username && u.password_hash
+  );
+  for (const u of legacyUsers) {
     const username = String(u.username).toLowerCase();
+    // email is optional in legacy admin_users but required+unique here
+    const email = u.email
+      ? String(u.email).toLowerCase()
+      : `${username}@migrated.onlyviewstbarth.com`;
     const dupe = await prisma.user.findFirst({
-      where: { OR: [{ username }, { email: String(u.email).toLowerCase() }] },
+      where: { OR: [{ username }, { email }] },
     });
     if (dupe) {
       // the seeded 'admin' account: adopt the legacy hash/role so the old
@@ -367,8 +383,10 @@ async function main() {
     await prisma.user.create({
       data: {
         username,
-        email: String(u.email).toLowerCase(),
+        email,
         passwordHash: u.password_hash,
+        firstname: u.firstname ?? null,
+        lastname: u.lastname ?? null,
         role: ROLE_MAP[u.role] ?? "viewer",
         isActive: bool(u.is_active),
         mustChangePassword: bool(u.must_change_password),
