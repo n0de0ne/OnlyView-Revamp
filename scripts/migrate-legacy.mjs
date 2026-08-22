@@ -67,10 +67,22 @@ async function resolveLegacySchema() {
   );
 }
 
+/** bigint / numeric columns come back as BigInt / Decimal — flatten to Number. */
+const normalizeValue = (v) => {
+  if (typeof v === "bigint") return Number(v);
+  if (v && typeof v === "object" && typeof v.toNumber === "function") return v.toNumber();
+  return v;
+};
+
 /** SELECT * from a legacy table; [] when the table doesn't exist. */
 async function legacy(table) {
   try {
-    return await prisma.$queryRawUnsafe(`SELECT * FROM "${LEGACY}".${table} ORDER BY id`);
+    const rows = await prisma.$queryRawUnsafe(
+      `SELECT * FROM "${LEGACY}".${table} ORDER BY id`
+    );
+    return rows.map((r) =>
+      Object.fromEntries(Object.entries(r).map(([k, v]) => [k, normalizeValue(v)]))
+    );
   } catch (e) {
     console.log(`  (legacy table ${LEGACY}.${table} not found — skipped)`);
     return [];
