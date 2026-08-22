@@ -110,6 +110,10 @@ async function main() {
   const agencies = await legacy("agencies");
   const agencyByName = new Map();
   for (const a of agencies) {
+    if (!a.name) {
+      count("agencies skipped (no name)");
+      continue;
+    }
     const found =
       (await prisma.agency.findFirst({
         where: { name: { equals: a.name, mode: "insensitive" } },
@@ -175,6 +179,13 @@ async function main() {
       count("reservations (skipped duplicates)");
       continue;
     }
+    const startDate = date(r.start_date);
+    const endDate = date(r.end_date);
+    if (!startDate || !endDate) {
+      console.log(`  (reservation ${r.id} skipped — missing start/end date)`);
+      count("reservations skipped (missing dates)");
+      continue;
+    }
 
     const priceHT = round(r.final_price);
     const noTax = bool(r.no_tax);
@@ -216,8 +227,8 @@ async function main() {
       data: {
         id: r.id,
         status: STATUS_MAP[r.status] ?? r.status ?? "option",
-        startDate: date(r.start_date),
-        endDate: date(r.end_date),
+        startDate,
+        endDate,
         clientId,
         clientName: r.client_name ?? null,
         email: r.email ?? null,
@@ -289,6 +300,10 @@ async function main() {
   /* ── contracts ── */
   const contracts = await legacy("contract_signatures");
   for (const c of contracts) {
+    if (!c.token || c.reservation_id == null) {
+      count("contracts skipped (no token/reservation)");
+      continue;
+    }
     if (!(await prisma.reservation.findUnique({ where: { id: c.reservation_id } }))) continue;
     if (await prisma.contract.findUnique({ where: { token: c.token } })) continue;
     const r = await prisma.reservation.findUnique({ where: { id: c.reservation_id } });
@@ -319,6 +334,10 @@ async function main() {
 
   /* ── promotions ── */
   for (const p of await legacy("promotions")) {
+    if (!p.name) {
+      count("promotions skipped (no name)");
+      continue;
+    }
     const dupe = await prisma.promotion.findFirst({ where: { name: p.name } });
     if (dupe) continue;
     await prisma.promotion.create({
@@ -354,13 +373,18 @@ async function main() {
 
   /* ── expenses ── */
   for (const e of await legacy("expenses")) {
+    const expenseDate = date(e.date);
+    if (!expenseDate) {
+      count("expenses skipped (no date)");
+      continue;
+    }
     const dupe = await prisma.expense.findFirst({
-      where: { date: date(e.date), amount: num(e.amount) ?? 0, category: e.category ?? "autre" },
+      where: { date: expenseDate, amount: num(e.amount) ?? 0, category: e.category ?? "autre" },
     });
     if (dupe) continue;
     await prisma.expense.create({
       data: {
-        date: date(e.date),
+        date: expenseDate,
         category: e.category ?? "autre",
         amount: num(e.amount) ?? 0,
         description: e.description ?? null,
@@ -376,6 +400,11 @@ async function main() {
 
   /* ── guestbook → testimonials ── */
   for (const g of await legacy("guestbook")) {
+    if (!g.name || !g.message) {
+      console.log(`  (guestbook entry "${g.name ?? "?"}" skipped — no message)`);
+      count("testimonials skipped (empty)");
+      continue;
+    }
     const dupe = await prisma.testimonial.findFirst({
       where: { name: g.name, message: g.message },
     });
