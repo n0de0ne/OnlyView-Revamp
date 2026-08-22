@@ -24,12 +24,55 @@ const num = (v) => (v == null ? null : Number(v));
 const date = (v) => (v == null ? null : new Date(v));
 const round = (v) => Math.round(Number(v) || 0);
 
+/**
+ * The legacy schema is usually `public`, but PHP's connection could resolve
+ * its unqualified table names elsewhere (search_path) — in production the
+ * data was found in a schema named `onlyview`. Auto-detect: the non-app
+ * schema whose `reservations` table has the most rows wins.
+ * Override with LEGACY_SCHEMA=<name> if needed.
+ */
+let LEGACY = process.env.LEGACY_SCHEMA ?? null;
+
+async function resolveLegacySchema() {
+  if (LEGACY) {
+    console.log(`Legacy schema (from LEGACY_SCHEMA): ${LEGACY}`);
+    return;
+  }
+  const appSchema =
+    /schema=([^&]+)/.exec(process.env.DATABASE_URL ?? "")?.[1] ?? "onlyview_app";
+  const candidates = await prisma.$queryRawUnsafe(
+    `SELECT table_schema FROM information_schema.tables
+     WHERE table_name = 'reservations' AND table_schema <> $1
+       AND table_schema NOT LIKE 'pg_%' AND table_schema <> 'information_schema'`,
+    appSchema
+  );
+  let best = null;
+  let bestRows = -1;
+  for (const c of candidates) {
+    try {
+      const n = await prisma.$queryRawUnsafe(
+        `SELECT count(*)::int AS n FROM "${c.table_schema}".reservations`
+      );
+      if (n[0].n > bestRows) {
+        best = c.table_schema;
+        bestRows = n[0].n;
+      }
+    } catch {
+      /* unreadable schema — skip */
+    }
+  }
+  LEGACY = best ?? "public";
+  console.log(
+    `Legacy schema: ${LEGACY}${bestRows >= 0 ? ` (${bestRows} reservations found)` : " (no reservations table found)"}`
+  );
+}
+
 /** SELECT * from a legacy table; [] when the table doesn't exist. */
 async function legacy(table) {
   try {
-    return await prisma.$queryRawUnsafe(`SELECT * FROM public.${table} ORDER BY id`);
+    return await prisma.$queryRawUnsafe(`SELECT * FROM "${LEGACY}".${table} ORDER BY id`);
   } catch (e) {
-    console.log(`  (legacy table public.${table} not found — skipped)`);
+    console.log(`  (legacy table ${LEGACY}.${table} not found — skipped)`);
     return [];
   }
 }
@@ -40,6 +83,7 @@ const count = (k, n = 1) => (report[k] = (report[k] ?? 0) + n);
 async function main() {
   console.log("Legacy → new migration starting");
   console.log("Target schema:", /schema=([^&]+)/.exec(process.env.DATABASE_URL ?? "")?.[1] ?? "(default)");
+  await resolveLegacySchema();
 
   const existing = await prisma.reservation.count();
   if (existing > 0 && !FORCE) {
