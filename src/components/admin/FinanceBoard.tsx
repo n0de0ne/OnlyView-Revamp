@@ -11,7 +11,21 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { api, Card, ConfirmButton, fmtDate, fmtEUR, fmtUSD, Modal, Spinner, useToast } from "./ui";
+import {
+  api,
+  Card,
+  ConfirmButton,
+  fmtDate,
+  fmtEUR,
+  fmtUSD,
+  Modal,
+  SEASON_MONTH_LABELS,
+  SeasonPicker,
+  seasonLabel,
+  seasonOfDate,
+  Spinner,
+  useToast,
+} from "./ui";
 
 const CATEGORIES: Record<string, string> = {
   jardinier: "🌿 Jardinier",
@@ -59,8 +73,6 @@ interface Stats {
   };
 }
 
-const MONTH_LABELS = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"];
-
 const EMPTY_FORM = {
   date: new Date().toISOString().slice(0, 10),
   category: "autre",
@@ -75,7 +87,7 @@ const EMPTY_FORM = {
 
 export function FinanceBoard() {
   const { push } = useToast();
-  const [year, setYear] = useState(new Date().getFullYear());
+  const [season, setSeason] = useState(() => seasonOfDate(new Date()));
   const [expenses, setExpenses] = useState<Expense[] | null>(null);
   const [recurring, setRecurring] = useState<Expense[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
@@ -85,17 +97,17 @@ export function FinanceBoard() {
 
   const load = useCallback(() => {
     api<{ expenses: Expense[]; recurring: Expense[] }>(
-      `/api/admin/expenses?year=${year}`
+      `/api/admin/expenses?season=${season}`
     ).then((d) => {
       if (d.success) {
         setExpenses(d.expenses);
         setRecurring(d.recurring);
       }
     });
-    api<Stats>(`/api/admin/stats?year=${year}`).then(
+    api<Stats>(`/api/admin/stats?season=${season}`).then(
       (d) => d.success && setStats(d as unknown as Stats)
     );
-  }, [year]);
+  }, [season]);
   useEffect(load, [load]);
 
   const openModal = (e: Expense | null) => {
@@ -151,7 +163,7 @@ export function FinanceBoard() {
 
   const chartData =
     stats?.months.map((m, i) => ({
-      name: MONTH_LABELS[i],
+      name: SEASON_MONTH_LABELS[i],
       "Revenu net (USD)": m.net,
       "Dépenses (EUR)": Math.round(m.expensesEUR),
       "Encaissé (USD)": m.cashIn,
@@ -160,19 +172,14 @@ export function FinanceBoard() {
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-bold text-slate-800">Finances</h1>
+        <div>
+          <h1 className="text-xl font-bold text-slate-800">Finances</h1>
+          <p className="text-xs text-slate-400">
+            Saison {seasonLabel(season)} · 1ᵉʳ sept. → 31 août
+          </p>
+        </div>
         <div className="flex items-center gap-2">
-          <select
-            value={year}
-            onChange={(e) => setYear(parseInt(e.target.value))}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm"
-          >
-            {Array.from({ length: 6 }, (_, i) => new Date().getFullYear() + 1 - i).map((y) => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            ))}
-          </select>
+          <SeasonPicker season={season} onChange={setSeason} />
           <button onClick={() => openModal(null)} className="abtn-gold">
             + Dépense
           </button>
@@ -183,7 +190,7 @@ export function FinanceBoard() {
       {stats && (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {[
-            { label: "Revenu net (année)", value: fmtUSD(stats.totals.net), sub: `dont ${fmtUSD(stats.totals.commissions)} commissions déduites` },
+            { label: "Revenu net (saison)", value: fmtUSD(stats.totals.net), sub: `dont ${fmtUSD(stats.totals.commissions)} commissions déduites` },
             { label: "Encaissements", value: fmtUSD(stats.totals.cashIn), sub: "paiements reçus (cash)" },
             { label: "Dépenses", value: fmtEUR(stats.totals.expensesEUR), sub: "charges villa (EUR)" },
             { label: "Taxe de séjour collectée", value: fmtUSD(stats.totals.tax), sub: "à reverser (5%)" },
@@ -197,7 +204,7 @@ export function FinanceBoard() {
         </div>
       )}
 
-      <Card title={`Revenus vs dépenses ${year}`}>
+      <Card title={`Revenus vs dépenses · saison ${seasonLabel(season)}`}>
         <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData} margin={{ left: 8, right: 8, top: 8 }}>
@@ -245,7 +252,7 @@ export function FinanceBoard() {
         </Card>
 
         {/* One-off list */}
-        <Card title={`Dépenses ${year}`}>
+        <Card title={`Dépenses · saison ${seasonLabel(season)}`}>
           {!expenses ? (
             <Spinner />
           ) : expenses.length === 0 ? (

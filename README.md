@@ -39,12 +39,24 @@ SEED_DEMO=1 npm run setup
 **SEO / GEO:** per-locale metadata + hreflang, `VacationRental`/`LodgingBusiness`/`FAQPage`/`Review`/`Article`/`BreadcrumbList` JSON-LD, sitemap with language alternates, robots.txt that explicitly welcomes AI crawlers (GPTBot, ClaudeBot, PerplexityBot), 301 redirects from every legacy `.php` URL, static generation + ISR, `next/image` AVIF/WebP.
 
 ### Admin (`/admin` — role-based: owner / manager / viewer)
+
+Everything is reported by **season — 1 September → 31 August** (a season is named
+after the year it opens: *2025 – 2026* runs Sep 2025 → Aug 2026), so a winter
+high season is never split across two reporting periods. The dashboard,
+calendar, finance and reservation list all share the same season picker.
+
+Editors open as **modals over the page you were on** (Next.js intercepting
+routes): clicking a stay in the calendar, list, dashboard or a contract opens it
+as an overlay, `Esc` closes it and you are back where you were with filters and
+scroll intact — while the URL still updates, so a refresh or a shared link
+renders the full page.
+
 - **Dashboard** — KPI cards, revenue & occupancy **graphs**, booking-source pie, expiring options, arrivals (Recharts).
-- **Calendar** — 12-month year view, colored spans, back-to-back split days, click-to-create.
+- **Calendar** — 12-month season view (September → August), colored spans, back-to-back split days, click-to-create.
 - **Reservations** — list + full editor with *all* the legacy PHP options:
   statuses (option 🟠 / confirmed 🔴 / pending / blocked / cancelled), option expiry, client autocomplete + VIP/blacklist badges, bedrooms/guests, agency & commission %, **variable periods (multi-pricing: different bedrooms and custom weekly rate per period)**, custom weekly rate, manual final price, discount %, *offer one bedroom*, free nights, offered tax, live season breakdown (incl. Christmas/New Year 7-night packages), revenue preview (HT/TTC/net), **profitability analysis** (cleaning + fixed charges, EUR), auto 30% deposit, payment ledger, early check-in / late check-out times.
 - **Contracts** — one-click EN/FR generation from the reservation, signature link, email sending, view tracking, e-signature, PDF (pdf-lib) with embedded signature, void/extend.
-- **Finance** (owner) — expenses with **recurring fixed costs** (monthly/quarterly/…), P&L: accrual revenue vs cash-in vs expenses, commissions, collected tax.
+- **Finance** (owner) — expenses with **recurring fixed costs** (monthly/quarterly/…), P&L per season: accrual revenue vs cash-in vs expenses, commissions, collected tax.
 - **Requests** — website booking-request inbox → one-click convert to option/confirmed reservation (creates/links the client).
 - **Clients** — CRM with stats, standing discounts, VIP, blacklist, tags.
 - **Loyalty** — automatic earning (1 pt/$100 paid, configurable), tiers (Silver/Gold/Platinum), manual adjustments.
@@ -54,7 +66,8 @@ SEED_DEMO=1 npm run setup
 - **Users** (owner) — multiple accounts with roles, forced password change, self-lockout protection, audit log on every action.
 
 ### Business rules (ported 1:1 from the PHP `PricingService` + admin)
-- Seasons: Winter Dec 15–Apr 14 · Summer(low) Jun 1–Aug 31 · Mid-season otherwise.
+- Reporting season: 1 September → 31 August (`src/lib/dates.ts`).
+- Rate seasons: Winter Dec 15–Apr 14 · Summer(low) Jun 1–Aug 31 · Mid-season otherwise.
 - Christmas (Dec 20–26) & New Year (Dec 27–Jan 2): flat weekly packages, billed min. 7 nights.
 - Weekly rates per bedrooms-in-use (2/3/4) — all editable in Settings.
 - 5% tourist tax, 30% deposit, balance 30 days before arrival.

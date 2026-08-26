@@ -127,12 +127,15 @@ export function ReservationEditor({
   agencies,
   costs,
   prefill,
+  inModal = false,
 }: {
   reservationId: number | null;
   rates: RateConfig;
   agencies: AgencyOpt[];
   costs: Costs;
   prefill: { start: string | null; end: string | null };
+  /** rendered inside the intercepted route overlay — the modal owns the title bar */
+  inModal?: boolean;
 }) {
   const router = useRouter();
   const { push } = useToast();
@@ -413,6 +416,8 @@ export function ReservationEditor({
       } else {
         load();
       }
+      // keep the calendar/list underneath in sync while the modal stays open
+      if (inModal) router.refresh();
     } else {
       push(
         res.error === "dates_conflict"
@@ -438,7 +443,12 @@ export function ReservationEditor({
     const res = await api(`/api/admin/reservations/${reservationId}`, { method: "DELETE" });
     if (res.success) {
       push("Réservation supprimée");
-      router.replace("/admin/reservations");
+      if (inModal) {
+        router.back();
+        router.refresh();
+      } else {
+        router.replace("/admin/reservations");
+      }
     }
   };
 
@@ -496,22 +506,46 @@ export function ReservationEditor({
   const latestContract = loaded?.contracts.find((c) => c.status !== "void");
 
   return (
-    <div className="mx-auto max-w-5xl space-y-5 pb-24">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <Link href="/admin/reservations" className="text-xs text-slate-400 hover:text-navy">
-            ← Réservations
-          </Link>
-          <h1 className="text-xl font-bold text-slate-800">
-            {reservationId ? `Réservation #${reservationId}` : "Nouvelle réservation"}
+    <div className={inModal ? "space-y-5" : "mx-auto max-w-5xl space-y-5 pb-24"}>
+      {/* Header — in a modal the overlay already shows the title, so only the
+          archived flag and the save button are repeated here. */}
+      <div
+        className={`flex flex-wrap items-center gap-3 ${
+          inModal
+            ? "sticky top-0 z-20 -mx-4 -mt-5 justify-end border-b border-slate-200 bg-slate-50/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6"
+            : "justify-between"
+        }`}
+      >
+        {!inModal ? (
+          <div>
+            <Link href="/admin/reservations" className="text-xs text-slate-400 hover:text-navy">
+              ← Réservations
+            </Link>
+            <h1 className="text-xl font-bold text-slate-800">
+              {reservationId ? `Réservation #${reservationId}` : "Nouvelle réservation"}
+              {loaded?.isArchived && (
+                <span className="ml-2 rounded bg-slate-200 px-2 py-0.5 text-xs font-medium text-slate-600">
+                  Archivée
+                </span>
+              )}
+            </h1>
+          </div>
+        ) : (
+          <div className="mr-auto flex items-center gap-2 text-xs text-slate-500">
             {loaded?.isArchived && (
-              <span className="ml-2 rounded bg-slate-200 px-2 py-0.5 text-xs font-medium text-slate-600">
+              <span className="rounded bg-slate-200 px-2 py-0.5 font-medium text-slate-600">
                 Archivée
               </span>
             )}
-          </h1>
-        </div>
+            {form.startDate && form.endDate && (
+              <span>
+                {fmtDate(form.startDate)} → {fmtDate(form.endDate)}
+                {quote && quote.nights > 0 && ` · ${quote.nights} nuits`}
+                {quote && quote.totalTTC > 0 && ` · ${fmtUSD(quote.totalTTC)} TTC`}
+              </span>
+            )}
+          </div>
+        )}
         <button onClick={save} disabled={saving} className="abtn-primary">
           {saving ? "Enregistrement…" : "💾 Enregistrer"}
         </button>

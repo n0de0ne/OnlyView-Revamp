@@ -5,13 +5,17 @@ import { ToastProvider } from "@/components/admin/ui";
 
 export default async function AdminAppLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+  modal,
+}: Readonly<{ children: React.ReactNode; modal?: React.ReactNode }>) {
   const user = await getSessionUser();
   if (!user) redirect("/admin/login");
 
   return (
     <ToastProvider>
       <AdminShell user={user}>{children}</AdminShell>
+      {/* Intercepted routes (reservation editor…) render here, over the page
+          the user came from, so the list/calendar keeps its scroll and filters. */}
+      {modal}
     </ToastProvider>
   );
 }

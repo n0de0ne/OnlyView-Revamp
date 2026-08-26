@@ -242,6 +242,81 @@ export function Spinner() {
   );
 }
 
+/* ───────────────────────── seasons ─────────────────────────
+ * The villa year runs September → August, so every period selector in the
+ * back-office picks a *season*, named after the year it starts in.
+ */
+
+/** Month labels in season order (September first). */
+export const SEASON_MONTH_LABELS = [
+  "Sep", "Oct", "Nov", "Déc", "Jan", "Fév",
+  "Mar", "Avr", "Mai", "Juin", "Juil", "Août",
+];
+
+export const SEASON_MONTH_NAMES = [
+  "Septembre", "Octobre", "Novembre", "Décembre", "Janvier", "Février",
+  "Mars", "Avril", "Mai", "Juin", "Juillet", "Août",
+];
+
+/** ‹ 2025 – 2026 › — the standard period control of the back-office. */
+export function SeasonPicker({
+  season,
+  onChange,
+  count = 6,
+}: {
+  season: number;
+  onChange: (s: number) => void;
+  /** how many past seasons to offer in the dropdown */
+  count?: number;
+}) {
+  const current = seasonOfDate(new Date());
+  const options = Array.from({ length: count }, (_, i) => current + 1 - i);
+  if (!options.includes(season)) options.push(season);
+  options.sort((a, b) => b - a);
+
+  return (
+    <div className="flex items-center gap-1 rounded-xl border border-slate-300 bg-white p-0.5">
+      <button
+        onClick={() => onChange(season - 1)}
+        className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100"
+        aria-label="Saison précédente"
+      >
+        ‹
+      </button>
+      <select
+        value={season}
+        onChange={(e) => onChange(parseInt(e.target.value, 10))}
+        className="cursor-pointer appearance-none bg-transparent px-1 py-1.5 text-center text-sm font-semibold text-navy focus:outline-none"
+        aria-label="Saison"
+        title="Saison : 1ᵉʳ septembre → 31 août"
+      >
+        {options.map((s) => (
+          <option key={s} value={s}>
+            Saison {s} – {s + 1}
+            {s === current ? " (en cours)" : ""}
+          </option>
+        ))}
+      </select>
+      <button
+        onClick={() => onChange(season + 1)}
+        className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100"
+        aria-label="Saison suivante"
+      >
+        ›
+      </button>
+    </div>
+  );
+}
+
+/** Client-side twin of lib/dates seasonOf (no server-only import in components). */
+export function seasonOfDate(d: Date | string): number {
+  const iso = typeof d === "string" ? d.slice(0, 10) : d.toISOString().slice(0, 10);
+  const year = parseInt(iso.slice(0, 4), 10);
+  return parseInt(iso.slice(5, 7), 10) >= 9 ? year : year - 1;
+}
+
+export const seasonLabel = (season: number) => `${season} – ${season + 1}`;
+
 /* ───────────────────────── formatting ───────────────────────── */
 
 export const fmtUSD = (n: number | null | undefined) =>

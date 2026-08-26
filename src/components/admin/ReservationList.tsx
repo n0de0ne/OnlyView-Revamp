@@ -2,25 +2,35 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { api, Card, fmtDate, fmtUSD, Spinner, StatusBadge, STATUS_LABELS } from "./ui";
+import {
+  api,
+  Card,
+  fmtDate,
+  fmtUSD,
+  seasonLabel,
+  seasonOfDate,
+  Spinner,
+  StatusBadge,
+  STATUS_LABELS,
+} from "./ui";
 import type { SerializedReservation } from "@/lib/reservations";
 
 export function ReservationList() {
   const [reservations, setReservations] = useState<SerializedReservation[] | null>(null);
-  const [year, setYear] = useState<string>("all");
+  const [season, setSeason] = useState<string>(() => String(seasonOfDate(new Date())));
   const [status, setStatus] = useState<string>("all");
   const [archived, setArchived] = useState(false);
   const [q, setQ] = useState("");
 
   useEffect(() => {
     const params = new URLSearchParams();
-    if (year !== "all") params.set("year", year);
+    if (season !== "all") params.set("season", season);
     if (status !== "all") params.set("status", status);
     params.set("archived", archived ? "1" : "0");
     api<{ reservations: SerializedReservation[] }>(
       `/api/admin/reservations?${params}`
     ).then((d) => d.success && setReservations(d.reservations));
-  }, [year, status, archived]);
+  }, [season, status, archived]);
 
   const filtered = useMemo(() => {
     if (!reservations) return null;
@@ -34,9 +44,9 @@ export function ReservationList() {
     );
   }, [reservations, q]);
 
-  const years = useMemo(() => {
-    const y = new Date().getFullYear();
-    return [y - 2, y - 1, y, y + 1, y + 2].map(String);
+  const seasons = useMemo(() => {
+    const s = seasonOfDate(new Date());
+    return [s + 1, s, s - 1, s - 2, s - 3, s - 4];
   }, []);
 
   const paymentDot = (r: SerializedReservation) =>
@@ -71,14 +81,15 @@ export function ReservationList() {
           className="w-56 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
         />
         <select
-          value={year}
-          onChange={(e) => setYear(e.target.value)}
+          value={season}
+          onChange={(e) => setSeason(e.target.value)}
           className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+          title="Une saison va du 1ᵉʳ septembre au 31 août"
         >
-          <option value="all">Toutes années</option>
-          {years.map((y) => (
-            <option key={y} value={y}>
-              {y}
+          <option value="all">Toutes saisons</option>
+          {seasons.map((s) => (
+            <option key={s} value={s}>
+              Saison {seasonLabel(s)}
             </option>
           ))}
         </select>

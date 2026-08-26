@@ -1,10 +1,17 @@
 import { notFound } from "next/navigation";
-import { getRateConfig, getSettings } from "@/lib/settings";
-import { prisma } from "@/lib/db";
 import { ReservationEditor } from "@/components/admin/ReservationEditor";
+import {
+  getReservationEditorData,
+  parseReservationParam,
+} from "@/lib/reservation-editor-data";
 
 export const dynamic = "force-dynamic";
 
+/**
+ * Standalone editor — what a hard load, refresh or shared link renders.
+ * Soft navigations from inside the back-office are intercepted by
+ * `@modal/(.)reservations/[id]` and open as an overlay instead.
+ */
 export default async function ReservationEditorPage({
   params,
   searchParams,
@@ -13,30 +20,15 @@ export default async function ReservationEditorPage({
   searchParams: Promise<{ start?: string; end?: string }>;
 }) {
   const [{ id }, sp] = await Promise.all([params, searchParams]);
-  const isNew = id === "new";
-  const numId = isNew ? null : parseInt(id, 10);
-  if (!isNew && (numId == null || Number.isNaN(numId))) notFound();
+  const reservationId = parseReservationParam(id);
+  if (reservationId === false) notFound();
 
-  const [rates, settings, agencies] = await Promise.all([
-    getRateConfig(),
-    getSettings(),
-    prisma.agency.findMany({
-      where: { isActive: true },
-      orderBy: { name: "asc" },
-      select: { id: true, name: true, commissionPercent: true },
-    }),
-  ]);
+  const data = await getReservationEditorData();
 
   return (
     <ReservationEditor
-      reservationId={numId}
-      rates={rates}
-      agencies={agencies}
-      costs={{
-        cleaningPerDayEUR: parseFloat(settings.cost_cleaning_per_day_eur ?? "66"),
-        fixedMonthlyEUR: parseFloat(settings.cost_fixed_monthly_eur ?? "1501.90"),
-        eurUsdRate: parseFloat(settings.eur_usd_rate ?? "1.08"),
-      }}
+      reservationId={reservationId}
+      {...data}
       prefill={{ start: sp.start ?? null, end: sp.end ?? null }}
     />
   );

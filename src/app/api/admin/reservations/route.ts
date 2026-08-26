@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { adminRoute, jsonError, jsonOk } from "@/lib/admin-api";
 import { audit } from "@/lib/audit";
 import { isRangeAvailable } from "@/lib/availability";
+import { fromISODate, seasonRange } from "@/lib/dates";
 import {
   ReservationInput,
   computePersistedPricing,
@@ -16,7 +17,7 @@ export const dynamic = "force-dynamic";
 
 export const GET = adminRoute("viewer", async (req) => {
   const sp = req.nextUrl.searchParams;
-  const year = sp.get("year");
+  const season = sp.get("season");
   const archived = sp.get("archived");
   const status = sp.get("status");
 
@@ -24,10 +25,12 @@ export const GET = adminRoute("viewer", async (req) => {
   if (archived === "1") where.isArchived = true;
   else if (archived !== "all") where.isArchived = false;
   if (status) where.status = status;
-  if (year && /^\d{4}$/.test(year)) {
+  // Seasons run September → August; a stay belongs to every season it overlaps.
+  if (season && /^\d{4}$/.test(season)) {
+    const { start, end } = seasonRange(parseInt(season, 10));
     where.AND = [
-      { startDate: { lt: new Date(`${parseInt(year) + 1}-01-01T00:00:00Z`) } },
-      { endDate: { gt: new Date(`${year}-01-01T00:00:00Z`) } },
+      { startDate: { lt: fromISODate(end) } },
+      { endDate: { gt: fromISODate(start) } },
     ];
   }
 

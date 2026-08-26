@@ -1,21 +1,22 @@
 import { prisma } from "@/lib/db";
 import { adminRoute, jsonOk } from "@/lib/admin-api";
-import { yearStats } from "@/lib/stats";
-import { toISODate, todayISO, addDays } from "@/lib/dates";
+import { seasonStats } from "@/lib/stats";
+import { toISODate, todayISO, addDays, currentSeason } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
 
 export const GET = adminRoute("viewer", async (req) => {
-  const yearParam = req.nextUrl.searchParams.get("year");
-  const year =
-    yearParam && /^\d{4}$/.test(yearParam)
-      ? parseInt(yearParam, 10)
-      : new Date().getUTCFullYear();
+  // A season is named after the year it starts in (Sept → Aug).
+  const seasonParam = req.nextUrl.searchParams.get("season");
+  const season =
+    seasonParam && /^\d{4}$/.test(seasonParam)
+      ? parseInt(seasonParam, 10)
+      : currentSeason();
 
   const today = todayISO();
   const [stats, upcoming, pendingRequests, expiringOptions, pendingContracts] =
     await Promise.all([
-      yearStats(year),
+      seasonStats(season),
       prisma.reservation.findMany({
         where: {
           status: "confirmed",
@@ -49,7 +50,6 @@ export const GET = adminRoute("viewer", async (req) => {
     ]);
 
   return jsonOk({
-    year,
     ...stats,
     upcoming: upcoming.map((r) => ({
       ...r,

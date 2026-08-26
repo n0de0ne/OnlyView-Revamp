@@ -2,22 +2,18 @@ import { prisma } from "@/lib/db";
 import { adminRoute, jsonError, jsonOk } from "@/lib/admin-api";
 import { ExpenseInput, dateOrNull } from "@/lib/admin-schemas";
 import { audit } from "@/lib/audit";
-import { toISODate } from "@/lib/dates";
+import { toISODate, fromISODate, seasonRange } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
 
 export const GET = adminRoute("owner", async (req) => {
-  const year = req.nextUrl.searchParams.get("year");
-  const where =
-    year && /^\d{4}$/.test(year)
-      ? {
-          date: {
-            gte: new Date(`${year}-01-01T00:00:00Z`),
-            lt: new Date(`${parseInt(year) + 1}-01-01T00:00:00Z`),
-          },
-        }
-      : {};
-  // recurring templates are shown regardless of year
+  const season = req.nextUrl.searchParams.get("season");
+  let where = {};
+  if (season && /^\d{4}$/.test(season)) {
+    const { start, end } = seasonRange(parseInt(season, 10));
+    where = { date: { gte: fromISODate(start), lt: fromISODate(end) } };
+  }
+  // recurring templates are shown regardless of season
   const [expenses, recurring] = await Promise.all([
     prisma.expense.findMany({ where: { ...where, isFixed: false }, orderBy: { date: "desc" } }),
     prisma.expense.findMany({ where: { isFixed: true }, orderBy: { date: "desc" } }),

@@ -17,10 +17,21 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { api, Card, fmtDate, fmtUSD, Spinner, StatusBadge } from "./ui";
+import {
+  api,
+  Card,
+  fmtDate,
+  fmtUSD,
+  SEASON_MONTH_LABELS,
+  SeasonPicker,
+  seasonLabel,
+  seasonOfDate,
+  Spinner,
+  StatusBadge,
+} from "./ui";
 
 interface Stats {
-  year: number;
+  season: number;
   months: Array<{
     month: string;
     revenueHT: number;
@@ -65,26 +76,25 @@ interface Stats {
   }>;
 }
 
-const MONTH_LABELS = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"];
 const PIE_COLORS = ["#C9A962", "#1B4965", "#5a8fa8", "#8b5cf6", "#059669", "#f59e0b"];
 
 export function Dashboard() {
-  const [year, setYear] = useState(new Date().getFullYear());
+  const [season, setSeason] = useState(() => seasonOfDate(new Date()));
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
-    api<Stats>(`/api/admin/stats?year=${year}`)
+    api<Stats>(`/api/admin/stats?season=${season}`)
       .then((d) => d.success && setStats(d as unknown as Stats))
       .finally(() => setLoading(false));
-  }, [year]);
+  }, [season]);
 
   if (loading && !stats) return <Spinner />;
   if (!stats) return null;
 
   const chartData = stats.months.map((m, i) => ({
-    name: MONTH_LABELS[i],
+    name: SEASON_MONTH_LABELS[i],
     "Revenu HT": m.revenueHT,
     "Net (après commissions)": m.net,
     "Occupation %": Math.round(m.occupancy * 100),
@@ -92,7 +102,7 @@ export function Dashboard() {
   }));
 
   const kpis = [
-    { label: `Revenu HT ${year}`, value: fmtUSD(stats.totals.revenueHT), sub: `${stats.totals.reservations} réservations` },
+    { label: `Revenu HT saison`, value: fmtUSD(stats.totals.revenueHT), sub: `${stats.totals.reservations} réservations` },
     { label: "Revenu net", value: fmtUSD(stats.totals.net), sub: `${fmtUSD(stats.totals.commissions)} de commissions` },
     { label: "Occupation", value: `${Math.round(stats.totals.occupancy * 100)}%`, sub: `${stats.totals.nightsBooked} nuits · séjour moyen ${stats.totals.averageStay}n` },
     { label: "Direct", value: `${Math.round(stats.totals.directShare * 100)}%`, sub: "part des réservations en direct" },
@@ -101,21 +111,15 @@ export function Dashboard() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-bold text-slate-800">Tableau de bord</h1>
+        <div>
+          <h1 className="text-xl font-bold text-slate-800">Tableau de bord</h1>
+          <p className="text-xs text-slate-400">
+            Saison {seasonLabel(season)} · 1ᵉʳ sept. → 31 août
+          </p>
+        </div>
         <div className="flex items-center gap-2">
-          <select
-            value={year}
-            onChange={(e) => setYear(parseInt(e.target.value))}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm"
-            aria-label="Année"
-          >
-            {Array.from({ length: 6 }, (_, i) => new Date().getFullYear() + 1 - i).map((y) => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            ))}
-          </select>
-          <Link href="/admin/reservations?new=1" className="abtn-gold">
+          <SeasonPicker season={season} onChange={setSeason} />
+          <Link href="/admin/reservations/new" className="abtn-gold">
             + Réservation
           </Link>
         </div>
@@ -166,7 +170,7 @@ export function Dashboard() {
       </div>
 
       {/* Revenue chart */}
-      <Card title={`Revenus ${year} (USD)`}>
+      <Card title={`Revenus saison ${seasonLabel(season)} (USD)`}>
         <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData} margin={{ left: 8, right: 8, top: 8 }}>

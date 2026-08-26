@@ -4,12 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import type { SerializedReservation } from "@/lib/reservations";
-import { api, fmtUSD, Spinner } from "./ui";
+import { api, fmtUSD, SEASON_MONTH_NAMES, SeasonPicker, seasonLabel, seasonOfDate, Spinner } from "./ui";
 
-const MONTHS = [
-  "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
-  "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre",
-];
 const DAYS = ["L", "M", "M", "J", "V", "S", "D"];
 
 const STATUS_BG: Record<string, string> = {
@@ -28,16 +24,16 @@ interface DayInfo {
 
 export function AdminCalendar() {
   const router = useRouter();
-  const [year, setYear] = useState(new Date().getFullYear());
+  const [season, setSeason] = useState(() => seasonOfDate(new Date()));
   const [reservations, setReservations] = useState<SerializedReservation[] | null>(null);
   const [hover, setHover] = useState<SerializedReservation | null>(null);
 
   useEffect(() => {
     setReservations(null);
     api<{ reservations: SerializedReservation[] }>(
-      `/api/admin/reservations?year=${year}`
+      `/api/admin/reservations?season=${season}`
     ).then((d) => d.success && setReservations(d.reservations));
-  }, [year]);
+  }, [season]);
 
   const dayMap = useMemo(() => {
     const map = new Map<string, DayInfo>();
@@ -64,7 +60,11 @@ export function AdminCalendar() {
 
   const todayISO = new Date().toISOString().slice(0, 10);
 
-  const renderMonth = (m: number) => {
+  /** `slot` 0–11 walks the season: 0 = September of the opening year. */
+  const renderMonth = (slot: number) => {
+    const offset = 8 + slot; // September is month index 8
+    const year = season + Math.floor(offset / 12);
+    const m = offset % 12;
     const daysInMonth = new Date(Date.UTC(year, m + 1, 0)).getUTCDate();
     const firstWeekday = (new Date(Date.UTC(year, m, 1)).getUTCDay() + 6) % 7;
     const cells: Array<{ d: number; iso: string } | null> = [];
@@ -77,9 +77,9 @@ export function AdminCalendar() {
     }
 
     return (
-      <div key={m} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div key={slot} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
         <div className="mb-2.5 text-sm font-semibold text-slate-700">
-          {MONTHS[m]} {year}
+          {SEASON_MONTH_NAMES[slot]} {year}
         </div>
         <div className="grid grid-cols-7 text-center text-[0.6rem] uppercase text-slate-300">
           {DAYS.map((d, i) => (
@@ -153,15 +153,14 @@ export function AdminCalendar() {
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-bold text-slate-800">Calendrier</h1>
+        <div>
+          <h1 className="text-xl font-bold text-slate-800">Calendrier</h1>
+          <p className="text-xs text-slate-400">
+            Saison {seasonLabel(season)} · septembre → août
+          </p>
+        </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => setYear((y) => y - 1)} className="abtn-ghost !px-3">
-            ‹
-          </button>
-          <span className="min-w-16 text-center font-display text-2xl text-navy">{year}</span>
-          <button onClick={() => setYear((y) => y + 1)} className="abtn-ghost !px-3">
-            ›
-          </button>
+          <SeasonPicker season={season} onChange={setSeason} />
           <Link href="/admin/reservations/new" className="abtn-gold ml-2">
             + Réservation
           </Link>
@@ -192,7 +191,7 @@ export function AdminCalendar() {
         <Spinner />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {Array.from({ length: 12 }, (_, m) => renderMonth(m))}
+          {Array.from({ length: 12 }, (_, slot) => renderMonth(slot))}
         </div>
       )}
     </div>
