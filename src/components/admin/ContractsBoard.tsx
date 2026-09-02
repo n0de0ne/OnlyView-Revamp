@@ -54,7 +54,7 @@ export function ContractsBoard() {
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+          className="min-h-[40px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
         >
           <option value="all">Tous</option>
           <option value="pending">En attente</option>
@@ -116,23 +116,23 @@ export function ContractsBoard() {
                       <StatusBadge status={c.status} />
                     </td>
                     <td className="py-3">
-                      <div className="flex flex-wrap gap-2 text-xs">
+                      <div className="flex flex-wrap gap-1.5 text-xs">
                         <a
                           href={`/api/contracts/pdf/${c.token}`}
                           target="_blank"
-                          className="text-navy hover:underline"
+                          className="inline-flex min-h-[40px] items-center rounded-md bg-slate-100 px-2.5 text-navy hover:bg-slate-200"
                         >
                           PDF
                         </a>
                         {c.status === "pending" && (
                           <>
-                            <button onClick={() => copyLink(c)} className="text-navy hover:underline">
+                            <button onClick={() => copyLink(c)} className="inline-flex min-h-[40px] items-center rounded-md bg-slate-100 px-2.5 text-navy hover:bg-slate-200">
                               Copier lien
                             </button>
-                            <button onClick={() => act(c.id, "extend")} className="text-slate-500 hover:underline">
+                            <button onClick={() => act(c.id, "extend")} className="inline-flex min-h-[40px] items-center rounded-md bg-slate-100 px-2.5 text-slate-600 hover:bg-slate-200">
                               Prolonger
                             </button>
-                            <button onClick={() => act(c.id, "void")} className="text-red-500 hover:underline">
+                            <button onClick={() => act(c.id, "void")} className="inline-flex min-h-[40px] items-center rounded-md bg-red-50 px-2.5 text-red-600 hover:bg-red-100">
                               Annuler
                             </button>
                           </>

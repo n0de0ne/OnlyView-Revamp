@@ -95,7 +95,7 @@ export default async function VillaPage({
           ].map(([n, label]) => (
             <div key={label} className="px-4 py-8">
               <div className="font-display text-4xl text-gold">{n}</div>
-              <div className="mt-1 text-[0.65rem] uppercase tracking-[0.22em] text-ink/50">
+              <div className="mt-1 text-[0.72rem] uppercase tracking-[0.2em] text-ink/50">
                 {label}
               </div>
             </div>

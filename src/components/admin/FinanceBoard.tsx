@@ -178,7 +178,7 @@ export function FinanceBoard() {
             Saison {seasonLabel(season)} · 1ᵉʳ sept. → 31 août
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <SeasonPicker season={season} onChange={setSeason} />
           <button onClick={() => openModal(null)} className="abtn-gold">
             + Dépense

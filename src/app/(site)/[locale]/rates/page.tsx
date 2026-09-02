@@ -88,8 +88,30 @@ export default async function RatesPage({
       <PageHero eyebrow={t.nav.rates} title={t.rates.title} intro={loyalty ? t.rates.intro : t.rates.introNoLoyalty} />
 
       <section className="mx-auto max-w-5xl px-5 py-16 lg:px-8">
-        {/* Season table */}
-        <div className="overflow-x-auto border border-ink/10 bg-white">
+        {/* Season rates — cards on a phone (a five-column table can't be read
+            at 390px), the table from small screens up */}
+        <div className="grid gap-4 sm:hidden">
+          {table.seasons.map((s) => (
+            <div key={s.key} className="border border-ink/10 bg-white p-5">
+              <div className="flex items-baseline justify-between gap-3">
+                <h3 className="font-display text-2xl">{t.rates.seasonNames[s.key]}</h3>
+                <span className="text-right text-xs text-ink/55">{fr ? s.datesFr : s.datesEn}</span>
+              </div>
+              <dl className="mt-4 divide-y divide-ink/10 border-t border-ink/10">
+                {([2, 3, 4] as const).map((b) => (
+                  <div key={b} className="flex items-center justify-between py-2.5">
+                    <dt className="text-sm text-ink/70">{t.rates[`br${b}` as "br2" | "br3" | "br4"]}</dt>
+                    <dd className="text-right">
+                      <span className="font-semibold">{usd(s.weekly[b])}</span>
+                      <span className="ml-1.5 text-xs text-ink/45">{t.rates.weekly}</span>
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          ))}
+        </div>
+        <div className="hidden overflow-x-auto border border-ink/10 bg-white sm:block">
           <table className="w-full min-w-[560px] text-left text-sm">
             <thead>
               <tr className="border-b border-ink/10 bg-sand-dark text-[0.68rem] uppercase tracking-[0.2em] text-ink/60">
@@ -135,7 +157,7 @@ export default async function RatesPage({
               </div>
               <div className="text-right">
                 <div className="font-display text-3xl text-gold">{usd(h.weekly)}</div>
-                <div className="text-[0.65rem] uppercase tracking-widest text-ink/45">
+                <div className="text-[0.72rem] uppercase tracking-widest text-ink/45">
                   {t.rates.weekly}
                 </div>
               </div>

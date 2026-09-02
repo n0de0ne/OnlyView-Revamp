@@ -78,13 +78,13 @@ export function SiteFooter({ locale }: { locale: Locale }) {
             © {year} Villa ONLY VIEW. {t.footer.rights}
           </p>
           <div className="flex flex-wrap items-center gap-5">
-            <Link href={localePath(locale, "/legal")} className="hover:text-gold">
+            <Link href={localePath(locale, "/legal")} className="inline-block py-3 hover:text-gold">
               {t.footer.legal}
             </Link>
-            <Link href={localePath(locale, "/privacy")} className="hover:text-gold">
+            <Link href={localePath(locale, "/privacy")} className="inline-block py-3 hover:text-gold">
               {t.footer.privacy}
             </Link>
-            <Link href="/admin" className="hover:text-gold">
+            <Link href="/admin" className="inline-block py-3 hover:text-gold">
               {t.footer.admin}
             </Link>
           </div>

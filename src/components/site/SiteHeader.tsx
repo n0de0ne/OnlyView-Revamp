@@ -229,7 +229,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
             <div className="flex items-center gap-1 rounded-full bg-white/60 p-1 text-xs font-semibold uppercase tracking-widest">
               <Link
                 href={pathNoLocale}
-                className={`rounded-full px-3 py-1.5 ${
+                className={`rounded-full px-4 py-3 ${
                   locale === "en" ? "bg-navy text-white" : "text-ink/60"
                 }`}
               >
@@ -237,7 +237,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
               </Link>
               <Link
                 href={frHref}
-                className={`rounded-full px-3 py-1.5 ${
+                className={`rounded-full px-4 py-3 ${
                   locale === "fr" ? "bg-navy text-white" : "text-ink/60"
                 }`}
               >

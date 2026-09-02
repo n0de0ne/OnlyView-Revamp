@@ -92,7 +92,7 @@ export function AdminShell({
             key={item.href}
             href={item.href}
             onClick={() => setMenuOpen(false)}
-            className={`flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm transition ${
+            className={`flex min-h-[44px] items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm transition ${
               active
                 ? "bg-white/12 font-semibold text-white"
                 : "text-white/65 hover:bg-white/8 hover:text-white"
@@ -146,13 +146,17 @@ export function AdminShell({
       </aside>
 
       {/* Mobile top bar */}
-      <div className="fixed inset-x-0 top-0 z-40 flex items-center justify-between bg-navy-deep px-4 py-3 lg:hidden">
-        <Link href="/admin" className="font-display text-lg tracking-[0.25em] text-white">
+      <div
+        className="fixed inset-x-0 top-0 z-40 flex items-center justify-between bg-navy-deep px-4 lg:hidden"
+        style={{ paddingTop: "max(0.5rem, env(safe-area-inset-top))", paddingBottom: "0.5rem" }}
+      >
+        <Link href="/admin" className="-mx-2 flex h-11 items-center px-2 font-display text-lg tracking-[0.25em] text-white">
           ONLY&nbsp;VIEW
         </Link>
         <button
           onClick={() => setMenuOpen((v) => !v)}
-          className="rounded-lg bg-white/10 px-3 py-1.5 text-sm text-white"
+          className="flex h-11 items-center rounded-lg bg-white/10 px-4 text-sm text-white"
+          aria-expanded={menuOpen}
         >
           {menuOpen ? "✕" : "☰"} Menu
         </button>
@@ -170,7 +174,10 @@ export function AdminShell({
       )}
 
       {/* Content */}
-      <main className="min-h-screen w-full px-4 pb-16 pt-16 lg:ml-60 lg:px-8 lg:pt-8">
+      <main
+        className="min-h-screen w-full min-w-0 overflow-x-hidden px-4 pb-16 pt-16 lg:ml-60 lg:px-8 lg:pt-8"
+        style={{ paddingBottom: "max(4rem, env(safe-area-inset-bottom))" }}
+      >
         {children}
       </main>
 

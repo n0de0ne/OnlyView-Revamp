@@ -95,7 +95,7 @@ export function AdminCalendar() {
 
             let style: React.CSSProperties = {};
             let cls =
-              "relative flex h-8 items-center justify-center text-xs transition cursor-pointer ";
+              "relative flex h-10 sm:h-8 items-center justify-center text-xs transition cursor-pointer ";
             if (r) {
               const color = STATUS_BG[r.status] ?? "#94a3b8";
               if (info?.isEnd && info.endReservation && info.endReservation.id !== r.id) {
@@ -159,9 +159,9 @@ export function AdminCalendar() {
             Saison {seasonLabel(season)} · septembre → août
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <SeasonPicker season={season} onChange={setSeason} />
-          <Link href="/admin/reservations/new" className="abtn-gold ml-2">
+          <Link href="/admin/reservations/new" className="abtn-gold">
             + Réservation
           </Link>
         </div>

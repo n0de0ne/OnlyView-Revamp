@@ -117,7 +117,7 @@ export function Dashboard() {
             Saison {seasonLabel(season)} · 1ᵉʳ sept. → 31 août
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <SeasonPicker season={season} onChange={setSeason} />
           <Link href="/admin/reservations/new" className="abtn-gold">
             + Réservation
@@ -263,7 +263,7 @@ export function Dashboard() {
       </div>
 
       {/* Upcoming arrivals */}
-      <Card title="Prochaines arrivées" action={<Link href="/admin/reservations" className="text-xs font-medium text-navy hover:underline">Tout voir</Link>}>
+      <Card title="Prochaines arrivées" action={<Link href="/admin/reservations" className="inline-block py-2 text-xs font-medium text-navy hover:underline">Tout voir</Link>}>
         {stats.upcoming.length === 0 ? (
           <p className="py-6 text-center text-sm text-slate-400">Aucune arrivée à venir</p>
         ) : (

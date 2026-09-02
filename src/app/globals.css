@@ -157,6 +157,33 @@ body {
     font-size: 1.0625rem;
     line-height: 1.65;
   }
+  /* iOS zooms into any field under 16px — never smaller on a phone */
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+  /* labels and micro-copy: 12px is the floor */
+  .field label,
+  .afield label,
+  .eyebrow {
+    font-size: 0.75rem;
+  }
+  .abtn,
+  .abtn-primary,
+  .abtn-gold,
+  .abtn-ghost,
+  .abtn-danger {
+    min-height: 44px;
+  }
+  .btn-gold,
+  .btn-outline,
+  .btn-outline-light {
+    font-size: 0.8rem;
+    letter-spacing: 0.18em;
+    padding-top: 0.95rem;
+    padding-bottom: 0.95rem;
+  }
   .text-ink\/70 {
     color: color-mix(in srgb, var(--color-ink) 82%, transparent);
   }

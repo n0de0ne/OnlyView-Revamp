@@ -578,7 +578,7 @@ export function ReservationEditor({
       >
         {!inModal ? (
           <div>
-            <Link href="/admin/reservations" className="text-xs text-slate-400 hover:text-navy">
+            <Link href="/admin/reservations" className="inline-block py-2 text-xs text-slate-400 hover:text-navy">
               ← Réservations
             </Link>
             <h1 className="text-xl font-bold text-slate-800">
@@ -668,7 +668,7 @@ export function ReservationEditor({
                     type="checkbox"
                     checked={sendConfirmation}
                     onChange={(e) => setSendConfirmation(e.target.checked)}
-                    className="accent-navy"
+                    className="h-5 w-5 accent-navy"
                   />
                   ✉️ Envoyer l&apos;email de confirmation au client à l&apos;enregistrement
                 </label>
@@ -720,7 +720,7 @@ export function ReservationEditor({
               type="checkbox"
               checked={form.earlyCheckin}
               onChange={(e) => set("earlyCheckin", e.target.checked)}
-              className="accent-navy"
+              className="h-5 w-5 accent-navy"
             />
             Early check-in
             {form.earlyCheckin && (
@@ -737,7 +737,7 @@ export function ReservationEditor({
               type="checkbox"
               checked={form.lateCheckout}
               onChange={(e) => set("lateCheckout", e.target.checked)}
-              className="accent-navy"
+              className="h-5 w-5 accent-navy"
             />
             Late check-out
             {form.lateCheckout && (
@@ -960,7 +960,7 @@ export function ReservationEditor({
               type="checkbox"
               checked={form.useVariable}
               onChange={(e) => set("useVariable", e.target.checked)}
-              className="accent-navy"
+              className="h-5 w-5 accent-navy"
             />
             🔄 Chambres / tarifs variables par période
           </label>
@@ -1157,7 +1157,7 @@ export function ReservationEditor({
               checked={form.offerOneRoom}
               disabled={form.useVariable || form.bedrooms < 3}
               onChange={(e) => set("offerOneRoom", e.target.checked)}
-              className="accent-gold"
+              className="h-5 w-5 accent-gold"
             />
             🏷️ Offrir 1 chambre
           </label>
@@ -1177,7 +1177,7 @@ export function ReservationEditor({
               type="checkbox"
               checked={form.noTax}
               onChange={(e) => set("noTax", e.target.checked)}
-              className="accent-gold"
+              className="h-5 w-5 accent-gold"
             />
             🎁 Offrir la taxe de séjour
           </label>
@@ -1317,7 +1317,7 @@ export function ReservationEditor({
               type="checkbox"
               checked={form.depositReceived}
               onChange={(e) => set("depositReceived", e.target.checked)}
-              className="accent-navy"
+              className="h-5 w-5 accent-navy"
             />
             Acompte reçu
           </label>

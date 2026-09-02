@@ -55,14 +55,14 @@ export function ReviewForm({ locale }: { locale: Locale }) {
       </div>
       <div className="field">
         <label>{t.reviews.rating}</label>
-        <div className="flex gap-1 text-2xl">
+        <div className="flex gap-0.5 text-3xl">
           {[1, 2, 3, 4, 5].map((n) => (
             <button
               key={n}
               type="button"
               onClick={() => setForm({ ...form, rating: n })}
               aria-label={`${n}/5`}
-              className={n <= form.rating ? "text-gold" : "text-ink/20"}
+              className={`flex h-11 w-11 items-center justify-center ${n <= form.rating ? "text-gold" : "text-ink/20"}`}
             >
               ★
             </button>

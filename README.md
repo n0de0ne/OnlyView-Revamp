@@ -104,6 +104,19 @@ expected types per page, image alt text, thin pages, broken links, noindex
 leaks, sitemap consistency, robots.txt and llms.txt. Exit code 1 on any
 failure. The owner-side checklist is in [`docs/seo-playbook.md`](docs/seo-playbook.md).
 
+## Mobile audit
+
+```bash
+BASE_URL=http://localhost:3000 ADMIN_USER=admin ADMIN_PASS=… node scripts/mobile-audit.mjs
+```
+
+Renders every public page (both languages) and the main admin screens at
+390×844 in Chromium and reports what breaks on a phone: horizontal
+overflow and the elements causing it, tap targets under 40 px, text under
+13 px, inputs under 16 px (iOS zooms into those), fixed elements covering
+each other — with a screenshot of each page under `./mobile-audit/`.
+Exit code 1 on any overflow.
+
 ## Smoke test
 
 `scripts/e2e-audit.mjs` drives the core back-office flows against a running

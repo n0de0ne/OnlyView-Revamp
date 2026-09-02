@@ -85,7 +85,7 @@ export function ReservationList() {
         <select
           value={season}
           onChange={(e) => setSeason(e.target.value)}
-          className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+          className="min-h-[40px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
           title="Une saison va du 1ᵉʳ septembre au 31 août"
         >
           <option value="all">Toutes saisons</option>
@@ -98,7 +98,7 @@ export function ReservationList() {
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value)}
-          className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+          className="min-h-[40px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
         >
           <option value="all">Tous statuts</option>
           {Object.entries(STATUS_LABELS)

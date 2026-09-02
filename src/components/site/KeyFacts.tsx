@@ -24,7 +24,7 @@ export function KeyFacts({
         <dl className="grid gap-x-10 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
           {Object.entries(facts).map(([key, [term, detail]]) => (
             <div key={key} className="border-t border-ink/10 pt-4">
-              <dt className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-gold">
+              <dt className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-gold">
                 {term}
               </dt>
               <dd className="mt-1.5 leading-relaxed text-ink/80">{detail}</dd>

@@ -61,7 +61,7 @@ export function GalleryGrid({ photos, categories, labels, allLabel, initialCateg
           <button
             key={c}
             onClick={() => setCat(c)}
-            className={`whitespace-nowrap border px-4 py-2 text-[0.7rem] font-semibold uppercase tracking-[0.18em] transition ${
+            className={`min-h-[44px] whitespace-nowrap border px-4 py-2.5 text-[0.72rem] font-semibold uppercase tracking-[0.18em] transition ${
               cat === c
                 ? "border-gold bg-gold text-white"
                 : "border-ink/15 text-ink/60 hover:border-gold hover:text-gold"

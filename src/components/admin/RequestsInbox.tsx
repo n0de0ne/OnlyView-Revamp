@@ -81,7 +81,7 @@ export function RequestsInbox() {
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+          className="min-h-[40px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
         >
           <option value="all">Toutes</option>
           <option value="new">Nouvelles</option>
@@ -123,7 +123,7 @@ export function RequestsInbox() {
                     )}
                   </div>
                   <div className="mt-1 text-xs text-slate-400">
-                    <a href={`mailto:${r.email}`} className="hover:text-navy">
+                    <a href={`mailto:${r.email}`} className="inline-block py-1.5 hover:text-navy">
                       {r.email}
                     </a>
                     {r.phone && ` · ${r.phone}`} · reçue le {fmtDate(r.createdAt.slice(0, 10))}

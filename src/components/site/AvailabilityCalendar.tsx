@@ -124,7 +124,7 @@ export function AvailabilityCalendar({
         <div className="mb-3 text-center font-display text-lg">
           {monthNames[m]} {y}
         </div>
-        <div className="grid grid-cols-7 gap-y-1 text-center text-[0.65rem] uppercase text-ink/40">
+        <div className="grid grid-cols-7 gap-y-1 text-center text-[0.72rem] uppercase text-ink/40 sm:text-[0.65rem]">
           {dayNames.map((n, i) => (
             <div key={i}>{n}</div>
           ))}
@@ -160,7 +160,7 @@ export function AvailabilityCalendar({
                 disabled={past || booked}
                 onClick={() => clickDay(cell.date)}
                 aria-label={cell.date}
-                className={`mx-auto flex h-9 w-9 items-center justify-center rounded-full text-xs transition ${cls}`}
+                className={`mx-auto flex h-10 w-10 items-center justify-center rounded-full text-sm transition sm:h-9 sm:w-9 sm:text-xs ${cls}`}
               >
                 {cell.d}
               </button>
@@ -173,16 +173,18 @@ export function AvailabilityCalendar({
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
+      {/* month nav first; the legend drops under it on a phone instead of
+          squeezing between the arrows */}
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-y-3">
         <button
           onClick={() => setOffset((o) => Math.max(0, o - 1))}
           disabled={offset === 0}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-ink/15 transition hover:border-gold hover:text-gold disabled:opacity-30"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-ink/15 text-lg transition hover:border-gold hover:text-gold disabled:opacity-30 sm:h-9 sm:w-9 sm:text-base"
           aria-label="Previous month"
         >
           ‹
         </button>
-        <div className="flex gap-4 text-[0.65rem] uppercase tracking-wider text-ink/60">
+        <div className="order-last flex w-full flex-wrap justify-center gap-x-4 gap-y-1 text-[0.75rem] uppercase tracking-wider text-ink/60 sm:order-none sm:w-auto sm:text-[0.65rem]">
           <span className="flex items-center gap-1.5">
             <span className="h-3 w-3 rounded-full bg-st-free/30" /> {legend.free}
           </span>
@@ -195,7 +197,7 @@ export function AvailabilityCalendar({
         </div>
         <button
           onClick={() => setOffset((o) => Math.min(22, o + 1))}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-ink/15 transition hover:border-gold hover:text-gold"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-ink/15 text-lg transition hover:border-gold hover:text-gold sm:h-9 sm:w-9 sm:text-base"
           aria-label="Next month"
         >
           ›

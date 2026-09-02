@@ -57,7 +57,7 @@ export function HomeHero(props: {
       <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/10 to-black/65" />
 
       <div className="relative z-10 mb-24 px-5 text-center text-white">
-        <p className="mb-5 text-[0.6rem] font-medium uppercase tracking-[0.22em] text-gold sm:text-[0.7rem] sm:tracking-[0.5em]">
+        <p className="mb-5 text-[0.72rem] font-medium uppercase tracking-[0.2em] text-gold sm:text-[0.7rem] sm:tracking-[0.5em]">
           {props.location}
         </p>
         <h1 className="font-display text-5xl leading-[1.05] tracking-wide sm:text-6xl md:text-7xl">
@@ -82,7 +82,8 @@ export function HomeHero(props: {
       <a
         href="#intro"
         aria-label={props.discover}
-        className="absolute bottom-7 left-1/2 z-10 -translate-x-1/2 text-white/70 transition hover:text-gold"
+        // the tab bar sits there on phones and tablets — the cue is desktop-only
+        className="absolute bottom-7 left-1/2 z-10 hidden -translate-x-1/2 p-3 text-white/70 transition hover:text-gold xl:block"
       >
         <svg width="22" height="34" viewBox="0 0 22 34" fill="none" aria-hidden>
           <rect x="1" y="1" width="20" height="32" rx="10" stroke="currentColor" />
