@@ -5,6 +5,9 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getDict, localePath, type Locale } from "@/lib/i18n";
 
+/** Apple's interruptible-spring curve, shared with the tab bar. */
+const SPRING = "cubic-bezier(0.32, 0.72, 0, 1)";
+
 export function SiteHeader({ locale }: { locale: Locale }) {
   const t = getDict(locale);
   const pathname = usePathname();
@@ -121,40 +124,43 @@ export function SiteHeader({ locale }: { locale: Locale }) {
         </div>
       </header>
 
-      {/* ── Mobile: floating glass bar (the tab bar carries navigation) ── */}
+      {/* ── Mobile: floating glass bar (the tab bar carries navigation) ──
+          Like an iOS 26 navigation bar it collapses to the leading edge as the
+          page scrolls: the wordmark capsule shrinks to its content on the left
+          and the menu sits in its own glass button on the right. */}
       <header
         className="fixed inset-x-0 top-0 z-50 xl:hidden"
         style={{ paddingTop: "max(0.6rem, env(safe-area-inset-top))" }}
       >
-        <div
-          className={`mx-3 flex items-center justify-between gap-3 rounded-full glass-dark pl-5 pr-2.5 ${
-            scrolled ? "py-1.5" : "py-2.5"
-          }`}
-          style={{ transition: "padding 520ms cubic-bezier(0.32, 0.72, 0, 1)" }}
-        >
+        <div className="mx-3 flex items-center justify-between gap-2">
           <Link
             href={localePath(locale, "/")}
-            className="flex flex-col leading-none"
+            className="glass-dark flex min-w-0 flex-col justify-center overflow-hidden rounded-full leading-none"
             aria-label="Villa ONLY VIEW"
+            style={{
+              flex: scrolled ? "0 1 auto" : "1 1 auto",
+              height: scrolled ? "2.75rem" : "3.5rem",
+              paddingInline: scrolled ? "1.1rem" : "1.25rem",
+              transition: `flex 520ms ${SPRING}, height 520ms ${SPRING}, padding 520ms ${SPRING}`,
+            }}
           >
             <span
-              className="font-display tracking-[0.3em] text-white"
+              className="whitespace-nowrap font-display tracking-[0.3em] text-white"
               style={{
-                fontSize: scrolled ? "0.95rem" : "1.05rem",
-                transition: "font-size 520ms cubic-bezier(0.32, 0.72, 0, 1)",
+                fontSize: scrolled ? "0.92rem" : "1.05rem",
+                transition: `font-size 520ms ${SPRING}`,
               }}
             >
               ONLY&nbsp;VIEW
             </span>
             {/* the subtitle folds away as the page scrolls, like an iOS large title */}
             <span
-              className="block overflow-hidden text-[0.45rem] font-medium uppercase tracking-[0.4em] text-gold"
+              className="block overflow-hidden whitespace-nowrap text-[0.45rem] font-medium uppercase tracking-[0.4em] text-gold"
               style={{
                 maxHeight: scrolled ? 0 : "0.9rem",
                 opacity: scrolled ? 0 : 1,
                 marginTop: scrolled ? 0 : "0.125rem",
-                transition:
-                  "max-height 520ms cubic-bezier(0.32, 0.72, 0, 1), opacity 260ms ease, margin-top 520ms cubic-bezier(0.32, 0.72, 0, 1)",
+                transition: `max-height 520ms ${SPRING}, opacity 260ms ease, margin-top 520ms ${SPRING}`,
               }}
             >
               Saint-Barthélemy
@@ -162,12 +168,15 @@ export function SiteHeader({ locale }: { locale: Locale }) {
           </Link>
 
           <button
-            className={`tap flex items-center justify-center rounded-full bg-white/12 text-white ${
-              scrolled ? "h-9 w-9" : "h-10 w-10"
-            }`}
+            className="glass-dark tap flex shrink-0 items-center justify-center rounded-full text-white"
             onClick={() => setOpen(true)}
             aria-label={t.navShort.more}
             aria-expanded={open}
+            style={{
+              height: scrolled ? "2.75rem" : "3.5rem",
+              width: scrolled ? "2.75rem" : "3.5rem",
+              transition: `height 520ms ${SPRING}, width 520ms ${SPRING}`,
+            }}
           >
             <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
               <path
