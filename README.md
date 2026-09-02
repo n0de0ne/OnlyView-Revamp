@@ -159,6 +159,12 @@ docker exec -it onlyview node scripts/migrate-legacy.mjs --report   # what is mi
 docker exec -it onlyview node scripts/migrate-legacy.mjs --force    # import it
 ```
 
+The report also names the legacy schema it read and, when several look like
+one, every candidate with its reservation count. Contracts pointing at a
+reservation that no longer exists in the legacy database are counted as
+*orphans* and left out: the PHP admin joins `reservations` everywhere it shows
+a contract, so those rows are invisible there too.
+
 > **Note:** the GHCR package is private by default. After the first workflow
 > run, open the package on GitHub (Packages → onlyview-revamp → Package
 > settings) and set visibility to *Public* — otherwise Docker/Unraid needs a

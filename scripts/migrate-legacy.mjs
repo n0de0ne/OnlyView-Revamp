@@ -32,6 +32,8 @@ const DRY = process.argv.includes("--report") || process.argv.includes("--dry-ru
    under a new id and tracked here so its contracts stay attached. */
 const clientIdMap = new Map();
 const reservationIdMap = new Map();
+/** --report only: legacy reservations a real run would import (their contracts follow) */
+const pendingReservations = new Set();
 const toISO = (d) => (d ? new Date(d).toISOString().slice(0, 10) : "—");
 
 const bool = (v) => v === true || v === 1 || v === "1" || v === "t";
@@ -63,11 +65,13 @@ async function resolveLegacySchema() {
   );
   let best = null;
   let bestRows = -1;
+  const seen = [];
   for (const c of candidates) {
     try {
       const n = await prisma.$queryRawUnsafe(
         `SELECT count(*)::int AS n FROM "${c.table_schema}".reservations`
       );
+      seen.push(`${c.table_schema} (${n[0].n})`);
       if (n[0].n > bestRows) {
         best = c.table_schema;
         bestRows = n[0].n;
@@ -80,6 +84,8 @@ async function resolveLegacySchema() {
   console.log(
     `Legacy schema: ${LEGACY}${bestRows >= 0 ? ` (${bestRows} reservations found)` : " (no reservations table found)"}`
   );
+  // more than one candidate: show them all, so a wrong pick is obvious
+  if (seen.length > 1) console.log(`  candidates: ${seen.join(", ")}`);
 }
 
 /** bigint / numeric columns come back as BigInt / Decimal — flatten to Number. */
@@ -264,6 +270,8 @@ async function main() {
       console.log(
         `  + reservation #${r.id} ${toISO(startDate)} → ${toISO(endDate)} · ${r.client_name ?? "—"} · ${r.status}${idTaken ? " (id taken → new id)" : ""}`
       );
+      // so its contract is reported as importable too, not as an orphan
+      pendingReservations.add(r.id);
       count("reservations to import");
       continue;
     }
@@ -383,7 +391,13 @@ async function main() {
     }
   }
 
-  /* ── contracts ── */
+  /* ── contracts ──
+     A contract whose reservation row is gone from the legacy database is dead
+     there too: every PHP query joins `reservations` (list-contracts, the
+     signing page, the PDF), so it is invisible in the old admin. Those are
+     reported as orphans, not as something the import lost. */
+  const legacyReservationIds = new Set(reservations.map((r) => r.id));
+  const orphanContracts = [];
   const contracts = await legacy("contract_signatures");
   for (const c of contracts) {
     if (!c.token || c.reservation_id == null) {
@@ -394,10 +408,15 @@ async function main() {
       count("contracts (already imported)");
       continue;
     }
+    if (!legacyReservationIds.has(c.reservation_id)) {
+      orphanContracts.push(c.reservation_id);
+      count("contracts skipped (orphan in the legacy database)");
+      continue;
+    }
     // the reservation may have been renumbered on the way in
     const reservationId = reservationIdMap.get(c.reservation_id) ?? c.reservation_id;
     const r = await prisma.reservation.findUnique({ where: { id: reservationId } });
-    if (!r) {
+    if (!r && !(DRY && pendingReservations.has(c.reservation_id))) {
       console.log(`  (contract ${c.token.slice(0, 8)}… skipped — reservation ${c.reservation_id} not imported)`);
       count("contracts skipped (no reservation)");
       continue;
@@ -627,6 +646,16 @@ async function main() {
   for (const t of DRY ? [] : ["Client", "Reservation"]) {
     await prisma.$executeRawUnsafe(
       `SELECT setval(pg_get_serial_sequence('"${t}"', 'id'), GREATEST((SELECT COALESCE(MAX(id),0) FROM "${t}"), 1))`
+    );
+  }
+
+  if (orphanContracts.length) {
+    const ids = [...new Set(orphanContracts)].sort((a, b) => a - b);
+    console.log(
+      `\n${orphanContracts.length} contract(s) in ${LEGACY}.contract_signatures point at reservations` +
+        ` that no longer exist there (${ids.join(", ")}).` +
+        `\nThe PHP admin joins reservations to list contracts, so they are not visible in it either —` +
+        `\nnothing is lost by leaving them out.`
     );
   }
 
