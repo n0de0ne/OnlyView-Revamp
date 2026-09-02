@@ -8,6 +8,12 @@
  * Usage (inside the container or from a dev checkout):
  *   node scripts/migrate-legacy.mjs           # refuses if new tables have data
  *   node scripts/migrate-legacy.mjs --force   # migrate anyway (skips duplicates)
+ *   node scripts/migrate-legacy.mjs --report  # list what is missing, write nothing
+ *
+ * Safe to re-run at any time: rows are matched on their natural key (a stay's
+ * dates + client, a client's email, a contract's token), so anything created
+ * in the PHP site since the last run is picked up — even when its id has been
+ * taken in the meantime by something created in the new app.
  *
  * Imports: agencies, clients, reservations (+ variable periods → ReservationPeriod,
  * payment flags → Payment ledger), contracts, promotions, expenses,
@@ -18,6 +24,15 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 const FORCE = process.argv.includes("--force");
+/** --report: list what is missing, write nothing */
+const DRY = process.argv.includes("--report") || process.argv.includes("--dry-run");
+
+/* Legacy id → id in the app schema. Ids are preserved when free; a legacy row
+   whose id has since been taken by something created in the app is imported
+   under a new id and tracked here so its contracts stay attached. */
+const clientIdMap = new Map();
+const reservationIdMap = new Map();
+const toISO = (d) => (d ? new Date(d).toISOString().slice(0, 10) : "—");
 
 const bool = (v) => v === true || v === 1 || v === "1" || v === "t";
 const num = (v) => (v == null ? null : Number(v));
@@ -97,8 +112,9 @@ async function main() {
   console.log("Target schema:", /schema=([^&]+)/.exec(process.env.DATABASE_URL ?? "")?.[1] ?? "(default)");
   await resolveLegacySchema();
 
+  if (DRY) console.log("REPORT MODE — nothing will be written\n");
   const existing = await prisma.reservation.count();
-  if (existing > 0 && !FORCE) {
+  if (existing > 0 && !FORCE && !DRY) {
     console.error(
       `\nAbort: the new Reservation table already holds ${existing} rows.` +
         `\nRun with --force to migrate anyway (duplicates are skipped by natural keys).`
@@ -136,20 +152,44 @@ async function main() {
     count("agencies");
   }
 
-  /* ── clients (ids preserved) ── */
+  /* ── clients (ids preserved when free) ── */
   const clients = await legacy("clients");
   for (const c of clients) {
     const email = c.email ? String(c.email).toLowerCase() : null;
-    const dupe =
-      (await prisma.client.findUnique({ where: { id: c.id } })) ??
-      (email ? await prisma.client.findUnique({ where: { email } }) : null);
-    if (dupe) {
-      count("clients (skipped duplicates)");
+    /* Already imported? The stamp left by a previous run is authoritative;
+       otherwise fall back to the natural key (email, else full name) and
+       stamp the row so later runs are exact even if it is edited here. */
+    const already =
+      (await prisma.client.findFirst({ where: { legacyId: c.id } })) ??
+      (email
+        ? await prisma.client.findUnique({ where: { email } })
+        : await prisma.client.findFirst({
+            where: {
+              firstname: { equals: c.firstname ?? "—", mode: "insensitive" },
+              lastname: { equals: c.lastname ?? "—", mode: "insensitive" },
+            },
+          }));
+    if (already) {
+      clientIdMap.set(c.id, already.id);
+      if (already.legacyId == null && !DRY) {
+        await prisma.client.update({ where: { id: already.id }, data: { legacyId: c.id } });
+        count("clients (legacy id stamped)");
+      }
+      count("clients (already imported)");
       continue;
     }
-    await prisma.client.create({
+    // the legacy id may have been taken since by a client created in the app
+    const taken = await prisma.client.findUnique({ where: { id: c.id } });
+    if (taken) count("clients renumbered (id taken)");
+    if (DRY) {
+      console.log(`  + client ${c.firstname} ${c.lastname}${taken ? " (id taken → new id)" : ""}`);
+      count("clients to import");
+      continue;
+    }
+    const createdClient = await prisma.client.create({
       data: {
-        id: c.id,
+        ...(taken ? {} : { id: c.id }),
+        legacyId: c.id,
         firstname: c.firstname ?? "—",
         lastname: c.lastname ?? "—",
         email,
@@ -170,6 +210,7 @@ async function main() {
         createdAt: date(c.created_at) ?? new Date(),
       },
     });
+    clientIdMap.set(c.id, createdClient.id);
     count("clients");
   }
 
@@ -179,10 +220,6 @@ async function main() {
   // confirmed one in the past; libre (older data) means blocked
   const STATUS_MAP = { libre: "blocked", completed: "confirmed" };
   for (const r of reservations) {
-    if (await prisma.reservation.findUnique({ where: { id: r.id } })) {
-      count("reservations (skipped duplicates)");
-      continue;
-    }
     const startDate = date(r.start_date);
     const endDate = date(r.end_date);
     if (!startDate || !endDate) {
@@ -191,16 +228,57 @@ async function main() {
       continue;
     }
 
+    /* Already imported? Match on the stay itself (dates + client), never on
+       the id alone: since the migration both systems have been allocating
+       ids from the same range, so a recent legacy reservation can carry an
+       id the app has since given to a different booking. */
+    const already =
+      // the stamp from a previous run — exact even if the stay was edited here
+      (await prisma.reservation.findFirst({ where: { legacyId: r.id } })) ??
+      (await prisma.reservation.findFirst({
+        where: {
+          startDate,
+          endDate,
+          ...(r.client_name
+            ? { clientName: { equals: r.client_name, mode: "insensitive" } }
+            : {}),
+        },
+      })) ??
+      // imported before the stamp existed and renamed since
+      (await prisma.reservation.findFirst({ where: { id: r.id, startDate } }));
+    if (already) {
+      reservationIdMap.set(r.id, already.id);
+      if (already.legacyId == null && !DRY) {
+        await prisma.reservation.update({
+          where: { id: already.id },
+          data: { legacyId: r.id },
+        });
+        count("reservations (legacy id stamped)");
+      }
+      count("reservations (already imported)");
+      continue;
+    }
+    const idTaken = await prisma.reservation.findUnique({ where: { id: r.id } });
+    if (idTaken) count("reservations renumbered (id taken)");
+    if (DRY) {
+      console.log(
+        `  + reservation #${r.id} ${toISO(startDate)} → ${toISO(endDate)} · ${r.client_name ?? "—"} · ${r.status}${idTaken ? " (id taken → new id)" : ""}`
+      );
+      count("reservations to import");
+      continue;
+    }
+
     const priceHT = round(r.final_price);
     const noTax = bool(r.no_tax);
     const tax = noTax ? 0 : round(priceHT * 0.05);
     const priceTTC = priceHT + tax;
     const agencyRef = r.agency ? agencyByName.get(String(r.agency).toLowerCase()) : null;
+    const mappedClient = r.client_id != null ? clientIdMap.get(r.client_id) : undefined;
     const clientId =
-      r.client_id != null &&
-      (await prisma.client.findUnique({ where: { id: r.client_id } }))
+      mappedClient ??
+      (r.client_id != null && (await prisma.client.findUnique({ where: { id: r.client_id } }))
         ? r.client_id
-        : null;
+        : null);
 
     // variable_rooms JSON → ReservationPeriod rows
     let periods = [];
@@ -227,9 +305,10 @@ async function main() {
     const balanceReceived = bool(r.balance_received);
     const depositAmount = round(r.deposit) || round(priceTTC * 0.3);
 
-    await prisma.reservation.create({
+    const createdReservation = await prisma.reservation.create({
       data: {
-        id: r.id,
+        ...(idTaken ? {} : { id: r.id }),
+        legacyId: r.id,
         status: STATUS_MAP[r.status] ?? r.status ?? "option",
         startDate,
         endDate,
@@ -267,6 +346,7 @@ async function main() {
         periods: { create: periods },
       },
     });
+    reservationIdMap.set(r.id, createdReservation.id);
     count("reservations");
     if (periods.length) count("variable periods", periods.length);
 
@@ -275,7 +355,7 @@ async function main() {
     if (depositReceived && depositAmount > 0) {
       await prisma.payment.create({
         data: {
-          reservationId: r.id,
+          reservationId: createdReservation.id,
           kind: "deposit",
           amount: depositAmount,
           method: "wire",
@@ -290,7 +370,7 @@ async function main() {
       if (rest > 0) {
         await prisma.payment.create({
           data: {
-            reservationId: r.id,
+            reservationId: createdReservation.id,
             kind: "balance",
             amount: rest,
             method: "wire",
@@ -310,12 +390,26 @@ async function main() {
       count("contracts skipped (no token/reservation)");
       continue;
     }
-    if (!(await prisma.reservation.findUnique({ where: { id: c.reservation_id } }))) continue;
-    if (await prisma.contract.findUnique({ where: { token: c.token } })) continue;
-    const r = await prisma.reservation.findUnique({ where: { id: c.reservation_id } });
+    if (await prisma.contract.findUnique({ where: { token: c.token } })) {
+      count("contracts (already imported)");
+      continue;
+    }
+    // the reservation may have been renumbered on the way in
+    const reservationId = reservationIdMap.get(c.reservation_id) ?? c.reservation_id;
+    const r = await prisma.reservation.findUnique({ where: { id: reservationId } });
+    if (!r) {
+      console.log(`  (contract ${c.token.slice(0, 8)}… skipped — reservation ${c.reservation_id} not imported)`);
+      count("contracts skipped (no reservation)");
+      continue;
+    }
+    if (DRY) {
+      console.log(`  + contract ${c.token.slice(0, 8)}… (${c.status}) for reservation #${c.reservation_id}`);
+      count("contracts to import");
+      continue;
+    }
     await prisma.contract.create({
       data: {
-        reservationId: c.reservation_id,
+        reservationId,
         token: c.token,
         status: ["pending", "signed", "expired"].includes(c.status) ? c.status : "void",
         language: c.lang === "fr" ? "fr" : "en",
@@ -530,7 +624,7 @@ async function main() {
   }
 
   /* ── fix sequences after explicit-id inserts ── */
-  for (const t of ["Client", "Reservation"]) {
+  for (const t of DRY ? [] : ["Client", "Reservation"]) {
     await prisma.$executeRawUnsafe(
       `SELECT setval(pg_get_serial_sequence('"${t}"', 'id'), GREATEST((SELECT COALESCE(MAX(id),0) FROM "${t}"), 1))`
     );

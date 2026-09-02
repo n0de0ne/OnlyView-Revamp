@@ -68,6 +68,8 @@ model AuditLog {
 
 model Client {
   id             Int       @id @default(autoincrement())
+  /// id of the row this was imported from in the legacy PHP schema
+  legacyId       Int?
   firstname      String
   lastname       String
   email          String?   @unique
@@ -92,6 +94,8 @@ model Client {
   reservations Reservation[]
   loyalty      LoyaltyAccount?
   authTokens   ClientAuthToken[]
+
+  @@index([legacyId])
 }
 
 /// Passwordless login for the guest portal (magic links)
@@ -126,6 +130,8 @@ model Agency {
 
 model Reservation {
   id     Int    @id @default(autoincrement())
+  /// id of the row this was imported from in the legacy PHP schema
+  legacyId Int?
   /// option | confirmed | pending | cancelled | blocked
   status String @default("option")
 
@@ -200,6 +206,7 @@ model Reservation {
 
   @@index([startDate, endDate])
   @@index([status])
+  @@index([legacyId])
 }
 
 /// Variable bedrooms / custom rate per period inside a single stay

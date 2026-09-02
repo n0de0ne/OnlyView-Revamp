@@ -145,8 +145,19 @@ docker exec -it onlyview node scripts/migrate-legacy.mjs
 Read-only on the legacy tables; imports agencies, clients, reservations
 (incl. variable periods and payment history), contracts, promotions,
 expenses, guestbook reviews and admin accounts (old passwords keep
-working), then backfills loyalty points for paid stays. Idempotent —
-safe to re-run with `--force`; duplicates are skipped.
+working), then backfills loyalty points for paid stays.
+
+**Safe to re-run at any time** to pick up whatever the PHP site has
+recorded since — including rows whose id the new app has meanwhile given
+to something else, which are imported under a fresh id with their
+contracts following them. Every imported row is stamped with its
+`legacyId`, so later runs are exact even after the stay is edited here.
+Check first without writing anything:
+
+```bash
+docker exec -it onlyview node scripts/migrate-legacy.mjs --report   # what is missing
+docker exec -it onlyview node scripts/migrate-legacy.mjs --force    # import it
+```
 
 > **Note:** the GHCR package is private by default. After the first workflow
 > run, open the package on GitHub (Packages → onlyview-revamp → Package
