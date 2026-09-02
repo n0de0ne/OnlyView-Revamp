@@ -126,22 +126,45 @@ export function SiteHeader({ locale }: { locale: Locale }) {
         className="fixed inset-x-0 top-0 z-50 xl:hidden"
         style={{ paddingTop: "max(0.6rem, env(safe-area-inset-top))" }}
       >
-        <div className="mx-3 flex items-center justify-between gap-3 rounded-full glass-dark py-2.5 pl-5 pr-2.5">
+        <div
+          className={`mx-3 flex items-center justify-between gap-3 rounded-full glass-dark pl-5 pr-2.5 ${
+            scrolled ? "py-1.5" : "py-2.5"
+          }`}
+          style={{ transition: "padding 520ms cubic-bezier(0.32, 0.72, 0, 1)" }}
+        >
           <Link
             href={localePath(locale, "/")}
             className="flex flex-col leading-none"
             aria-label="Villa ONLY VIEW"
           >
-            <span className="font-display text-[1.05rem] tracking-[0.3em] text-white">
+            <span
+              className="font-display tracking-[0.3em] text-white"
+              style={{
+                fontSize: scrolled ? "0.95rem" : "1.05rem",
+                transition: "font-size 520ms cubic-bezier(0.32, 0.72, 0, 1)",
+              }}
+            >
               ONLY&nbsp;VIEW
             </span>
-            <span className="mt-0.5 text-[0.45rem] font-medium uppercase tracking-[0.4em] text-gold">
+            {/* the subtitle folds away as the page scrolls, like an iOS large title */}
+            <span
+              className="block overflow-hidden text-[0.45rem] font-medium uppercase tracking-[0.4em] text-gold"
+              style={{
+                maxHeight: scrolled ? 0 : "0.9rem",
+                opacity: scrolled ? 0 : 1,
+                marginTop: scrolled ? 0 : "0.125rem",
+                transition:
+                  "max-height 520ms cubic-bezier(0.32, 0.72, 0, 1), opacity 260ms ease, margin-top 520ms cubic-bezier(0.32, 0.72, 0, 1)",
+              }}
+            >
               Saint-Barthélemy
             </span>
           </Link>
 
           <button
-            className="tap flex h-10 w-10 items-center justify-center rounded-full bg-white/12 text-white"
+            className={`tap flex items-center justify-center rounded-full bg-white/12 text-white ${
+              scrolled ? "h-9 w-9" : "h-10 w-10"
+            }`}
             onClick={() => setOpen(true)}
             aria-label={t.navShort.more}
             aria-expanded={open}

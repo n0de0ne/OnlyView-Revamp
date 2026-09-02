@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getDict, localePath, type Locale } from "@/lib/i18n";
 
 /* Line icons (1.6 stroke) — no icon dependency, crisp at 22px */
@@ -46,7 +47,7 @@ function Icon({ name, active }: { name: keyof typeof icons; active?: boolean }) 
       strokeWidth={active ? 2 : 1.6}
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="h-[22px] w-[22px]"
+      className="h-[22px] w-[22px] shrink-0"
       aria-hidden="true"
     >
       {icons[name]}
@@ -54,14 +55,21 @@ function Icon({ name, active }: { name: keyof typeof icons; active?: boolean }) 
   );
 }
 
+/** Apple's standard interruptible-spring curve. */
+const SPRING = "cubic-bezier(0.32, 0.72, 0, 1)";
+
 /**
- * iOS-style floating tab bar: the primary destinations plus an unmissable
- * booking action, on a liquid-glass capsule that lets the page show through.
- * Mobile/tablet only — the desktop header keeps the full navigation.
+ * iOS-style floating tab bar on liquid glass.
+ *
+ * Like iOS 26's `tabBarMinimizeBehavior(.onScrollDown)`, it minimises while
+ * the page scrolls down — the inactive tabs and the labels collapse away,
+ * leaving a compact pill with the current section and the booking action —
+ * and springs back open on scroll up, at the top of the page, or on a tap.
  */
 export function MobileTabBar({ locale }: { locale: Locale }) {
   const t = getDict(locale);
   const pathname = usePathname();
+  const [collapsed, setCollapsed] = useState(false);
 
   const tabs: Array<{ href: string; label: string; icon: keyof typeof icons }> = [
     { href: localePath(locale, "/villa"), label: t.navShort.villa, icon: "villa" },
@@ -71,6 +79,47 @@ export function MobileTabBar({ locale }: { locale: Locale }) {
   ];
   const bookHref = localePath(locale, "/booking");
   const onBooking = pathname === bookHref;
+  const activeIndex = tabs.findIndex((tab) => tab.href === pathname);
+  /** the tab kept visible while minimised (the current one, else the first) */
+  const keptIndex = activeIndex >= 0 ? activeIndex : 0;
+
+  /* ── minimise on scroll down, restore on scroll up / at the top ── */
+  useEffect(() => {
+    let last = window.scrollY;
+    let ticking = false;
+    const settle = () => {
+      const y = window.scrollY;
+      const dy = y - last;
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      if (y < 90 || y > max - 90) setCollapsed(false); // top and bottom edges
+      else if (dy > 8) setCollapsed(true);
+      else if (dy < -8) setCollapsed(false);
+      last = y;
+      ticking = false;
+    };
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(settle);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // a new page always starts open
+  useEffect(() => setCollapsed(false), [pathname]);
+
+  /** first tap on a minimised bar expands it instead of navigating */
+  const interceptWhenCollapsed = useCallback(
+    (e: React.MouseEvent) => {
+      if (!collapsed) return;
+      e.preventDefault();
+      setCollapsed(false);
+    },
+    [collapsed]
+  );
+
+  const barRef = useRef<HTMLDivElement>(null);
 
   return (
     <nav
@@ -78,20 +127,46 @@ export function MobileTabBar({ locale }: { locale: Locale }) {
       style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
       aria-label="Principal"
     >
-      <div className="mx-3 flex items-center gap-2">
-        <div className="glass-bar flex min-w-0 flex-1 items-center rounded-[1.65rem] p-1.5">
-          {tabs.map((tab) => {
-            const active = pathname === tab.href;
+      <div
+        className="mx-3 flex items-center justify-center gap-2"
+        style={{
+          transition: `transform 520ms ${SPRING}`,
+          transform: collapsed ? "translateY(2px)" : "none",
+        }}
+      >
+        <div
+          ref={barRef}
+          onClick={interceptWhenCollapsed}
+          className={`glass-bar flex min-w-0 items-center rounded-[1.65rem] ${
+            collapsed ? "flex-none p-1" : "flex-1 p-1.5"
+          }`}
+          style={{ transition: `padding 520ms ${SPRING}, flex-grow 520ms ${SPRING}` }}
+        >
+          {tabs.map((tab, i) => {
+            const active = i === activeIndex;
+            const kept = i === keptIndex;
+            const hidden = collapsed && !kept;
             return (
               <Link
                 key={tab.href}
                 href={tab.href}
                 aria-current={active ? "page" : undefined}
-                className={`tap relative flex min-w-0 flex-1 flex-col items-center gap-1 rounded-[1.3rem] px-0.5 py-2 ${
+                aria-hidden={hidden || undefined}
+                tabIndex={hidden ? -1 : undefined}
+                onClick={interceptWhenCollapsed}
+                className={`tap relative flex min-w-0 flex-col items-center justify-center gap-1 overflow-hidden rounded-[1.3rem] ${
                   active ? "text-navy" : "text-ink/55"
                 }`}
+                style={{
+                  flex: hidden ? "0 0 0px" : "1 1 0px",
+                  maxWidth: hidden ? 0 : "8rem",
+                  opacity: hidden ? 0 : 1,
+                  paddingBlock: collapsed ? "0.4rem" : "0.5rem",
+                  paddingInline: hidden ? 0 : collapsed ? "0.7rem" : "0.125rem",
+                  transition: `flex 520ms ${SPRING}, max-width 520ms ${SPRING}, opacity 320ms ease, padding 520ms ${SPRING}`,
+                }}
               >
-                {active && (
+                {active && !collapsed && (
                   <span
                     className="absolute inset-0 rounded-[1.3rem] bg-white/70"
                     style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,.9)" }}
@@ -102,9 +177,14 @@ export function MobileTabBar({ locale }: { locale: Locale }) {
                   <Icon name={tab.icon} active={active} />
                 </span>
                 <span
-                  className={`relative max-w-full truncate text-[0.58rem] font-semibold uppercase tracking-[0.06em] ${
+                  className={`relative block max-w-full truncate text-[0.58rem] font-semibold uppercase tracking-[0.06em] ${
                     active ? "text-navy" : "text-ink/65"
                   }`}
+                  style={{
+                    maxHeight: collapsed ? 0 : "1rem",
+                    opacity: collapsed ? 0 : 1,
+                    transition: `max-height 520ms ${SPRING}, opacity 260ms ease`,
+                  }}
                 >
                   {tab.label}
                 </span>
@@ -116,16 +196,26 @@ export function MobileTabBar({ locale }: { locale: Locale }) {
         <Link
           href={bookHref}
           aria-current={onBooking ? "page" : undefined}
-          className="tap flex h-[4.25rem] shrink-0 flex-col items-center justify-center gap-1 rounded-[1.65rem] px-4 text-white"
+          className="tap flex shrink-0 flex-col items-center justify-center gap-1 overflow-hidden rounded-[1.65rem] text-white"
           style={{
+            height: collapsed ? "3.1rem" : "4.25rem",
+            paddingInline: collapsed ? "0.95rem" : "1rem",
             background:
               "linear-gradient(160deg, var(--color-gold-light), var(--color-gold) 55%, var(--color-gold-dark))",
             boxShadow:
               "inset 0 1px 0 rgba(255,255,255,.55), 0 10px 26px -8px rgba(201,169,98,.75), 0 2px 10px -4px rgba(12,20,27,.35)",
+            transition: `height 520ms ${SPRING}, padding 520ms ${SPRING}`,
           }}
         >
           <Icon name="book" active />
-          <span className="text-[0.6rem] font-bold uppercase tracking-[0.08em]">
+          <span
+            className="block overflow-hidden text-[0.6rem] font-bold uppercase tracking-[0.08em]"
+            style={{
+              maxHeight: collapsed ? 0 : "1rem",
+              opacity: collapsed ? 0 : 1,
+              transition: `max-height 520ms ${SPRING}, opacity 260ms ease`,
+            }}
+          >
             {t.navShort.booking}
           </span>
         </Link>

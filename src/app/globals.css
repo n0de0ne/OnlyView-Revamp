@@ -131,6 +131,16 @@ body {
   opacity: 0.85;
 }
 
+/* The tab bar animates through inline styles — honour reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  nav[aria-label="Principal"],
+  nav[aria-label="Principal"] *,
+  header .glass-dark,
+  header .glass-dark * {
+    transition-duration: 0.01ms !important;
+  }
+}
+
 /* Room for the floating tab bar (mobile only) */
 .has-tabbar {
   padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
