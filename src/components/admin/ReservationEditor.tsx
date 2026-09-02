@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { computeQuote, type RateConfig } from "@/lib/pricing";
-import { nightsBetween } from "@/lib/dates";
+import { addDays, nightsBetween } from "@/lib/dates";
 import type { SerializedReservation } from "@/lib/reservations";
 import {
   api,
@@ -182,6 +182,15 @@ export function ReservationEditor({
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
+
+  /** Arrival picked → a week's stay by default, like the PHP admin: the
+      departure follows only when it is empty or no longer after the arrival. */
+  const setStartDate = (value: string) =>
+    setForm((f) => ({
+      ...f,
+      startDate: value,
+      endDate: value && (!f.endDate || f.endDate <= value) ? addDays(value, 7) : f.endDate,
+    }));
 
   /* ── load ── */
   const load = useCallback(async () => {
@@ -692,7 +701,7 @@ export function ReservationEditor({
             <input
               type="date"
               value={form.startDate}
-              onChange={(e) => set("startDate", e.target.value)}
+              onChange={(e) => setStartDate(e.target.value)}
             />
           </div>
           <div className="afield">

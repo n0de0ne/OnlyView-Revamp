@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { redeemMagicLink, openGuestSession, resolvePortalToken } from "@/lib/guest-auth";
+import { siteUrl } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -18,19 +19,19 @@ export async function GET(req: NextRequest) {
   if (token) {
     const clientId = await redeemMagicLink(token);
     if (clientId) {
-      return NextResponse.redirect(new URL(accountPath, req.url));
+      return NextResponse.redirect(siteUrl(accountPath));
     }
-    return NextResponse.redirect(new URL(`${accountPath}?error=link`, req.url));
+    return NextResponse.redirect(siteUrl(`${accountPath}?error=link`));
   }
 
   if (pt) {
     const reservation = await resolvePortalToken(pt);
     if (reservation?.clientId) {
       await openGuestSession(reservation.clientId);
-      return NextResponse.redirect(new URL(accountPath, req.url));
+      return NextResponse.redirect(siteUrl(accountPath));
     }
-    return NextResponse.redirect(new URL(`${accountPath}?error=link`, req.url));
+    return NextResponse.redirect(siteUrl(`${accountPath}?error=link`));
   }
 
-  return NextResponse.redirect(new URL(accountPath, req.url));
+  return NextResponse.redirect(siteUrl(accountPath));
 }

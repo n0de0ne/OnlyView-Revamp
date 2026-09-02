@@ -89,7 +89,7 @@
     Description="Secret protecting the private calendar feed (/api/ical?token=...) that shows client names. Any long random string. The public feed stays anonymized."
     Type="Variable" Display="advanced" Required="false" Mask="true"></Config>
 
-  <Config Name="Public site URL" Target="NEXT_PUBLIC_SITE_URL" Default="https://onlyviewstbarth.com"
-    Description="Absolute URL used in emails and calendar links (e.g. https://onlyviewstbarth.com, or http://TOWER-IP:3000 for LAN-only use). Note: URLs baked into pre-rendered pages are set at image build time; override the NEXT_PUBLIC_SITE_URL build-arg to change those."
+  <Config Name="Public site URL" Target="SITE_URL" Default="https://onlyviewstbarth.com"
+    Description="Absolute URL the site is reached at (e.g. https://onlyviewstbarth.com, or http://TOWER-IP:3000 for LAN-only use). Every link the server hands out — contract and guest-portal links, emails, calendar feeds, redirects after login — is built from it. Behind a reverse proxy, also make sure it forwards the real Host (nginx: proxy_set_header Host $host;)."
     Type="Variable" Display="always" Required="false" Mask="false">https://onlyviewstbarth.com</Config>
 </Container>

@@ -1,26 +1,39 @@
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 /**
  * Overlay used by intercepted admin routes: the underlying page stays mounted
  * (scroll position, filters and all) and closing simply goes back in history.
  * A hard load of the same URL renders the standalone page instead.
+ *
+ * The overlay renders only while the URL is still the intercepted route.
+ * Next keeps the last content of a parallel slot when a soft navigation lands
+ * on a route the slot doesn't match, so without this check coming back to
+ * /admin/reservations re-displayed the modal that was closed earlier — and
+ * closing that one went back past the list, since no history entry was pushed
+ * for it (vercel/next.js#49662).
  */
 export function RouteModal({
+  routePath,
   title,
   children,
 }: {
+  /** the pathname this modal belongs to — it hides itself anywhere else */
+  routePath: string;
   title: React.ReactNode;
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const panel = useRef<HTMLDivElement>(null);
+  const open = pathname === routePath;
 
   const close = useCallback(() => router.back(), [router]);
 
   useEffect(() => {
+    if (!open) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") close();
     };
@@ -31,7 +44,9 @@ export function RouteModal({
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = previous;
     };
-  }, [close]);
+  }, [close, open]);
+
+  if (!open) return null;
 
   return (
     <div

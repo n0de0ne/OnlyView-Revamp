@@ -41,6 +41,19 @@ case "$DATABASE_URL" in
 esac
 export DATABASE_URL
 
+# Public address for the links the server hands out (emails, contract and
+# portal links, redirects). NEXT_PUBLIC_* values are baked into the bundle when
+# the image is built, so the one set here only reaches the app through SITE_URL.
+if [ -z "$SITE_URL" ] && [ -n "$NEXT_PUBLIC_SITE_URL" ]; then
+  SITE_URL="$NEXT_PUBLIC_SITE_URL"
+fi
+export SITE_URL
+if [ -n "$SITE_URL" ]; then
+  echo "[onlyview] public site URL: $SITE_URL"
+else
+  echo "[onlyview] no SITE_URL set — links will use https://onlyviewstbarth.com"
+fi
+
 echo "[onlyview] database: $(echo "$DATABASE_URL" | sed 's|//[^@]*@|//***@|')"
 node prisma-cli/node_modules/prisma/build/index.js db push --skip-generate --schema prisma/schema.prisma
 

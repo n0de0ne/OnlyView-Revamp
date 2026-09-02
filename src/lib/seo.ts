@@ -1,7 +1,35 @@
 import type { Locale } from "./i18n";
 
-export const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "https://onlyviewstbarth.com";
+/**
+ * The site's public address, used for every absolute link the server hands
+ * out (emails, contract and portal links, redirects, canonicals, sitemap).
+ *
+ * `SITE_URL` is read at runtime, so the deployed container decides it;
+ * `NEXT_PUBLIC_SITE_URL` is inlined into the bundle when the image is built,
+ * so setting it on the container has no effect — the Docker entrypoint copies
+ * it into SITE_URL for installs that already use that name.
+ */
+function resolveSiteUrl(): string {
+  const raw = (process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || "").trim();
+  if (!raw) return "https://onlyviewstbarth.com";
+  const withScheme = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+  try {
+    const url = new URL(withScheme);
+    // a host the container only listens on is not an address anyone can open
+    if (["0.0.0.0", "::", "[::]"].includes(url.hostname)) return "https://onlyviewstbarth.com";
+    return withScheme.replace(/\/+$/, "");
+  } catch {
+    return "https://onlyviewstbarth.com";
+  }
+}
+
+export const SITE_URL = resolveSiteUrl();
+
+/** Absolute URL on the public site — never derived from the incoming request,
+    whose Host a reverse proxy can rewrite (nginx sends its upstream address
+    unless it sets `proxy_set_header Host $host`). */
+export const siteUrl = (path: string) =>
+  new URL(path.startsWith("/") ? path : `/${path}`, `${SITE_URL}/`).toString();
 
 export const ORG = {
   name: "Villa ONLY VIEW",

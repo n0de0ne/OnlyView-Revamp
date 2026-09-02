@@ -28,6 +28,7 @@ export default async function ReservationEditorModal({
 
   return (
     <RouteModal
+      routePath={`/admin/reservations/${id}`}
       title={reservationId ? `Réservation #${reservationId}` : "Nouvelle réservation"}
     >
       <ReservationEditor

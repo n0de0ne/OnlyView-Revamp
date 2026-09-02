@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { sendMail } from "@/lib/mailer";
 import { todayISO } from "@/lib/dates";
+import { siteUrl } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -76,7 +77,7 @@ export async function POST(req: NextRequest) {
 <p><strong>${d.name}</strong> &lt;${d.email}&gt;${d.phone ? " · " + d.phone : ""}</p>
 <p>${d.startDate} → ${d.endDate} · ${d.bedrooms} bedrooms · ${d.guests} guests</p>
 ${d.message ? `<p style="background:#f6f4ef;padding:12px;border-radius:8px;">${d.message.replace(/</g, "&lt;")}</p>` : ""}
-<p><a href="${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/admin/requests">Open in admin</a></p>`,
+<p><a href="${siteUrl("/admin/requests")}">Open in admin</a></p>`,
   });
 
   // acknowledge to the guest

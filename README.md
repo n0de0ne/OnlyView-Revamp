@@ -109,7 +109,8 @@ Copy `.env.example` → `.env` and fill what you need:
 
 - `DATABASE_URL` — PostgreSQL connection string. **The app manages only its own schema namespace** (`?schema=onlyview_app`, appended automatically when missing), so it can safely share the legacy PHP site's database: the old lowercase tables in `public` are never read, altered, or dropped by the app.
 - `SMTP_*` — without SMTP nothing is lost: every outgoing email is stored in the admin **Email log** with status *queued*.
-- `NEXT_PUBLIC_SITE_URL`, `ADMIN_NOTIFY_EMAIL`, `ICAL_TOKEN` (private calendar feed `/api/ical?token=…`; public feed is anonymized).
+- `SITE_URL` — the address the site is reached at. Every absolute link the server hands out (contract and guest-portal links, emails, redirects, canonicals) is built from it, never from the incoming request, so a reverse proxy that forwards its own upstream address as `Host` cannot leak `0.0.0.0:3000` into a link. `NEXT_PUBLIC_SITE_URL` is still read as a fallback, but it is inlined when the image is built — set `SITE_URL` on the container.
+- `ADMIN_NOTIFY_EMAIL`, `ICAL_TOKEN` (private calendar feed `/api/ical?token=…`; public feed is anonymized).
 
 ## Deploying
 
