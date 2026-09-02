@@ -133,7 +133,7 @@ export function ClientsCrm({ loyaltyEnabled = false }: { loyaltyEnabled?: boolea
             placeholder="Rechercher…"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            className="w-52 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm sm:w-52"
           />
           <button onClick={() => openEdit(null)} className="abtn-gold">
             + Client
@@ -147,7 +147,47 @@ export function ClientsCrm({ loyaltyEnabled = false }: { loyaltyEnabled?: boolea
         ) : filtered.length === 0 ? (
           <p className="py-8 text-center text-sm text-slate-400">Aucun client</p>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          <ul className="divide-y divide-slate-100 sm:hidden">
+            {filtered.map((c) => (
+              <li key={c.id}>
+                <button
+                  type="button"
+                  onClick={() => openEdit(c)}
+                  className="flex w-full min-h-[64px] items-start justify-between gap-3 py-3 text-left active:bg-slate-50"
+                >
+                  <div className="min-w-0">
+                    <div className="truncate font-semibold text-slate-800">
+                      {c.isVip && "⭐ "}
+                      {c.blacklisted && "⛔ "}
+                      {c.firstname} {c.lastname}
+                      {c.country && <span className="ml-1.5 text-xs font-normal text-slate-400">{c.country}</span>}
+                    </div>
+                    <div className="mt-0.5 truncate text-sm text-slate-500">{c.email}</div>
+                    {c.phone && <div className="text-xs text-slate-400">{c.phone}</div>}
+                    {c.tags && (
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        {c.tags.split(",").map((t) => (
+                          <span key={t} className="rounded bg-slate-100 px-1.5 py-0.5 text-[0.7rem] text-slate-500">
+                            {t.trim()}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div className="shrink-0 text-right text-sm">
+                    <div className="font-semibold text-slate-800">{fmtUSD(c.stats.spent)}</div>
+                    <div className="text-xs text-slate-400">
+                      {c.stats.stays} séjour{c.stats.stays > 1 ? "s" : ""}
+                    </div>
+                    {c.discountPercent > 0 && <div className="text-xs text-emerald-600">-{c.discountPercent}%</div>}
+                    {loyaltyEnabled && <div className="text-xs text-gold-dark">✦ {c.loyalty?.points ?? 0}</div>}
+                  </div>
+                </button>
+              </li>
+            ))}
+          </ul>
+          <div className="hidden overflow-x-auto sm:block">
             <table className="w-full min-w-[720px] text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-400">
@@ -208,6 +248,7 @@ export function ClientsCrm({ loyaltyEnabled = false }: { loyaltyEnabled?: boolea
               </tbody>
             </table>
           </div>
+          </>
         )}
       </Card>
 

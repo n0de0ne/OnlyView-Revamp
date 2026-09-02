@@ -100,7 +100,38 @@ export function AgenciesBoard() {
         {!agencies ? (
           <Spinner />
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          <ul className="divide-y divide-slate-100 sm:hidden">
+            {agencies.map((a) => (
+              <li key={a.id}>
+                <button
+                  type="button"
+                  onClick={() => openModal(a)}
+                  className="flex w-full min-h-[64px] items-start justify-between gap-3 py-3 text-left active:bg-slate-50"
+                >
+                  <div className="min-w-0">
+                    <div className="truncate font-semibold text-slate-800">
+                      {a.name}
+                      {!a.isActive && <span className="ml-1.5 text-xs font-normal text-slate-400">inactive</span>}
+                    </div>
+                    {a.contactName && (
+                      <div className="truncate text-xs text-slate-400">
+                        {a.contactName} {a.email && `· ${a.email}`}
+                      </div>
+                    )}
+                    <div className="mt-1 text-xs text-slate-500">
+                      {a.stats.reservations} réservation{a.stats.reservations > 1 ? "s" : ""} · {fmtUSD(a.stats.volume)}
+                    </div>
+                  </div>
+                  <div className="shrink-0 text-right text-sm">
+                    <div className="font-semibold text-navy">{a.commissionPercent}%</div>
+                    <div className="text-xs text-red-600">-{fmtUSD(a.stats.commissions)}</div>
+                  </div>
+                </button>
+              </li>
+            ))}
+          </ul>
+          <div className="hidden overflow-x-auto sm:block">
             <table className="w-full min-w-[620px] text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-400">
@@ -141,6 +172,7 @@ export function AgenciesBoard() {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </Card>
 

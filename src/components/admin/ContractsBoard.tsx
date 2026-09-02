@@ -71,7 +71,64 @@ export function ContractsBoard() {
             Aucun contrat — générez-les depuis une réservation.
           </p>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          <ul className="divide-y divide-slate-100 sm:hidden">
+            {filtered.map((c) => (
+              <li key={c.id} className="py-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="truncate font-semibold text-slate-800">{c.clientName}</div>
+                    <div className="truncate text-xs text-slate-400">{c.clientEmail}</div>
+                    <Link
+                      href={`/admin/reservations/${c.reservation.id}`}
+                      className="mt-1 inline-block py-1 text-sm text-slate-600 hover:text-navy"
+                    >
+                      {fmtDate(c.reservation.startDate)} → {fmtDate(c.reservation.endDate)}
+                    </Link>
+                    {c.status === "signed" && c.signedAt && (
+                      <div className="text-xs text-emerald-600">✓ signé le {fmtDate(c.signedAt.slice(0, 10))}</div>
+                    )}
+                    {c.status === "pending" && c.expiresAt && (
+                      <div className="text-xs text-slate-400">expire {fmtDate(c.expiresAt.slice(0, 10))}</div>
+                    )}
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <div className="font-semibold">{fmtUSD(c.totalPrice)}</div>
+                    <div className="mt-1 flex items-center justify-end gap-1.5 text-xs text-slate-500">
+                      <span className="uppercase">{c.language}</span>
+                      <span>· {c.viewCount} vue{c.viewCount > 1 ? "s" : ""}</span>
+                    </div>
+                    <div className="mt-1.5">
+                      <StatusBadge status={c.status} />
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-2.5 flex flex-wrap gap-1.5 text-xs">
+                  <a
+                    href={`/api/contracts/pdf/${c.token}`}
+                    target="_blank"
+                    className="inline-flex min-h-[40px] items-center rounded-md bg-slate-100 px-3 text-navy"
+                  >
+                    PDF
+                  </a>
+                  {c.status === "pending" && (
+                    <>
+                      <button onClick={() => copyLink(c)} className="inline-flex min-h-[40px] items-center rounded-md bg-slate-100 px-3 text-navy">
+                        Copier lien
+                      </button>
+                      <button onClick={() => act(c.id, "extend")} className="inline-flex min-h-[40px] items-center rounded-md bg-slate-100 px-3 text-slate-600">
+                        Prolonger
+                      </button>
+                      <button onClick={() => act(c.id, "void")} className="inline-flex min-h-[40px] items-center rounded-md bg-red-50 px-3 text-red-600">
+                        Annuler
+                      </button>
+                    </>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+          <div className="hidden overflow-x-auto sm:block">
             <table className="w-full min-w-[780px] text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-400">
@@ -144,6 +201,7 @@ export function ContractsBoard() {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </Card>
     </div>

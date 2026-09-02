@@ -157,7 +157,7 @@ export function Dashboard() {
       )}
 
       {/* KPIs */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         {kpis.map((k) => (
           <div key={k.label} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="text-xs font-medium uppercase tracking-wide text-slate-400">

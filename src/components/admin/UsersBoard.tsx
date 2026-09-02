@@ -112,7 +112,38 @@ export function UsersBoard({ currentUserId }: { currentUserId: number }) {
         {!users ? (
           <Spinner />
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          <ul className="divide-y divide-slate-100 sm:hidden">
+            {users.map((u) => (
+              <li key={u.id}>
+                <button
+                  type="button"
+                  onClick={() => openModal(u)}
+                  className="flex w-full min-h-[64px] items-start justify-between gap-3 py-3 text-left active:bg-slate-50"
+                >
+                  <div className="min-w-0">
+                    <div className="truncate font-semibold text-slate-800">
+                      {u.username}
+                      {u.id === currentUserId && <span className="ml-1.5 text-xs font-normal text-slate-400">(vous)</span>}
+                      {u.mustChangePassword && <span className="ml-1.5 text-xs text-amber-600">🔑</span>}
+                    </div>
+                    {(u.firstname || u.lastname) && (
+                      <div className="text-xs text-slate-400">{u.firstname} {u.lastname}</div>
+                    )}
+                    <div className="truncate text-sm text-slate-500">{u.email}</div>
+                    <div className="mt-1 text-xs text-slate-400">
+                      {u.lastLogin ? `connecté ${fmtDate(u.lastLogin.slice(0, 10))}` : "jamais connecté"}
+                      {!u.isActive && " · inactif"}
+                    </div>
+                  </div>
+                  <span className="shrink-0 rounded-full bg-navy/10 px-2.5 py-1 text-xs font-semibold text-navy">
+                    {ROLES[u.role]?.label ?? u.role}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+          <div className="hidden overflow-x-auto sm:block">
             <table className="w-full min-w-[560px] text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-400">
@@ -161,6 +192,7 @@ export function UsersBoard({ currentUserId }: { currentUserId: number }) {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </Card>
 

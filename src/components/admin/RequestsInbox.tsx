@@ -123,7 +123,7 @@ export function RequestsInbox() {
                     )}
                   </div>
                   <div className="mt-1 text-xs text-slate-400">
-                    <a href={`mailto:${r.email}`} className="inline-block py-1.5 hover:text-navy">
+                    <a href={`mailto:${r.email}`} className="inline-block py-2.5 hover:text-navy">
                       {r.email}
                     </a>
                     {r.phone && ` · ${r.phone}`} · reçue le {fmtDate(r.createdAt.slice(0, 10))}

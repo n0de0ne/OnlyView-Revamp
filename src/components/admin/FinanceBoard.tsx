@@ -188,7 +188,7 @@ export function FinanceBoard() {
 
       {/* P&L summary */}
       {stats && (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
           {[
             { label: "Revenu net (saison)", value: fmtUSD(stats.totals.net), sub: `dont ${fmtUSD(stats.totals.commissions)} commissions déduites` },
             { label: "Encaissements", value: fmtUSD(stats.totals.cashIn), sub: "paiements reçus (cash)" },

@@ -80,7 +80,7 @@ export function ReservationList() {
           placeholder="Rechercher client, email, n°…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          className="w-56 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm sm:w-56"
         />
         <select
           value={season}
@@ -127,7 +127,47 @@ export function ReservationList() {
         ) : filtered.length === 0 ? (
           <p className="py-10 text-center text-sm text-slate-400">Aucune réservation</p>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          {/* phone: one card per stay, everything the row carries, nothing off-screen */}
+          <ul className="divide-y divide-slate-100 sm:hidden">
+            {filtered.map((r) => {
+              const nights = Math.round(
+                (new Date(r.endDate).getTime() - new Date(r.startDate).getTime()) / 86400000
+              );
+              return (
+                <li key={r.id}>
+                  <Link
+                    href={`/admin/reservations/${r.id}`}
+                    className="flex min-h-[64px] items-start justify-between gap-3 py-3 active:bg-slate-50"
+                  >
+                    <div className="min-w-0">
+                      <div className="truncate font-semibold text-slate-800">
+                        {r.clientName ?? "Sans nom"}
+                        {r.client?.isVip && <span title="VIP"> ⭐</span>}
+                        <span className="ml-1.5 text-xs font-normal text-slate-400">#{r.id}</span>
+                      </div>
+                      <div className="mt-0.5 text-sm text-slate-600">
+                        {fmtDate(r.startDate)} → {fmtDate(r.endDate)}
+                        <span className="text-slate-400"> · {nights} n · {r.periods.length > 0 ? "🔄" : `${r.bedrooms} ch.`}</span>
+                      </div>
+                      <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500">
+                        <StatusBadge status={r.status} />
+                        <span>{r.agency?.name ?? "Direct"}</span>
+                        {r.status === "option" && r.optionExpires && (
+                          <span className="text-amber-600">⏳ {fmtDate(r.optionExpires)}</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <div className="font-semibold text-slate-800">{fmtUSD(r.priceTTC)}</div>
+                      <div className="mt-1 text-lg leading-none">{paymentDot(r)}</div>
+                    </div>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+          <div className="hidden overflow-x-auto sm:block">
             <table className="w-full min-w-[760px] text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-400">
@@ -208,6 +248,7 @@ export function ReservationList() {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </Card>
     </div>
