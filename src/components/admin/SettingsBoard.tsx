@@ -92,6 +92,7 @@ const GROUPS: Array<{
       ["contact_phone", "Téléphone"],
       ["contact_whatsapp", "WhatsApp (numéro int.)"],
       ["villa_address", "Adresse"],
+      ["villa_map_url", "Lien Google Maps"],
       ["villa_lat", "Latitude"],
       ["villa_lng", "Longitude"],
     ],

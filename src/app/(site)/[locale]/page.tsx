@@ -11,6 +11,7 @@ import {
 } from "@/lib/seo";
 import { getPhotos, firstOf } from "@/lib/photos";
 import { isLoyaltyEnabled } from "@/lib/features";
+import { getContact } from "@/lib/contact";
 import { getRateConfig } from "@/lib/settings";
 import { getApprovedTestimonials } from "@/lib/testimonials";
 import { usd } from "@/lib/money";
@@ -46,12 +47,14 @@ export default async function HomePage({
   const locale = (isLocale(raw) ? raw : "en") as Locale;
   const t = getDict(locale);
 
-  const [loyalty, photos, rates, testimonials] = await Promise.all([
+  const [loyalty, photos, rates, testimonials, contact] = await Promise.all([
     isLoyaltyEnabled(),
     getPhotos(),
     getRateConfig(),
     getApprovedTestimonials(3),
+    getContact(),
   ]);
+  const { whatsappUrl } = contact;
 
   const spaces = [
     { cat: "living", title: t.spaces.living, desc: t.spaces.livingDesc },
@@ -349,9 +352,20 @@ export default async function HomePage({
             <Link href={localePath(locale, "/booking")} className="btn-gold">
               {t.cta.button}
             </Link>
-            <Link href={localePath(locale, "/contact")} className="btn-outline-light">
-              {t.cta.whatsapp}
-            </Link>
+            {whatsappUrl ? (
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-outline-light"
+              >
+                {t.cta.whatsapp}
+              </a>
+            ) : (
+              <Link href={localePath(locale, "/contact")} className="btn-outline-light">
+                {t.cta.whatsapp}
+              </Link>
+            )}
           </div>
         </div>
       </section>

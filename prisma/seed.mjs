@@ -45,10 +45,11 @@ const SETTINGS = {
   bank_iban: "FR76 1010 7001 6600 6106 6055 692",
   bank_bic: "BREDFRPPXXX",
   // Contact
-  contact_email: "contact@onlyviewstbarth.com",
-  contact_phone: "+590 690 00 00 00",
-  contact_whatsapp: "+590690000000",
+  contact_email: "annaerick971@gmail.com",
+  contact_phone: "+590 690 39 90 47",
+  contact_whatsapp: "+590690399047",
   villa_address: "Pointe Milou, 97133 Saint-Barthélemy",
+  villa_map_url: "https://maps.app.goo.gl/9eV7KhFcF9AJdWeLA",
   villa_lat: "17.9124",
   villa_lng: "-62.8272",
   // Immersive 3D walkthrough embedded on the tour page (empty = hidden)
@@ -66,13 +67,28 @@ async function seedBase() {
     });
   }
 
+  // The contact details shipped as placeholders until the owner's real ones
+  // were known. Replace those exact values once — anything typed in Réglages
+  // since is left alone.
+  const PLACEHOLDERS = {
+    contact_email: "contact@onlyviewstbarth.com",
+    contact_phone: "+590 690 00 00 00",
+    contact_whatsapp: "+590690000000",
+  };
+  for (const [key, placeholder] of Object.entries(PLACEHOLDERS)) {
+    const current = await prisma.setting.findUnique({ where: { key } });
+    if (current && current.value.trim() === placeholder) {
+      await prisma.setting.update({ where: { key }, data: { value: SETTINGS[key] } });
+    }
+  }
+
   // Admin accounts
   const ownerPass = process.env.SEED_ADMIN_PASSWORD ?? "onlyview2026";
   await prisma.user.upsert({
     where: { username: "admin" },
     create: {
       username: "admin",
-      email: "contact@onlyviewstbarth.com",
+      email: "annaerick971@gmail.com",
       passwordHash: await bcrypt.hash(ownerPass, 12),
       firstname: "Annie",
       lastname: "Chriqui",

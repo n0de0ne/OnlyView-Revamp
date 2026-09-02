@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getDict, isLocale, type Locale } from "@/lib/i18n";
 import { altLanguages } from "@/lib/seo";
-import { getSettings } from "@/lib/settings";
+import { getContact } from "@/lib/contact";
 import { PageHero } from "@/components/site/PageHero";
 import { ContactForm } from "@/components/site/ContactForm";
 
@@ -29,15 +29,7 @@ export default async function ContactPage({
   const { locale: raw } = await params;
   const locale = (isLocale(raw) ? raw : "en") as Locale;
   const t = getDict(locale);
-  let email = "contact@onlyviewstbarth.com";
-  let whatsapp = "";
-  try {
-    const s = await getSettings();
-    email = s.contact_email ?? email;
-    whatsapp = s.contact_whatsapp ?? "";
-  } catch {
-    // defaults
-  }
+  const { email, whatsappUrl } = await getContact();
 
   return (
     <>
@@ -50,11 +42,11 @@ export default async function ContactPage({
               {email}
             </a>
           </div>
-          {whatsapp && (
+          {whatsappUrl && (
             <div>
               <h2 className="eyebrow mb-3">{t.contact.whatsapp}</h2>
               <a
-                href={`https://wa.me/${whatsapp.replace(/[^0-9]/g, "")}`}
+                href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-outline"

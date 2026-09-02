@@ -4,6 +4,7 @@ import Link from "next/link";
 import { getDict, isLocale, localePath, type Locale } from "@/lib/i18n";
 import { altLanguages, jsonLd, lodgingBusinessJsonLd } from "@/lib/seo";
 import { getPhotos, firstOf } from "@/lib/photos";
+import { getContact } from "@/lib/contact";
 import { PageHero } from "@/components/site/PageHero";
 
 export const revalidate = 3600;
@@ -32,6 +33,7 @@ export default async function LocationPage({
   const t = getDict(locale);
   const fr = locale === "fr";
   const photos = await getPhotos();
+  const { mapUrl } = await getContact();
 
   const distances: Array<[string, string]> = fr
     ? [
@@ -83,7 +85,7 @@ export default async function LocationPage({
             </ul>
             <div className="mt-8 flex flex-wrap gap-4">
               <a
-                href="https://www.google.com/maps/search/?api=1&query=Pointe+Milou+Saint-Barthelemy"
+                href={mapUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-outline"

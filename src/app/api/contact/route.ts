@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { sendMail } from "@/lib/mailer";
+import { ownerNotifyEmail } from "@/lib/contact";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,7 @@ export async function POST(req: NextRequest) {
   }
   const { name, email, message } = parsed.data;
   await sendMail({
-    to: process.env.ADMIN_NOTIFY_EMAIL ?? "contact@onlyviewstbarth.com",
+    to: await ownerNotifyEmail(),
     subject: `Website message — ${name}`,
     templateSlug: "contact_message",
     html: `<p><strong>${name}</strong> &lt;${email}&gt;</p><p style="background:#f6f4ef;padding:12px;border-radius:8px;white-space:pre-wrap;">${message.replace(/</g, "&lt;")}</p>`,

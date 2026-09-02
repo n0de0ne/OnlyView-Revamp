@@ -8,27 +8,34 @@ import { usePathname, useRouter } from "next/navigation";
  * (scroll position, filters and all) and closing simply goes back in history.
  * A hard load of the same URL renders the standalone page instead.
  *
- * The overlay renders only while the URL is still the intercepted route.
- * Next keeps the last content of a parallel slot when a soft navigation lands
- * on a route the slot doesn't match, so without this check coming back to
- * /admin/reservations re-displayed the modal that was closed earlier — and
- * closing that one went back past the list, since no history entry was pushed
- * for it (vercel/next.js#49662).
+ * The overlay renders only while the URL is still inside the intercepted
+ * section. Next keeps the last content of a parallel slot when a soft
+ * navigation lands on a route the slot doesn't match, so without this check
+ * coming back to /admin/reservations re-displayed the modal that was closed
+ * earlier — and closing that one went back past the list, since no history
+ * entry was pushed for it (vercel/next.js#49662).
+ *
+ * The test is the section (`/admin/reservations/`), not the exact URL: the
+ * pages that leave the slot behind are the ones *above* it — the list, the
+ * calendar, the dashboard — while every URL the slot itself serves sits under
+ * that prefix. Matching the whole URL made the overlay depend on rebuilding
+ * the pathname exactly as the router spells it (ids, escaping, a trailing
+ * slash), which is a way to hide a modal that should be showing.
  */
 export function RouteModal({
-  routePath,
+  routePrefix,
   title,
   children,
 }: {
-  /** the pathname this modal belongs to — it hides itself anywhere else */
-  routePath: string;
+  /** the section this modal belongs to — it hides itself outside of it */
+  routePrefix: string;
   title: React.ReactNode;
   children: React.ReactNode;
 }) {
   const router = useRouter();
   const pathname = usePathname();
   const panel = useRef<HTMLDivElement>(null);
-  const open = pathname === routePath;
+  const open = (pathname ?? "").startsWith(routePrefix);
 
   const close = useCallback(() => router.back(), [router]);
 

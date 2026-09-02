@@ -6,6 +6,7 @@ import { sendMail } from "@/lib/mailer";
 import { SITE_URL } from "@/lib/seo";
 import { renderContractPdfFor, formatDateTime } from "@/lib/contract-render";
 import { formatDate, toISODate, nightsBetween } from "@/lib/dates";
+import { ownerNotifyEmail } from "@/lib/contact";
 
 export const dynamic = "force-dynamic";
 
@@ -81,7 +82,7 @@ export async function POST(req: NextRequest) {
 
   // Owner notification — same details the legacy site sent
   await sendMail({
-    to: process.env.ADMIN_NOTIFY_EMAIL ?? "contact@onlyviewstbarth.com",
+    to: await ownerNotifyEmail(),
     subject: `✅ Contract signed — ${signed.clientName} (${formatDate(checkIn, "en", { day: "numeric", month: "short" })} → ${formatDate(checkOut, "en", { day: "numeric", month: "short" })})`,
     templateSlug: "contract_signed_admin",
     reservationId: r.id,

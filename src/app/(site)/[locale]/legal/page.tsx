@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { isLocale, type Locale } from "@/lib/i18n";
 import { altLanguages } from "@/lib/seo";
 import { PageHero } from "@/components/site/PageHero";
+import { OWNER_EMAIL } from "@/lib/contact";
 
 export const revalidate = 3600;
 
@@ -37,7 +38,7 @@ export default async function LegalPage({
           <br />
           Pointe Milou, 97133 Saint-Barthélemy, France
           <br />
-          contact@onlyviewstbarth.com
+          {OWNER_EMAIL}
         </p>
         <h2 className="font-display mb-3 text-2xl text-ink">
           {fr ? "Location saisonnière" : "Seasonal rental"}

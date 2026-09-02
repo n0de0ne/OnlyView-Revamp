@@ -43,7 +43,7 @@ export default async function PrivacyPage({
         ],
         [
           "Vos droits",
-          "Conformément au RGPD, vous disposez d'un droit d'accès, de rectification, d'effacement et d'opposition. Écrivez à contact@onlyviewstbarth.com — nous répondons sous 30 jours.",
+          "Conformément au RGPD, vous disposez d'un droit d'accès, de rectification, d'effacement et d'opposition. Écrivez à annaerick971@gmail.com — nous répondons sous 30 jours.",
         ],
         [
           "Cookies",
@@ -65,7 +65,7 @@ export default async function PrivacyPage({
         ],
         [
           "Your rights",
-          "Under GDPR you may access, rectify, erase or object to the processing of your data. Write to contact@onlyviewstbarth.com — we answer within 30 days.",
+          "Under GDPR you may access, rectify, erase or object to the processing of your data. Write to annaerick971@gmail.com — we answer within 30 days.",
         ],
         [
           "Cookies",

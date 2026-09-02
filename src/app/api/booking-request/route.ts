@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { sendMail } from "@/lib/mailer";
 import { todayISO } from "@/lib/dates";
 import { siteUrl } from "@/lib/seo";
+import { ownerNotifyEmail } from "@/lib/contact";
 
 export const dynamic = "force-dynamic";
 
@@ -68,7 +69,7 @@ export async function POST(req: NextRequest) {
   });
 
   // notify admin
-  const adminEmail = process.env.ADMIN_NOTIFY_EMAIL ?? "contact@onlyviewstbarth.com";
+  const adminEmail = await ownerNotifyEmail();
   await sendMail({
     to: adminEmail,
     subject: `New booking request — ${d.name} · ${d.startDate} → ${d.endDate}`,

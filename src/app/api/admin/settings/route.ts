@@ -39,6 +39,7 @@ const ALLOWED_KEYS = [
   "contact_phone",
   "contact_whatsapp",
   "villa_address",
+  "villa_map_url",
   "villa_lat",
   "villa_lng",
 ] as const;

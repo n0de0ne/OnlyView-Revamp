@@ -35,8 +35,8 @@ export const ORG = {
   name: "Villa ONLY VIEW",
   legalName: "Villa ONLY VIEW — Saint-Barthélemy",
   url: SITE_URL,
-  email: "contact@onlyviewstbarth.com",
-  telephone: "+590 690 00 00 00",
+  email: "annaerick971@gmail.com",
+  telephone: "+590 690 39 90 47",
   address: {
     "@type": "PostalAddress",
     streetAddress: "Pointe Milou",
