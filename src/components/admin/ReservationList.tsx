@@ -99,11 +99,14 @@ export function ReservationList() {
           className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
         >
           <option value="all">Tous statuts</option>
-          {Object.entries(STATUS_LABELS).map(([k, v]) => (
-            <option key={k} value={k}>
-              {v}
-            </option>
-          ))}
+          {Object.entries(STATUS_LABELS)
+            // the business only uses Option / Confirmé
+            .filter(([k]) => k === "option" || k === "confirmed")
+            .map(([k, v]) => (
+              <option key={k} value={k}>
+                {v}
+              </option>
+            ))}
         </select>
         <label className="flex items-center gap-2 text-sm text-slate-600">
           <input

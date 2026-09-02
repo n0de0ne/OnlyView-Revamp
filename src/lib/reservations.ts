@@ -126,7 +126,7 @@ export function reservationData(input: ReservationInputType, pricing: {
 }
 
 const include = {
-  client: { select: { id: true, firstname: true, lastname: true, email: true, phone: true, isVip: true, blacklisted: true, discountPercent: true } },
+  client: { select: { id: true, firstname: true, lastname: true, email: true, phone: true, isVip: true, blacklisted: true, discountPercent: true, discountReason: true } },
   agency: { select: { id: true, name: true, commissionPercent: true } },
   periods: { orderBy: { sortOrder: "asc" as const } },
   payments: { orderBy: { receivedAt: "asc" as const } },

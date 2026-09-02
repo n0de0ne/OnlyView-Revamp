@@ -29,8 +29,10 @@ const PICKS: Record<string, number> = {
   exterior: 4,
 };
 
-const MAX_EDGE = 1800;
-const QUALITY = 78;
+// Sources are 4000×3000; 2400 keeps full-bleed and retina layouts sharp
+// (a 1200 CSS px frame at 2× DPR) without doubling the payload.
+const MAX_EDGE = 2400;
+const QUALITY = 76;
 
 interface ManifestEntry {
   category: string;

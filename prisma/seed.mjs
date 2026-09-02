@@ -123,6 +123,17 @@ async function seedBase() {
         });
       }
       console.log(`Seeded ${photos.length} photos`);
+    } else {
+      // keep stored dimensions in step with re-encoded media (same URLs)
+      let refreshed = 0;
+      for (const p of photos) {
+        const { count: n } = await prisma.photo.updateMany({
+          where: { url: p.url, NOT: { width: p.width, height: p.height } },
+          data: { width: p.width, height: p.height },
+        });
+        refreshed += n;
+      }
+      if (refreshed > 0) console.log(`Refreshed dimensions of ${refreshed} photos`);
     }
   }
 

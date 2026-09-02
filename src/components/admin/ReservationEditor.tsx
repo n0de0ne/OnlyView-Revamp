@@ -110,12 +110,20 @@ interface ClientHit {
   isVip: boolean;
   blacklisted: boolean;
   discountPercent: number;
+  discountReason?: string | null;
   stats?: { stays: number; nights: number; spent: number };
 }
 
-const STATUS_BTNS: Array<[string, string, string]> = [
+type StatusBtn = [string, string, string];
+
+/** The business uses two statuses, exactly like the PHP admin. */
+const STATUS_BTNS: StatusBtn[] = [
   ["option", "🟠 Option", "border-amber-400 bg-amber-50 text-amber-700"],
   ["confirmed", "🔴 Confirmé", "border-red-400 bg-red-50 text-red-700"],
+];
+
+/** Statuses that only exist in older rows — shown when set, never offered. */
+const LEGACY_STATUS_BTNS: StatusBtn[] = [
   ["pending", "🟣 En attente", "border-violet-400 bg-violet-50 text-violet-700"],
   ["blocked", "⬛ Bloqué", "border-slate-400 bg-slate-100 text-slate-700"],
   ["cancelled", "✖ Annulé", "border-slate-300 bg-white text-slate-400"],
@@ -164,6 +172,10 @@ export function ReservationEditor({
   const [hits, setHits] = useState<ClientHit[]>([]);
   const [showHits, setShowHits] = useState(false);
   const [linkedClient, setLinkedClient] = useState<ClientHit | null>(null);
+
+  // agencies (server list + any created from here, like the legacy "Autre…")
+  const [agencyList, setAgencyList] = useState<AgencyOpt[]>(agencies);
+  const [newAgency, setNewAgency] = useState<string | null>(null);
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
@@ -226,6 +238,7 @@ export function ReservationEditor({
           isVip: r.client.isVip,
           blacklisted: r.client.blacklisted,
           discountPercent: r.client.discountPercent,
+          discountReason: r.client.discountReason,
         });
       }
     }
@@ -431,6 +444,38 @@ export function ReservationEditor({
     }
   };
 
+  /** "Autre agence…" — create it on the fly and select it, like the PHP modal. */
+  const createAgency = async () => {
+    const name = (newAgency ?? "").trim();
+    if (!name) return setNewAgency(null);
+    const existing = agencyList.find((a) => a.name.toLowerCase() === name.toLowerCase());
+    if (existing) {
+      setForm((f) => ({
+        ...f,
+        agencyId: existing.id,
+        agencyFeePercent: existing.commissionPercent,
+      }));
+      setNewAgency(null);
+      return;
+    }
+    const res = await api<{ agency: AgencyOpt }>("/api/admin/agencies", {
+      method: "POST",
+      json: { name, commissionPercent: form.agencyFeePercent || 20 },
+    });
+    if (res.success && res.agency) {
+      setAgencyList((l) => [...l, res.agency].sort((a, b) => a.name.localeCompare(b.name)));
+      setForm((f) => ({
+        ...f,
+        agencyId: res.agency.id,
+        agencyFeePercent: res.agency.commissionPercent,
+      }));
+      setNewAgency(null);
+      push(`Agence « ${name} » créée`);
+    } else {
+      push(`Erreur : ${res.error}`, "error");
+    }
+  };
+
   const doAction = async (action: string, extra: Record<string, unknown> = {}) => {
     if (!reservationId) return null;
     const res = await api<Record<string, unknown>>(
@@ -557,7 +602,11 @@ export function ReservationEditor({
       {/* Status */}
       <Card title="Statut">
         <div className="flex flex-wrap gap-2">
-          {STATUS_BTNS.map(([value, label, cls]) => (
+          {[
+            ...STATUS_BTNS,
+            // keep a legacy status visible (and selected) until it is changed
+            ...LEGACY_STATUS_BTNS.filter(([v]) => v === form.status),
+          ].map(([value, label, cls]) => (
             <button
               key={value}
               onClick={() => set("status", value)}
@@ -721,6 +770,24 @@ export function ReservationEditor({
             </button>
           </div>
         )}
+        {/* standing client discount not applied to this stay yet */}
+        {linkedClient &&
+          linkedClient.discountPercent > 0 &&
+          form.discountPercent !== linkedClient.discountPercent && (
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm">
+              <span className="text-emerald-800">
+                🎁 Remise client habituelle de <strong>{linkedClient.discountPercent}%</strong>
+                {linkedClient.discountReason ? ` — ${linkedClient.discountReason}` : ""}
+              </span>
+              <button
+                type="button"
+                className="abtn-primary !py-1 text-xs"
+                onClick={() => set("discountPercent", linkedClient.discountPercent)}
+              >
+                Appliquer
+              </button>
+            </div>
+          )}
         <div className="relative grid gap-4 sm:grid-cols-2">
           <div className="afield">
             <label>Prénom</label>
@@ -817,8 +884,12 @@ export function ReservationEditor({
             <select
               value={form.agencyId ?? ""}
               onChange={(e) => {
+                if (e.target.value === "__new") {
+                  setNewAgency("");
+                  return;
+                }
                 const id = e.target.value ? parseInt(e.target.value) : null;
-                const agency = agencies.find((a) => a.id === id);
+                const agency = agencyList.find((a) => a.id === id);
                 setForm((f) => ({
                   ...f,
                   agencyId: id,
@@ -827,12 +898,34 @@ export function ReservationEditor({
               }}
             >
               <option value="">Direct</option>
-              {agencies.map((a) => (
+              {agencyList.map((a) => (
                 <option key={a.id} value={a.id}>
                   {a.name} ({a.commissionPercent}%)
                 </option>
               ))}
+              <option value="__new">＋ Autre agence…</option>
             </select>
+            {newAgency !== null && (
+              <div className="mt-2 flex gap-2">
+                <input
+                  autoFocus
+                  value={newAgency}
+                  onChange={(e) => setNewAgency(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && createAgency()}
+                  placeholder="Nom de l'agence"
+                />
+                <button type="button" className="abtn-primary !py-1 text-xs" onClick={createAgency}>
+                  Créer
+                </button>
+                <button
+                  type="button"
+                  className="abtn-ghost !py-1 text-xs"
+                  onClick={() => setNewAgency(null)}
+                >
+                  ✕
+                </button>
+              </div>
+            )}
           </div>
         </div>
 

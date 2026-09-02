@@ -168,7 +168,7 @@ export function AdminCalendar() {
       </div>
 
       <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500">
-        {Object.entries({ confirmed: "Confirmé", option: "Option", pending: "En attente", blocked: "Bloqué" }).map(
+        {Object.entries({ confirmed: "Confirmé", option: "Option" }).map(
           ([k, v]) => (
             <span key={k} className="flex items-center gap-1.5">
               <span className="h-3 w-3 rounded" style={{ background: STATUS_BG[k] }} />
