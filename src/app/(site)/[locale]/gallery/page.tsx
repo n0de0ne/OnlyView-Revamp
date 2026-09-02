@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getDict, isLocale, type Locale } from "@/lib/i18n";
-import { altLanguages, breadcrumbJsonLd, jsonLd } from "@/lib/seo";
+import { breadcrumbJsonLd, imageGalleryJsonLd, jsonLd, pageMetadata } from "@/lib/seo";
 import { getPhotos, PHOTO_CATEGORIES } from "@/lib/photos";
 import { GalleryGrid } from "@/components/site/GalleryGrid";
 import { PageHero } from "@/components/site/PageHero";
@@ -12,13 +12,16 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
-  const { locale } = await params;
+  const { locale: raw } = await params;
+  const locale = (isLocale(raw) ? raw : "en") as Locale;
   const t = getDict(locale);
-  return {
+  return pageMetadata({
+    locale,
+    path: "/gallery",
     title: t.meta.titleGallery,
     description: t.meta.descGallery,
-    alternates: altLanguages("/gallery"),
-  };
+    image: "/media/photos/night/night-01.webp",
+  });
 }
 
 export default async function GalleryPage({
@@ -38,12 +41,13 @@ export default async function GalleryPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: jsonLd(
+          __html: jsonLd([
+            imageGalleryJsonLd(locale, photos),
             breadcrumbJsonLd([
               { name: t.nav.home, url: locale === "fr" ? "/fr" : "/" },
               { name: t.nav.gallery, url: locale === "fr" ? "/fr/gallery" : "/gallery" },
-            ])
-          ),
+            ]),
+          ]),
         }}
       />
       <PageHero
@@ -52,6 +56,7 @@ export default async function GalleryPage({
         intro={t.meta.descGallery}
       />
       <section className="mx-auto max-w-7xl px-5 py-14 lg:px-8">
+        <p className="mb-10 max-w-3xl leading-relaxed text-ink/70">{t.galleryIntro}</p>
         <GalleryGrid
           photos={photos}
           categories={[...PHOTO_CATEGORIES]}

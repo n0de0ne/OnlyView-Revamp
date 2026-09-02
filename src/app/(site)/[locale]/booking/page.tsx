@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getDict, isLocale, type Locale } from "@/lib/i18n";
-import { altLanguages, breadcrumbJsonLd, jsonLd } from "@/lib/seo";
+import { breadcrumbJsonLd, jsonLd, pageMetadata } from "@/lib/seo";
 import { getBookedRanges } from "@/lib/availability";
 import { todayISO, addDays } from "@/lib/dates";
 import { BookingWidget } from "@/components/site/BookingWidget";
@@ -13,13 +13,15 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
-  const { locale } = await params;
+  const { locale: raw } = await params;
+  const locale = (isLocale(raw) ? raw : "en") as Locale;
   const t = getDict(locale);
-  return {
+  return pageMetadata({
+    locale,
+    path: "/booking",
     title: t.meta.titleBooking,
     description: t.meta.descBooking,
-    alternates: altLanguages("/booking"),
-  };
+  });
 }
 
 export default async function BookingPage({

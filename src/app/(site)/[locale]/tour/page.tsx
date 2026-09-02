@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getDict, isLocale, type Locale } from "@/lib/i18n";
-import { altLanguages, breadcrumbJsonLd, jsonLd } from "@/lib/seo";
+import { breadcrumbJsonLd, jsonLd, pageMetadata } from "@/lib/seo";
 import { getPhotos } from "@/lib/photos";
 import { getSettings } from "@/lib/settings";
 import { TourExperience, type TourStop } from "@/components/site/TourExperience";
@@ -14,13 +14,16 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
-  const { locale } = await params;
+  const { locale: raw } = await params;
+  const locale = (isLocale(raw) ? raw : "en") as Locale;
   const t = getDict(locale);
-  return {
+  return pageMetadata({
+    locale,
+    path: "/tour",
     title: t.meta.titleTour,
     description: t.meta.descTour,
-    alternates: altLanguages("/tour"),
-  };
+    image: "/media/photos/living/living-01.webp",
+  });
 }
 
 const STOP_ORDER: Array<{ key: string; cat: string }> = [

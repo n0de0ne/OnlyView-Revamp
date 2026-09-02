@@ -55,8 +55,10 @@ export function SiteHeader({ locale }: { locale: Locale }) {
     [localePath(locale, "/account"), t.nav.account],
   ];
 
-  // Language switch keeps the current page
-  const pathNoLocale = pathname.replace(/^\/fr(?=\/|$)/, "") || "/";
+  // Language switch keeps the current page. Static pages are prerendered
+  // under the internal `/en/…` path, so both prefixes must go — otherwise the
+  // HTML crawlers read carries `/en/villa` and `/fr/en/villa` links.
+  const pathNoLocale = pathname.replace(/^\/(fr|en)(?=\/|$)/, "") || "/";
   const frHref = pathNoLocale === "/" ? "/fr" : `/fr${pathNoLocale}`;
 
   return (

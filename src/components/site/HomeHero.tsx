@@ -15,6 +15,8 @@ export function HomeHero(props: {
   location: string;
   cta: string;
   discover: string;
+  /** " — luxury villa rental in Pointe Milou, St Barth" */
+  headingSuffix: string;
   fallbackImage: string;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -60,6 +62,9 @@ export function HomeHero(props: {
         </p>
         <h1 className="font-display text-5xl leading-[1.05] tracking-wide sm:text-6xl md:text-7xl">
           ONLY&nbsp;VIEW
+          {/* the rest of the heading is for engines and screen readers — the
+              wordmark alone says nothing about what or where this is */}
+          <span className="sr-only">{props.headingSuffix}</span>
         </h1>
         <p className="mx-auto mt-5 max-w-md font-display text-xl italic text-white/85 md:text-2xl">
           {props.tagline}

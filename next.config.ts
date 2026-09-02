@@ -37,7 +37,7 @@ const nextConfig: NextConfig = {
       ["/pricing.php", "/rates"],
       ["/contact.php", "/contact"],
       ["/faq.php", "/faq"],
-      ["/about.php", "/about"],
+      ["/about.php", "/villa"],
       ["/book-direct.php", "/booking"],
       ["/why-book-direct.php", "/why-book-direct"],
       ["/guestbook.php", "/reviews"],
@@ -52,11 +52,20 @@ const nextConfig: NextConfig = {
       ["/journal.php", "/guide"],
       ["/legal.php", "/legal"],
     ];
-    return map.map(([source, destination]) => ({
-      source,
-      destination,
-      permanent: true,
-    }));
+    return [
+      // one host: www → apex, so links and signals never split across two
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.onlyviewstbarth.com" }],
+        destination: "https://onlyviewstbarth.com/:path*",
+        permanent: true,
+      },
+      ...map.map(([source, destination]) => ({
+        source,
+        destination,
+        permanent: true,
+      })),
+    ];
   },
 };
 

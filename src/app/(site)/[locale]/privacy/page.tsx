@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { isLocale, type Locale } from "@/lib/i18n";
-import { altLanguages } from "@/lib/seo";
+import { pageMetadata } from "@/lib/seo";
 import { PageHero } from "@/components/site/PageHero";
 
 export const revalidate = 3600;
@@ -10,12 +10,16 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
-  const { locale } = await params;
-  return {
+  const { locale: raw } = await params;
+  const locale = (isLocale(raw) ? raw : "en") as Locale;
+  const fr = locale === "fr";
+  return pageMetadata({
+    locale,
+    path: "/privacy",
     title: locale === "fr" ? "Politique de confidentialité" : "Privacy Policy",
-    robots: { index: false },
-    alternates: altLanguages("/privacy"),
-  };
+    description: fr ? "Politique de confidentialité de la Villa ONLY VIEW." : "Privacy policy for Villa ONLY VIEW.",
+    noindex: true,
+  });
 }
 
 export default async function PrivacyPage({

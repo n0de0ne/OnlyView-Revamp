@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getDict, isLocale, localePath, LOCALES, type Locale } from "@/lib/i18n";
-import { altLanguages, breadcrumbJsonLd, jsonLd, SITE_URL } from "@/lib/seo";
+import { breadcrumbJsonLd, jsonLd, organizationJsonLd, ownerJsonLd, pageMetadata, SITE_URL } from "@/lib/seo";
+import { CONTENT_UPDATED } from "@/lib/site-facts";
 import { GUIDES, getGuide } from "@/data/guides";
 import { PageHero } from "@/components/site/PageHero";
 
@@ -17,15 +18,18 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: string; slug: string }>;
 }): Promise<Metadata> {
-  const { locale, slug } = await params;
+  const { locale: raw, slug } = await params;
+  const locale = (isLocale(raw) ? raw : "en") as Locale;
   const guide = getGuide(slug);
   if (!guide) return {};
   const fr = locale === "fr";
-  return {
+  return pageMetadata({
+    locale,
+    path: `/guide/${slug}`,
     title: fr ? guide.title.fr : guide.title.en,
     description: fr ? guide.description.fr : guide.description.en,
-    alternates: altLanguages(`/guide/${slug}`),
-  };
+    type: "article",
+  });
 }
 
 export default async function GuidePage({
@@ -48,10 +52,15 @@ export default async function GuidePage({
     "@type": "Article",
     headline: title,
     description: fr ? guide.description.fr : guide.description.en,
-    author: { "@type": "Organization", name: "Villa ONLY VIEW" },
-    publisher: { "@type": "Organization", name: "Villa ONLY VIEW", url: SITE_URL },
+    author: { "@id": `${SITE_URL}/#owner` },
+    publisher: { "@id": `${SITE_URL}/#org` },
     mainEntityOfPage: `${SITE_URL}${fr ? "/fr" : ""}/guide/${slug}`,
+    image: [`${SITE_URL}/media/photos/exterior/exterior-01.webp`],
+    inLanguage: fr ? "fr-FR" : "en-US",
+    datePublished: "2025-11-01",
+    dateModified: CONTENT_UPDATED,
     about: { "@id": `${SITE_URL}/#villa` },
+    isPartOf: { "@id": `${SITE_URL}/#website` },
   };
 
   return (
@@ -61,6 +70,8 @@ export default async function GuidePage({
         dangerouslySetInnerHTML={{
           __html: jsonLd([
             article,
+            ownerJsonLd(locale),
+            organizationJsonLd(),
             breadcrumbJsonLd([
               { name: t.nav.home, url: fr ? "/fr" : "/" },
               { name: t.nav.guide, url: localePath(locale, "/guide") },

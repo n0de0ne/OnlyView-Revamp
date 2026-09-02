@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import "../../globals.css";
 import { fontClasses } from "@/lib/fonts";
 import { getDict, isLocale, LOCALES, type Locale } from "@/lib/i18n";
-import { SITE_URL } from "@/lib/seo";
+import { DEFAULT_OG_IMAGE, SITE_URL } from "@/lib/seo";
+import { getSettings } from "@/lib/settings";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { MobileTabBar } from "@/components/site/MobileTabBar";
@@ -19,11 +20,23 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = getDict(locale);
+  // Search Console / Bing Webmaster ownership tokens, pasted in Réglages —
+  // ISR picks them up without a deploy
+  let verification: Metadata["verification"] = undefined;
+  try {
+    const s = await getSettings();
+    const google = s.google_site_verification?.trim();
+    const bing = s.bing_site_verification?.trim();
+    if (google || bing) verification = { ...(google ? { google } : {}), ...(bing ? { other: { "msvalidate.01": bing } } : {}) };
+  } catch {
+    // no database at build time
+  }
   return {
     metadataBase: new URL(SITE_URL),
+    ...(verification ? { verification } : {}),
     title: {
       default: t.meta.titleHome,
-      template: `%s | ${t.meta.siteName} St Barth`,
+      template: `%s | ${t.meta.siteName}`,
     },
     applicationName: t.meta.siteName,
     formatDetection: { telephone: false },
@@ -31,8 +44,10 @@ export async function generateMetadata({
       siteName: t.meta.siteName,
       type: "website",
       locale: locale === "fr" ? "fr_FR" : "en_US",
+      images: [{ url: `${SITE_URL}${DEFAULT_OG_IMAGE}`, width: 1200, height: 900, alt: t.meta.siteName }],
     },
-    robots: { index: true, follow: true },
+    twitter: { card: "summary_large_image" },
+    robots: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 },
   };
 }
 

@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { getDict, isLocale, localePath, type Locale } from "@/lib/i18n";
-import { altLanguages, breadcrumbJsonLd, jsonLd, vacationRentalJsonLd } from "@/lib/seo";
+import { breadcrumbJsonLd, jsonLd, pageMetadata, vacationRentalJsonLd } from "@/lib/seo";
+import { getContact } from "@/lib/contact";
+import { KeyFacts } from "@/components/site/KeyFacts";
 import { getPhotos, firstOf } from "@/lib/photos";
 import { PageHero } from "@/components/site/PageHero";
 
@@ -13,13 +15,16 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
-  const { locale } = await params;
+  const { locale: raw } = await params;
+  const locale = (isLocale(raw) ? raw : "en") as Locale;
   const t = getDict(locale);
-  return {
+  return pageMetadata({
+    locale,
+    path: "/villa",
     title: t.meta.titleVilla,
     description: t.meta.descVilla,
-    alternates: altLanguages("/villa"),
-  };
+    image: "/media/photos/exterior/exterior-01.webp",
+  });
 }
 
 export default async function VillaPage({
@@ -30,7 +35,7 @@ export default async function VillaPage({
   const { locale: raw } = await params;
   const locale = (isLocale(raw) ? raw : "en") as Locale;
   const t = getDict(locale);
-  const photos = await getPhotos();
+  const [photos, { sameAs }] = await Promise.all([getPhotos(), getContact()]);
 
   const rooms: Array<{ cat: string; title: string; text: string }> = [
     { cat: "living", ...t.tour.stops.living },
@@ -63,7 +68,7 @@ export default async function VillaPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: jsonLd([
-            vacationRentalJsonLd({ locale, images: photos.slice(0, 8).map((p) => p.url) }),
+            vacationRentalJsonLd({ locale, images: photos.slice(0, 8).map((p) => p.url), sameAs }),
             breadcrumbJsonLd([
               { name: t.nav.home, url: locale === "fr" ? "/fr" : "/" },
               { name: t.nav.villa, url: localePath(locale, "/villa") },
@@ -97,6 +102,8 @@ export default async function VillaPage({
           ))}
         </div>
       </section>
+
+      <KeyFacts title={t.seo.factsTitle} label={t.seo.factsLabel} facts={t.seo.facts} className="border-b border-ink/10" />
 
       {/* Rooms — alternating layout */}
       <section className="mx-auto max-w-7xl space-y-24 px-5 py-24 lg:px-8">

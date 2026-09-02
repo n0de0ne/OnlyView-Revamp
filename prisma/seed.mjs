@@ -50,6 +50,15 @@ const SETTINGS = {
   contact_whatsapp: "+590690399047",
   villa_address: "Pointe Milou, 97133 Saint-Barthélemy",
   villa_map_url: "https://maps.app.goo.gl/9eV7KhFcF9AJdWeLA",
+  // Public profiles (sameAs in structured data) and search-console tokens —
+  // empty until filled in Réglages
+  social_instagram: "",
+  social_facebook: "",
+  social_tripadvisor: "",
+  social_google: "",
+  social_youtube: "",
+  google_site_verification: "",
+  bing_site_verification: "",
   villa_lat: "17.9124",
   villa_lng: "-62.8272",
   // Immersive 3D walkthrough embedded on the tour page (empty = hidden)

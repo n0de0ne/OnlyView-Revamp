@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getDict, isLocale, localePath, type Locale } from "@/lib/i18n";
-import { altLanguages } from "@/lib/seo";
+import { breadcrumbJsonLd, itemListJsonLd, jsonLd, pageMetadata, webPageJsonLd } from "@/lib/seo";
 import { GUIDES } from "@/data/guides";
 import { PageHero } from "@/components/site/PageHero";
 
@@ -12,15 +12,17 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
-  const { locale } = await params;
+  const { locale: raw } = await params;
+  const locale = (isLocale(raw) ? raw : "en") as Locale;
   const fr = locale === "fr";
-  return {
-    title: fr ? "Guide St Barth" : "St Barth Guide",
+  return pageMetadata({
+    locale,
+    path: "/guide",
+    title: fr ? "Guide St Barth — plages, restaurants, saisons" : "St Barth Guide — Beaches, Restaurants, Seasons",
     description: fr
-      ? "Le guide St Barth de la Villa ONLY VIEW : venir sur l'île, les plus belles plages, où manger, quelle saison choisir."
-      : "Villa ONLY VIEW's St Barth guide: getting to the island, the best beaches, where to eat, and which season to choose.",
-    alternates: altLanguages("/guide"),
-  };
+      ? "Le guide St Barth de la Villa ONLY VIEW, écrit depuis Pointe Milou : venir sur l'île, les plus belles plages, où manger, quelle saison choisir."
+      : "Villa ONLY VIEW's St Barth guide, written from Pointe Milou: getting to the island, the best beaches, where to eat, and which season to choose.",
+  });
 }
 
 export default async function GuideIndex({
@@ -35,14 +37,35 @@ export default async function GuideIndex({
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLd([
+            webPageJsonLd({
+              locale,
+              path: "/guide",
+              name: fr ? "Guide St Barth" : "St Barth Guide",
+              description: t.guideIntro,
+              type: "CollectionPage",
+            }),
+            itemListJsonLd(
+              GUIDES.map((g) => ({
+                name: fr ? g.title.fr : g.title.en,
+                url: localePath(locale, `/guide/${g.slug}`),
+                description: fr ? g.description.fr : g.description.en,
+              }))
+            ),
+            breadcrumbJsonLd([
+              { name: t.nav.home, url: fr ? "/fr" : "/" },
+              { name: t.nav.guide, url: localePath(locale, "/guide") },
+            ]),
+          ]),
+        }}
+      />
       <PageHero
         eyebrow={t.nav.guide}
         title={fr ? "Guide St Barth" : "St Barth Guide"}
-        intro={
-          fr
-            ? "Nos conseils d'initiés, écrits depuis la terrasse : l'essentiel pour préparer votre séjour."
-            : "Insider notes written from the terrace: the essentials to plan your stay."
-        }
+        intro={t.guideIntro}
       />
       <section className="mx-auto max-w-5xl px-5 py-16 lg:px-8">
         <div className="grid gap-6 sm:grid-cols-2">

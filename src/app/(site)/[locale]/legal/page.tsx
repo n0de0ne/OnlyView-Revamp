@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { isLocale, type Locale } from "@/lib/i18n";
-import { altLanguages } from "@/lib/seo";
+import { pageMetadata } from "@/lib/seo";
 import { PageHero } from "@/components/site/PageHero";
 import { OWNER_EMAIL } from "@/lib/contact";
 
@@ -11,12 +11,16 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
-  const { locale } = await params;
-  return {
+  const { locale: raw } = await params;
+  const locale = (isLocale(raw) ? raw : "en") as Locale;
+  const fr = locale === "fr";
+  return pageMetadata({
+    locale,
+    path: "/legal",
     title: locale === "fr" ? "Mentions légales" : "Legal Notice",
-    robots: { index: false },
-    alternates: altLanguages("/legal"),
-  };
+    description: fr ? "Mentions légales de la Villa ONLY VIEW, Saint-Barthélemy." : "Legal notice for Villa ONLY VIEW, Saint-Barthélemy.",
+    noindex: true,
+  });
 }
 
 export default async function LegalPage({

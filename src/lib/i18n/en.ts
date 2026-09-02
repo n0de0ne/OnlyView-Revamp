@@ -3,8 +3,8 @@ export const en = {
     siteName: "Villa ONLY VIEW",
     titleHome: "Only View St Barth — Luxury Villa Rental Direct from Owner",
     descHome:
-      "Book Villa ONLY VIEW direct — no agency fees. 4-bedroom luxury villa in Pointe Milou, St Barth, with heated pool, panoramic ocean views and concierge service. From $1,430/night.",
-    titleVilla: "The Villa — 4 Bedrooms, Heated Pool & Ocean View",
+      "Villa ONLY VIEW, Pointe Milou, St Barth: 4-bedroom luxury villa with heated pool, 180° ocean view and concierge. Book direct with the owner — no agency fees.",
+    titleVilla: "The Villa — 4 Bedrooms, Heated Pool, Sea View",
     descVilla:
       "Inside Villa ONLY VIEW: 4 en-suite bedrooms, open living spaces, gourmet kitchen, heated pool and 180° Caribbean sea views above Pointe Milou, Saint-Barthélemy.",
     titleTour: "Virtual Tour — Room by Room",
@@ -15,7 +15,7 @@ export const en = {
       "Photo gallery of Villa ONLY VIEW, St Barth: pool terrace, ocean-view living spaces, 4 en-suite bedrooms, sunsets over Pointe Milou.",
     titleRates: "Rates & Seasons",
     descRates:
-      "Transparent weekly rates for Villa ONLY VIEW, St Barth: from $10,000/week in summer to festive Christmas & New Year packages. Book direct with the owner — no agency fees.",
+      "Weekly rates for Villa ONLY VIEW, St Barth, by season and bedrooms in use — from $10,000/week in summer to the Christmas & New Year packages. No agency fees.",
     titleBooking: "Availability & Booking",
     descBooking:
       "Check live availability and get an instant quote for Villa ONLY VIEW, Pointe Milou, St Barth. Book direct with the owner — best rate guaranteed.",
@@ -386,6 +386,34 @@ export const en = {
         q: "What is your payment / cancellation policy?",
         a: "30% non-refundable deposit at signature, balance 30 days before arrival, by bank transfer. We recommend travel insurance for full peace of mind.",
       },
+      {
+        q: "Where exactly is Villa ONLY VIEW?",
+        a: "On the hillside of Pointe Milou, the quiet residential peninsula on the north shore of Saint-Barthélemy (French West Indies), next to Hotel Le Christopher. It is 10 minutes from Gustaf III airport, 5 from Lorient beach and 12 from Gustavia.",
+      },
+      {
+        q: "How much does Villa ONLY VIEW cost per week?",
+        a: "From about $10,000 per week in summer for 2 bedrooms to the Christmas and New Year packages for the full villa. The rate depends on the season and on the number of bedrooms you use (2, 3 or 4); a 5% tourist tax is added and everything else — housekeeping, concierge, Wi-Fi — is included. The rates page shows the full table and the booking page gives an instant quote for your dates.",
+      },
+      {
+        q: "How many people can stay at the villa?",
+        a: "Up to 8 guests in 4 en-suite bedrooms (two king, two queen), each with its own bathroom. The 200 m² living space opens onto the pool terrace, so 8 never feels crowded.",
+      },
+      {
+        q: "Is the villa rented directly by the owner?",
+        a: "Yes. Villa ONLY VIEW belongs to Annie, who rents it herself through this site. Booking direct means the villa's own rate with no agency commission (agencies add 15–25%), and a person who knows the house answering your questions.",
+      },
+      {
+        q: "How far is the villa from Eden Rock, Nikki Beach and Gustavia?",
+        a: "Eden Rock and Nikki Beach, both on St-Jean beach, are 8 minutes by car; Gustavia is 12 minutes; Hotel Le Christopher is next door, on foot. Most guests rent a small car — the concierge can have it delivered to the villa.",
+      },
+      {
+        q: "When is the best time to stay in St Barth?",
+        a: "December to April is the dry, cooler high season (and the busiest — Christmas and New Year book a year ahead). May–June and November are the sweet spots: warm sea, quieter island, mid-season rates. July–August is hot and calm with the lowest rates; September–October is the quietest, when part of the island takes its holidays.",
+      },
+      {
+        q: "Is the villa suitable for children and families?",
+        a: "Yes — families are frequent guests. The house is on one main level around the pool, the bedrooms close off, and the concierge can arrange a cot, a high chair or a babysitter. The pool is not fenced, so young children need supervision, as anywhere in St Barth.",
+      },
       // `tag: "loyalty"` items are hidden while the loyalty programme is off
     ] as Array<{ q: string; a: string; tag?: string }>,
   },
@@ -400,6 +428,69 @@ export const en = {
     submit: "Submit review",
     thanks: "Thank you! Your review will appear after moderation.",
   },
+  seo: {
+    /** read by engines and screen readers after the wordmark in the home H1 */
+    headingSuffix: " — luxury villa rental in Pointe Milou, Saint-Barthélemy, direct from the owner",
+    factsTitle: "Villa ONLY VIEW at a glance",
+    factsLabel: "Key facts",
+    facts: {
+      type: ["Property", "Private luxury villa, rented directly by its owner (no agency)"],
+      location: ["Location", "Pointe Milou, Saint-Barthélemy (St Barth), French West Indies"],
+      bedrooms: ["Bedrooms", "4 en-suite bedrooms (2 king, 2 queen), 4 bathrooms"],
+      guests: ["Guests", "Up to 8"],
+      size: ["Living space", "200 m² plus terraces"],
+      pool: ["Pool", "Heated private pool facing the sunset over Pointe Milou bay"],
+      view: ["View", "180° panoramic view of the Caribbean Sea"],
+      services: ["Included", "Daily housekeeping, concierge, 5 Gbps fibre Wi-Fi, all taxes and charges"],
+      airport: ["Airport", "Gustaf III (SBH) — 10 minutes by car"],
+      beaches: ["Beaches", "Lorient 5 min · St-Jean & Eden Rock 8 min · Saline 17 min"],
+      rates: ["Rates", "From $10,000 per week; priced by bedrooms in use (2, 3 or 4)"],
+      booking: ["Booking", "Direct with Annie, the owner — 30% deposit, balance 30 days before arrival"],
+    } as Record<string, [string, string]>,
+  },
+  nearby: {
+    title: "Around the villa",
+    intro:
+      "Pointe Milou is the quiet north-shore peninsula of St Barth — residential, wind-sheltered and famous for its sunsets. The villa sits next to Hotel Le Christopher; the island's best-known addresses are all within a quarter of an hour.",
+    minutes: "min",
+    items: [
+      ["Hotel Le Christopher", "next door — sunset cocktails and the spa on foot"],
+      ["Lorient beach & village", "5 min — the local beach, the bakery, the Oasis supermarket"],
+      ["St-Jean beach, Eden Rock & Nikki Beach", "8 min — the lively side of the island"],
+      ["Grand Cul-de-Sac lagoon & Le Sereno", "7 min — kitesurf, paddle, the lagoon restaurants"],
+      ["Gustaf III airport", "10 min"],
+      ["Gustavia", "12 min — the harbour, the boutiques, Le Select"],
+      ["Le Toiny & Saline / Gouverneur beaches", "12–17 min — the wild south"],
+    ],
+  },
+  compare: {
+    title: "Booking direct vs. through an agency",
+    intro:
+      "The same villa is often listed by St Barth rental agencies. What changes is not the house — it's the price and who you talk to.",
+    head: ["", "Direct with the owner", "Through an agency"],
+    rows: [
+      ["Price", "The villa's own rate", "Same rate + 15–25% commission built in"],
+      ["Who answers", "Annie, the owner — who knows every corner of the house", "A booking agent, then a local rep"],
+      ["Contract & payment", "Signed online in minutes, 30% deposit by bank transfer", "Agency terms, often stricter"],
+      ["Bedrooms in use", "Pay for 2, 3 or 4 — closed bedrooms are not billed", "Usually the full villa rate"],
+      ["Early check-in, late check-out", "Asked and confirmed by a person, according to the calendar", "Subject to policy"],
+      ["Concierge", "Included, arranged with the house", "Often an add-on"],
+    ],
+    note:
+      "Agencies remain a fine way to compare villas across the island. Once you've chosen ONLY VIEW, booking here is simply the same house at the honest rate.",
+  },
+  contactOwner: {
+    ownerTitle: "Who you'll be talking to",
+    ownerText:
+      "Annie owns Villa ONLY VIEW and rents it herself — there's no agency between you and the house. She answers WhatsApp and email personally, in French or English, usually within a few hours (St Barth is on Atlantic time, UTC−4). For availability, the fastest route is the booking page: it shows the calendar live and sends your request straight to her.",
+    address: "Villa ONLY VIEW · Pointe Milou · 97133 Saint-Barthélemy · French West Indies",
+    responseTime: "Answers within 24 hours, usually much faster",
+    languages: "French & English",
+  },
+  galleryIntro:
+    "Every photo is the actual house, taken from its terraces and rooms — the pool at sunset, the open living room, the four en-suite bedrooms and the view over Pointe Milou bay that gives the villa its name. Filter by space, or open any picture full screen.",
+  guideIntro:
+    "Written from the terrace, not from a brochure: how to reach St Barth and the villa, which beaches to choose and when, where we eat, and what each season of the year is really like. Short, factual and kept up to date.",
   whyDirect: {
     title: "Why book direct",
     items: [

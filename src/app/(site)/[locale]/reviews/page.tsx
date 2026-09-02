@@ -1,25 +1,29 @@
 import type { Metadata } from "next";
-import { getDict, isLocale, type Locale } from "@/lib/i18n";
-import { altLanguages, jsonLd, reviewsJsonLd } from "@/lib/seo";
+import { getDict, isLocale, localePath, type Locale } from "@/lib/i18n";
+import { breadcrumbJsonLd, jsonLd, pageMetadata, reviewsJsonLd } from "@/lib/seo";
 import { getApprovedTestimonials } from "@/lib/testimonials";
 import { formatDate } from "@/lib/dates";
 import { PageHero } from "@/components/site/PageHero";
 import { ReviewForm } from "@/components/site/ReviewForm";
 
-export const revalidate = 300;
+// rendered per request: a build has no database, and an ISR snapshot of an
+// empty reviews page would be what a crawler sees first after each deploy
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
-  const { locale } = await params;
+  const { locale: raw } = await params;
+  const locale = (isLocale(raw) ? raw : "en") as Locale;
   const t = getDict(locale);
-  return {
+  return pageMetadata({
+    locale,
+    path: "/reviews",
     title: t.meta.titleReviews,
     description: t.meta.descReviews,
-    alternates: altLanguages("/reviews"),
-  };
+  });
 }
 
 export default async function ReviewsPage({
@@ -41,16 +45,20 @@ export default async function ReviewsPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: jsonLd(
-            reviewsJsonLd(
+          __html: jsonLd([
+            ...reviewsJsonLd(
               reviews.map((r) => ({
                 name: r.name,
                 rating: r.rating,
                 message: r.message,
                 date: r.stayDate?.toISOString().slice(0, 10),
               }))
-            )
-          ),
+            ),
+            breadcrumbJsonLd([
+              { name: t.nav.home, url: locale === "fr" ? "/fr" : "/" },
+              { name: t.nav.reviews, url: localePath(locale, "/reviews") },
+            ]),
+          ]),
         }}
       />
       <PageHero

@@ -5,19 +5,19 @@ export const fr: Dict = {
     siteName: "Villa ONLY VIEW",
     titleHome: "Only View St Barth — Villa de luxe en direct propriétaire",
     descHome:
-      "Réservez la Villa ONLY VIEW en direct — sans frais d'agence. Villa de luxe 4 chambres à Pointe Milou, St Barth : piscine chauffée, vue mer panoramique, conciergerie. Dès 1 430 $/nuit.",
-    titleVilla: "La Villa — 4 chambres, piscine chauffée & vue mer",
+      "Villa ONLY VIEW, Pointe Milou, St Barth : villa de luxe 4 chambres, piscine chauffée, vue mer à 180°, conciergerie. En direct propriétaire, sans frais d'agence.",
+    titleVilla: "La Villa — 4 chambres en suite, piscine, vue mer",
     descVilla:
-      "Découvrez la Villa ONLY VIEW : 4 chambres en suite, espaces de vie ouverts, cuisine gastronomique, piscine chauffée et vue à 180° sur la mer des Caraïbes à Pointe Milou, Saint-Barthélemy.",
+      "La Villa ONLY VIEW : 4 chambres en suite, grands espaces de vie, cuisine équipée, piscine chauffée et vue à 180° sur la mer, à Pointe Milou, Saint-Barthélemy.",
     titleTour: "Visite virtuelle — pièce par pièce",
     descTour:
-      "Parcourez la Villa ONLY VIEW pièce par pièce : salon, cuisine, quatre chambres en suite, terrasse piscine et le célèbre coucher de soleil sur la baie de Pointe Milou.",
+      "Parcourez la Villa ONLY VIEW pièce par pièce : salon, cuisine, quatre chambres en suite, terrasse piscine et le coucher de soleil sur la baie de Pointe Milou.",
     titleGallery: "Galerie photos",
     descGallery:
       "Galerie photos de la Villa ONLY VIEW, St Barth : terrasse piscine, espaces de vie vue mer, 4 chambres en suite, couchers de soleil sur Pointe Milou.",
     titleRates: "Tarifs & saisons",
     descRates:
-      "Tarifs hebdomadaires transparents pour la Villa ONLY VIEW, St Barth : dès 10 000 $/semaine en été, forfaits Noël & Nouvel An. Réservez en direct — sans frais d'agence.",
+      "Tarifs à la semaine de la Villa ONLY VIEW, St Barth, par saison et chambres utilisées — dès 10 000 $/semaine en été, forfaits Noël & Nouvel An. Sans frais d'agence.",
     titleBooking: "Disponibilités & réservation",
     descBooking:
       "Vérifiez les disponibilités en temps réel et obtenez un devis instantané pour la Villa ONLY VIEW, Pointe Milou, St Barth. Réservation en direct propriétaire.",
@@ -387,6 +387,34 @@ export const fr: Dict = {
         q: "Quelle est votre politique de paiement / annulation ?",
         a: "Acompte de 30 % non remboursable à la signature, solde 30 jours avant l'arrivée, par virement bancaire. Nous recommandons une assurance voyage pour une tranquillité totale.",
       },
+      {
+        q: "Où se trouve exactement la Villa ONLY VIEW ?",
+        a: "Sur la colline de Pointe Milou, la presqu'île résidentielle et calme de la côte nord de Saint-Barthélemy (Antilles françaises), voisine de l'hôtel Le Christopher. À 10 minutes de l'aéroport Gustaf III, 5 de la plage de Lorient et 12 de Gustavia.",
+      },
+      {
+        q: "Combien coûte la Villa ONLY VIEW à la semaine ?",
+        a: "À partir d'environ 10 000 $ la semaine en été pour 2 chambres, jusqu'aux forfaits de Noël et du Nouvel An pour la villa complète. Le tarif dépend de la saison et du nombre de chambres utilisées (2, 3 ou 4) ; une taxe de séjour de 5 % s'ajoute et tout le reste — ménage, conciergerie, Wi-Fi — est inclus. La page tarifs donne la grille complète et la page réservation un devis instantané pour vos dates.",
+      },
+      {
+        q: "Combien de personnes peuvent séjourner à la villa ?",
+        a: "Jusqu'à 8 personnes dans 4 chambres en suite (deux king, deux queen), chacune avec sa salle de bain. Les 200 m² d'espace de vie s'ouvrent sur la terrasse piscine : à 8, on ne se marche jamais dessus.",
+      },
+      {
+        q: "La villa est-elle louée en direct par la propriétaire ?",
+        a: "Oui. La Villa ONLY VIEW appartient à Annie, qui la loue elle-même via ce site. Réserver en direct, c'est le tarif propre de la villa sans commission d'agence (les agences ajoutent 15 à 25 %), et une personne qui connaît la maison pour répondre à vos questions.",
+      },
+      {
+        q: "À quelle distance sont Eden Rock, Nikki Beach et Gustavia ?",
+        a: "Eden Rock et Nikki Beach, tous deux sur la plage de St-Jean, sont à 8 minutes en voiture ; Gustavia à 12 minutes ; l'hôtel Le Christopher est voisin, à pied. La plupart des hôtes louent une petite voiture — la conciergerie peut la faire livrer à la villa.",
+      },
+      {
+        q: "Quelle est la meilleure période pour séjourner à St Barth ?",
+        a: "De décembre à avril, c'est la haute saison, sèche et plus fraîche (et la plus demandée — Noël et le Nouvel An se réservent un an à l'avance). Mai–juin et novembre sont les bons compromis : mer chaude, île plus calme, tarifs de moyenne saison. Juillet–août est chaud et calme avec les tarifs les plus bas ; septembre–octobre est la période la plus tranquille, quand une partie de l'île prend ses vacances.",
+      },
+      {
+        q: "La villa convient-elle aux enfants et aux familles ?",
+        a: "Oui — les familles sont des hôtes fréquents. La maison est sur un niveau principal autour de la piscine, les chambres se ferment, et la conciergerie peut organiser un lit bébé, une chaise haute ou une baby-sitter. La piscine n'est pas clôturée : les jeunes enfants doivent être surveillés, comme partout à St Barth.",
+      },
     ],
   },
   reviews: {
@@ -400,6 +428,68 @@ export const fr: Dict = {
     submit: "Envoyer l'avis",
     thanks: "Merci ! Votre avis apparaîtra après modération.",
   },
+  seo: {
+    headingSuffix: " — villa de luxe à louer à Pointe Milou, Saint-Barthélemy, en direct propriétaire",
+    factsTitle: "La Villa ONLY VIEW en bref",
+    factsLabel: "L'essentiel",
+    facts: {
+      type: ["Bien", "Villa privée de luxe, louée en direct par sa propriétaire (sans agence)"],
+      location: ["Localisation", "Pointe Milou, Saint-Barthélemy (St Barth), Antilles françaises"],
+      bedrooms: ["Chambres", "4 chambres en suite (2 king, 2 queen), 4 salles de bain"],
+      guests: ["Capacité", "Jusqu'à 8 personnes"],
+      size: ["Surface", "200 m² plus terrasses"],
+      pool: ["Piscine", "Piscine privée chauffée face au coucher de soleil sur la baie de Pointe Milou"],
+      view: ["Vue", "Vue panoramique à 180° sur la mer des Caraïbes"],
+      services: ["Inclus", "Ménage quotidien, conciergerie, fibre 5 Gbps, toutes taxes et charges"],
+      airport: ["Aéroport", "Gustaf III (SBH) — 10 minutes en voiture"],
+      beaches: ["Plages", "Lorient 5 min · St-Jean & Eden Rock 8 min · Saline 17 min"],
+      rates: ["Tarifs", "Dès 10 000 $ la semaine ; tarifé selon les chambres utilisées (2, 3 ou 4)"],
+      booking: ["Réservation", "En direct avec Annie, la propriétaire — acompte de 30 %, solde 30 jours avant l'arrivée"],
+    } as Record<string, [string, string]>,
+  },
+  nearby: {
+    title: "Autour de la villa",
+    intro:
+      "Pointe Milou est la presqu'île tranquille de la côte nord de St Barth — résidentielle, abritée du vent et réputée pour ses couchers de soleil. La villa est voisine de l'hôtel Le Christopher ; les grandes adresses de l'île sont toutes à moins d'un quart d'heure.",
+    minutes: "min",
+    items: [
+      ["Hôtel Le Christopher", "voisin — cocktails au coucher du soleil et spa à pied"],
+      ["Plage & village de Lorient", "5 min — la plage du quartier, la boulangerie, le supermarché Oasis"],
+      ["Plage de St-Jean, Eden Rock & Nikki Beach", "8 min — le côté animé de l'île"],
+      ["Lagon de Grand Cul-de-Sac & Le Sereno", "7 min — kitesurf, paddle, les restaurants du lagon"],
+      ["Aéroport Gustaf III", "10 min"],
+      ["Gustavia", "12 min — le port, les boutiques, Le Select"],
+      ["Le Toiny & plages de Saline / Gouverneur", "12–17 min — le sud sauvage"],
+    ],
+  },
+  compare: {
+    title: "Réserver en direct ou par une agence",
+    intro:
+      "La même villa figure parfois chez des agences de location de St Barth. Ce qui change, ce n'est pas la maison — c'est le prix et votre interlocuteur.",
+    head: ["", "En direct avec la propriétaire", "Par une agence"],
+    rows: [
+      ["Prix", "Le tarif de la villa", "Le même tarif + 15 à 25 % de commission intégrée"],
+      ["Qui répond", "Annie, la propriétaire — qui connaît chaque recoin de la maison", "Un agent de réservation, puis un représentant local"],
+      ["Contrat & paiement", "Signé en ligne en quelques minutes, acompte de 30 % par virement", "Conditions de l'agence, souvent plus strictes"],
+      ["Chambres utilisées", "Payez pour 2, 3 ou 4 — les chambres fermées ne sont pas facturées", "Généralement le tarif villa complète"],
+      ["Early check-in, late check-out", "Demandés et confirmés par une personne, selon le calendrier", "Selon la politique"],
+      ["Conciergerie", "Incluse, organisée avec la maison", "Souvent en supplément"],
+    ],
+    note:
+      "Les agences restent un bon moyen de comparer les villas de l'île. Une fois ONLY VIEW choisie, réserver ici, c'est simplement la même maison au tarif honnête.",
+  },
+  contactOwner: {
+    ownerTitle: "Votre interlocutrice",
+    ownerText:
+      "Annie est propriétaire de la Villa ONLY VIEW et la loue elle-même — aucune agence entre vous et la maison. Elle répond personnellement sur WhatsApp et par email, en français ou en anglais, généralement en quelques heures (St Barth est à l'heure de l'Atlantique, UTC−4). Pour les disponibilités, le plus rapide est la page de réservation : le calendrier y est en direct et votre demande lui parvient immédiatement.",
+    address: "Villa ONLY VIEW · Pointe Milou · 97133 Saint-Barthélemy · Antilles françaises",
+    responseTime: "Réponse sous 24 h, souvent bien plus vite",
+    languages: "Français & anglais",
+  },
+  galleryIntro:
+    "Chaque photo montre la vraie maison, prise depuis ses terrasses et ses pièces — la piscine au coucher du soleil, le grand salon ouvert, les quatre chambres en suite et la vue sur la baie de Pointe Milou qui donne son nom à la villa. Filtrez par espace, ou ouvrez n'importe quelle image en plein écran.",
+  guideIntro:
+    "Écrit depuis la terrasse, pas depuis une brochure : comment rejoindre St Barth et la villa, quelles plages choisir et quand, où nous mangeons, et à quoi ressemble vraiment chaque saison. Court, factuel et tenu à jour.",
   whyDirect: {
     title: "Pourquoi réserver en direct",
     items: [

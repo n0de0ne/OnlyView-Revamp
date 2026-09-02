@@ -1,4 +1,7 @@
 import { getSettings } from "./settings";
+import { OWNER_EMAIL, OWNER_PHONE, OWNER_WHATSAPP, VILLA_MAP_URL } from "./site-facts";
+
+export { OWNER_EMAIL, OWNER_PHONE, OWNER_WHATSAPP, VILLA_MAP_URL };
 
 /**
  * Who the villa is reached at. The values live in Réglages → Contact
@@ -6,15 +9,18 @@ import { getSettings } from "./settings";
  * them without a deploy; these constants are what the site falls back to when
  * the database is unreachable (an image build, for instance).
  */
-export const OWNER_EMAIL = "annaerick971@gmail.com";
-export const OWNER_PHONE = "+590 690 39 90 47";
-export const OWNER_WHATSAPP = "+590690399047";
-/** the villa's pin, shared by the owner */
-export const VILLA_MAP_URL = "https://maps.app.goo.gl/9eV7KhFcF9AJdWeLA";
-
 /** wa.me only accepts digits — strip spaces, +, dashes. */
 export const whatsappHref = (number: string) =>
   `https://wa.me/${number.replace(/[^0-9]/g, "")}`;
+
+/** Réglages → Contact: one URL each, empty = not listed */
+export const SOCIAL_KEYS = [
+  "social_instagram",
+  "social_facebook",
+  "social_tripadvisor",
+  "social_google",
+  "social_youtube",
+] as const;
 
 export interface ContactDetails {
   email: string;
@@ -24,6 +30,9 @@ export interface ContactDetails {
   whatsappUrl: string | null;
   /** the villa's pin on Google Maps */
   mapUrl: string;
+  /** public profiles of the villa (Instagram, Facebook, TripAdvisor…) — the
+      `sameAs` of its structured data, so engines merge them into one entity */
+  sameAs: string[];
 }
 
 export async function getContact(): Promise<ContactDetails> {
@@ -31,12 +40,17 @@ export async function getContact(): Promise<ContactDetails> {
   let phone = OWNER_PHONE;
   let whatsapp = OWNER_WHATSAPP;
   let mapUrl = VILLA_MAP_URL;
+  const sameAs: string[] = [];
   try {
     const s = await getSettings();
     email = s.contact_email?.trim() || email;
     phone = s.contact_phone?.trim() || phone;
     whatsapp = s.contact_whatsapp?.trim() ?? whatsapp;
     mapUrl = s.villa_map_url?.trim() || mapUrl;
+    for (const key of SOCIAL_KEYS) {
+      const v = s[key]?.trim();
+      if (v && /^https?:\/\//.test(v)) sameAs.push(v);
+    }
   } catch {
     // defaults above
   }
@@ -46,6 +60,7 @@ export async function getContact(): Promise<ContactDetails> {
     whatsapp,
     whatsappUrl: whatsapp ? whatsappHref(whatsapp) : null,
     mapUrl,
+    sameAs,
   };
 }
 

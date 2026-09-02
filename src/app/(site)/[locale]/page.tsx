@@ -3,7 +3,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { getDict, isLocale, localePath, type Locale } from "@/lib/i18n";
 import {
-  altLanguages,
+  DEFAULT_OG_IMAGE,
+  organizationJsonLd,
+  ownerJsonLd,
+  pageMetadata,
+  websiteJsonLd,
   faqJsonLd,
   jsonLd,
   lodgingBusinessJsonLd,
@@ -16,26 +20,27 @@ import { getRateConfig } from "@/lib/settings";
 import { getApprovedTestimonials } from "@/lib/testimonials";
 import { usd } from "@/lib/money";
 import { HomeHero } from "@/components/site/HomeHero";
+import { KeyFacts } from "@/components/site/KeyFacts";
 
-export const revalidate = 300;
+export const revalidate = 60;
 
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
-  const { locale } = await params;
+  const { locale: raw } = await params;
+  const locale = (isLocale(raw) ? raw : "en") as Locale;
   const t = getDict(locale);
-  return {
-    title: { absolute: t.meta.titleHome },
+  return pageMetadata({
+    locale,
+    path: "/",
+    title: t.meta.titleHome,
     description: t.meta.descHome,
-    alternates: altLanguages("/"),
-    openGraph: {
-      title: t.meta.titleHome,
-      description: t.meta.descHome,
-      images: ["/media/photos/pool-terrace/pool-terrace-01.webp"],
-    },
-  };
+    image: DEFAULT_OG_IMAGE,
+    imageAlt: t.badges.pool,
+    absoluteTitle: true,
+  });
 }
 
 export default async function HomePage({
@@ -54,7 +59,7 @@ export default async function HomePage({
     getApprovedTestimonials(3),
     getContact(),
   ]);
-  const { whatsappUrl } = contact;
+  const { whatsappUrl, sameAs } = contact;
 
   const spaces = [
     { cat: "living", title: t.spaces.living, desc: t.spaces.livingDesc },
@@ -92,13 +97,17 @@ export default async function HomePage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: jsonLd([
+            organizationJsonLd(sameAs),
+            ownerJsonLd(locale),
+            websiteJsonLd(locale),
             vacationRentalJsonLd({
               locale,
               images: photos.slice(0, 10).map((p) => p.url),
               ratingValue: avgRating ? Math.round(avgRating * 10) / 10 : undefined,
               reviewCount: testimonials.length || undefined,
+              sameAs,
             }),
-            lodgingBusinessJsonLd(locale),
+            lodgingBusinessJsonLd(locale, sameAs),
             faqJsonLd(t.faq.items.filter((i) => loyalty || i.tag !== "loyalty").slice(0, 6)),
           ]),
         }}
@@ -110,6 +119,7 @@ export default async function HomePage({
         location={t.hero.location}
         cta={t.hero.cta}
         discover={t.hero.discover}
+        headingSuffix={t.seo.headingSuffix}
         fallbackImage={heroImage?.url ?? "/media/photos/pool-terrace/pool-terrace-01.webp"}
       />
 
@@ -118,7 +128,7 @@ export default async function HomePage({
         <div className="grid items-center gap-14 lg:grid-cols-2">
           <div className="reveal">
             <p className="eyebrow mb-4">{t.intro.label}</p>
-            <h1 className="section-title mb-7">{t.intro.title}</h1>
+            <h2 className="section-title mb-7">{t.intro.title}</h2>
             <p className="max-w-xl leading-relaxed text-ink/70">{t.intro.text}</p>
 
             <div className="mt-8 grid grid-cols-2 gap-x-6 gap-y-3 text-sm text-ink/80 sm:grid-cols-2">
@@ -160,6 +170,9 @@ export default async function HomePage({
           </div>
         </div>
       </section>
+
+      {/* The facts, in plain text — what answer engines quote */}
+      <KeyFacts title={t.seo.factsTitle} label={t.seo.factsLabel} facts={t.seo.facts} />
 
       {/* Spaces */}
       <section className="bg-sand-dark py-24 lg:py-32">

@@ -36,7 +36,7 @@ SEED_DEMO=1 npm run setup
 | Online **contract e-signature** (draw + type-to-confirm) & PDF download | `/contracts/sign/[token]` |
 | Reviews with moderation, St Barth guide hub, FAQ, location, why-book-direct, legal/privacy | … |
 
-**SEO / GEO:** per-locale metadata + hreflang, `VacationRental`/`LodgingBusiness`/`FAQPage`/`Review`/`Article`/`BreadcrumbList` JSON-LD, sitemap with language alternates, robots.txt that explicitly welcomes AI crawlers (GPTBot, ClaudeBot, PerplexityBot), 301 redirects from every legacy `.php` URL, static generation + ISR, `next/image` AVIF/WebP.
+**SEO / GEO:** one canonical per language + `hreflang` en/fr/x-default, complete Open Graph / Twitter cards on every page, one H1 per page, a linked JSON-LD graph (`VacationRental`, `LodgingBusiness`, `Organization`, `Person` owner, `WebSite`, `AggregateOffer`, `FAQPage`, `Review`, `Article`, `ImageGallery`, `ContactPage`, `BreadcrumbList`), plain-text key facts and a named-neighbourhood section that answer engines can quote, `/llms.txt`, a robots.txt that welcomes 21 AI crawlers by name, a bilingual image sitemap with real `lastmod`, 301s from every legacy `.php` URL and from `www`. `scripts/seo-audit.mjs` crawls a running instance and fails on any regression; `docs/seo-playbook.md` is the off-site checklist (Google Business Profile, Search Console, reviews, `sameAs` profiles).
 
 ### Admin (`/admin` — role-based: owner / manager / viewer)
 
@@ -90,6 +90,19 @@ prisma/schema.prisma       full data model  ·  prisma/seed.mjs
 scripts/migrate-legacy.mjs legacy PHP data → new schema importer
 scripts/prepare-media.ts   photo pipeline from the legacy repo
 ```
+
+## SEO audit
+
+```bash
+BASE_URL=http://localhost:3000 node scripts/seo-audit.mjs
+```
+
+Crawls the sitemap and every internal link in both languages and checks
+what engines read: status, `lang`, title/description length and uniqueness,
+one H1, canonical + hreflang, Open Graph / Twitter, JSON-LD validity and the
+expected types per page, image alt text, thin pages, broken links, noindex
+leaks, sitemap consistency, robots.txt and llms.txt. Exit code 1 on any
+failure. The owner-side checklist is in [`docs/seo-playbook.md`](docs/seo-playbook.md).
 
 ## Smoke test
 

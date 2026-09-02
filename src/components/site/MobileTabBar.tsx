@@ -68,7 +68,8 @@ const SPRING = "cubic-bezier(0.32, 0.72, 0, 1)";
  */
 export function MobileTabBar({ locale }: { locale: Locale }) {
   const t = getDict(locale);
-  const pathname = usePathname();
+  // the prerender pathname is /en/x — compare on the public path
+  const pathname = usePathname().replace(/^\/en(?=\/|$)/, "") || "/";
   const [collapsed, setCollapsed] = useState(false);
 
   const tabs: Array<{ href: string; label: string; icon: keyof typeof icons }> = [

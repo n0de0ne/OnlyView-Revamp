@@ -40,6 +40,13 @@ const ALLOWED_KEYS = [
   "contact_whatsapp",
   "villa_address",
   "villa_map_url",
+  "social_instagram",
+  "social_facebook",
+  "social_tripadvisor",
+  "social_google",
+  "social_youtube",
+  "google_site_verification",
+  "bing_site_verification",
   "villa_lat",
   "villa_lng",
 ] as const;

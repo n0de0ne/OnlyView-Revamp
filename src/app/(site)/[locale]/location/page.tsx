@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { getDict, isLocale, localePath, type Locale } from "@/lib/i18n";
-import { altLanguages, jsonLd, lodgingBusinessJsonLd } from "@/lib/seo";
+import { breadcrumbJsonLd, jsonLd, lodgingBusinessJsonLd, pageMetadata, vacationRentalJsonLd } from "@/lib/seo";
 import { getPhotos, firstOf } from "@/lib/photos";
 import { getContact } from "@/lib/contact";
 import { PageHero } from "@/components/site/PageHero";
@@ -14,13 +14,16 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
-  const { locale } = await params;
+  const { locale: raw } = await params;
+  const locale = (isLocale(raw) ? raw : "en") as Locale;
   const t = getDict(locale);
-  return {
+  return pageMetadata({
+    locale,
+    path: "/location",
     title: t.meta.titleLocation,
     description: t.meta.descLocation,
-    alternates: altLanguages("/location"),
-  };
+    image: "/media/photos/exterior/exterior-01.webp",
+  });
 }
 
 export default async function LocationPage({
@@ -33,7 +36,7 @@ export default async function LocationPage({
   const t = getDict(locale);
   const fr = locale === "fr";
   const photos = await getPhotos();
-  const { mapUrl } = await getContact();
+  const { mapUrl, sameAs } = await getContact();
 
   const distances: Array<[string, string]> = fr
     ? [
@@ -61,7 +64,16 @@ export default async function LocationPage({
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLd(lodgingBusinessJsonLd(locale)) }}
+        dangerouslySetInnerHTML={{
+          __html: jsonLd([
+            lodgingBusinessJsonLd(locale, sameAs),
+            vacationRentalJsonLd({ locale, images: photos.slice(0, 4).map((p) => p.url), sameAs }),
+            breadcrumbJsonLd([
+              { name: t.nav.home, url: fr ? "/fr" : "/" },
+              { name: t.location.title, url: localePath(locale, "/location") },
+            ]),
+          ]),
+        }}
       />
       <PageHero
         eyebrow={t.location.label}
@@ -114,6 +126,21 @@ export default async function LocationPage({
                 : "Pointe Milou is a residential peninsula on St Barth's north shore, known for its calm, its characterful villas and its sunsets — the island's finest, regulars say."}
             </p>
           </div>
+        </div>
+      </section>
+      {/* The neighbourhood, named — the places people search for near here */}
+      <section className="border-t border-ink/10 bg-white">
+        <div className="mx-auto max-w-6xl px-5 py-16 lg:px-8">
+          <h2 className="section-title mb-5 !text-3xl">{t.nearby.title}</h2>
+          <p className="mb-10 max-w-3xl leading-relaxed text-ink/70">{t.nearby.intro}</p>
+          <ul className="grid gap-x-10 gap-y-4 sm:grid-cols-2">
+            {t.nearby.items.map(([place, detail]) => (
+              <li key={place} className="border-t border-ink/10 pt-4">
+                <span className="font-semibold text-ink">{place}</span>
+                <span className="block text-sm text-ink/65">{detail}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
     </>

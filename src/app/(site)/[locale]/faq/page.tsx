@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { isLoyaltyEnabled } from "@/lib/features";
 import { getDict, isLocale, localePath, type Locale } from "@/lib/i18n";
-import { altLanguages, faqJsonLd, jsonLd } from "@/lib/seo";
+import { breadcrumbJsonLd, faqJsonLd, jsonLd, pageMetadata } from "@/lib/seo";
 import { PageHero } from "@/components/site/PageHero";
 
 export const revalidate = 3600;
@@ -12,13 +12,15 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
-  const { locale } = await params;
+  const { locale: raw } = await params;
+  const locale = (isLocale(raw) ? raw : "en") as Locale;
   const t = getDict(locale);
-  return {
+  return pageMetadata({
+    locale,
+    path: "/faq",
     title: t.meta.titleFaq,
     description: t.meta.descFaq,
-    alternates: altLanguages("/faq"),
-  };
+  });
 }
 
 export default async function FaqPage({
@@ -36,7 +38,15 @@ export default async function FaqPage({
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLd(faqJsonLd(items)) }}
+        dangerouslySetInnerHTML={{
+          __html: jsonLd([
+            faqJsonLd(items),
+            breadcrumbJsonLd([
+              { name: t.nav.home, url: locale === "fr" ? "/fr" : "/" },
+              { name: "FAQ", url: localePath(locale, "/faq") },
+            ]),
+          ]),
+        }}
       />
       <PageHero eyebrow="FAQ" title={t.faq.title} />
       <section className="mx-auto max-w-3xl px-5 py-16 lg:px-8">

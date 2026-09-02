@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { isLoyaltyEnabled } from "@/lib/features";
 import { getDict, isLocale, localePath, tpl, type Locale } from "@/lib/i18n";
-import { altLanguages, breadcrumbJsonLd, jsonLd, SITE_URL } from "@/lib/seo";
+import { breadcrumbJsonLd, jsonLd, pageMetadata, SITE_URL } from "@/lib/seo";
 import { getRateConfig } from "@/lib/settings";
 import { publicRateTable } from "@/lib/pricing";
 import { usd } from "@/lib/money";
@@ -16,13 +16,15 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
-  const { locale } = await params;
+  const { locale: raw } = await params;
+  const locale = (isLocale(raw) ? raw : "en") as Locale;
   const t = getDict(locale);
-  return {
+  return pageMetadata({
+    locale,
+    path: "/rates",
     title: t.meta.titleRates,
     description: t.meta.descRates,
-    alternates: altLanguages("/rates"),
-  };
+  });
 }
 
 async function getWebsitePromotions() {
@@ -56,7 +58,11 @@ export default async function RatesPage({
   const offers = {
     "@context": "https://schema.org",
     "@type": "AggregateOffer",
+    "@id": `${SITE_URL}/#offers`,
     url: `${SITE_URL}${fr ? "/fr" : ""}/rates`,
+    itemOffered: { "@id": `${SITE_URL}/#villa` },
+    availability: "https://schema.org/InStock",
+    validFrom: new Date().toISOString().slice(0, 10),
     priceCurrency: "USD",
     lowPrice: Math.round(rates.lowSeason[2] / 7),
     highPrice: Math.round(rates.newYearWeekly / 7),

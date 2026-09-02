@@ -80,11 +80,11 @@ export const GUIDES: GuideArticle[] = [
     category: "island",
     title: {
       en: "The best beaches of St Barth, from Pointe Milou",
-      fr: "Les plus belles plages de St Barth, depuis Pointe Milou",
+      fr: "Plages de St Barth, vues de Pointe Milou",
     },
     description: {
       en: "Sixteen beaches, no bad choices: our honest shortlist — Lorient, St Jean, Gouverneur, Saline, Colombier — with drive times from Villa ONLY VIEW.",
-      fr: "Seize plages, aucun mauvais choix : notre sélection honnête — Lorient, St Jean, Gouverneur, Saline, Colombier — avec les temps de route depuis la Villa ONLY VIEW.",
+      fr: "Seize plages, aucun mauvais choix : notre sélection — Lorient, St Jean, Gouverneur, Saline, Colombier — avec les temps de route depuis la Villa ONLY VIEW.",
     },
     sections: {
       en: [
@@ -133,12 +133,12 @@ export const GUIDES: GuideArticle[] = [
     slug: "best-restaurants",
     category: "island",
     title: {
-      en: "Where to eat: our St Barth restaurant shortlist",
-      fr: "Où manger : notre sélection de restaurants à St Barth",
+      en: "Where to eat in St Barth: our shortlist",
+      fr: "Où manger à St Barth : notre sélection",
     },
     description: {
       en: "From beach clubs to gastronomy: the restaurants we actually book for our guests — including sunset dinners two minutes from the villa.",
-      fr: "Des beach clubs à la gastronomie : les restaurants que nous réservons vraiment pour nos hôtes — dont des dîners au coucher du soleil à deux minutes de la villa.",
+      fr: "Des beach clubs à la gastronomie : les restaurants que nous réservons vraiment pour nos hôtes — dont un dîner au coucher du soleil à deux minutes de la villa.",
     },
     sections: {
       en: [
@@ -192,7 +192,7 @@ export const GUIDES: GuideArticle[] = [
     },
     description: {
       en: "Winter glamour, summer value, festive weeks: an honest guide to St Barth's seasons, weather and prices — and when Villa ONLY VIEW books out.",
-      fr: "L'hiver glamour, l'été avantageux, les semaines festives : un guide honnête des saisons, de la météo et des prix à St Barth — et des périodes où la Villa ONLY VIEW affiche complet.",
+      fr: "Hiver glamour, été avantageux, semaines festives : le guide des saisons, de la météo et des prix à St Barth — et des périodes où la Villa ONLY VIEW affiche complet.",
     },
     sections: {
       en: [
