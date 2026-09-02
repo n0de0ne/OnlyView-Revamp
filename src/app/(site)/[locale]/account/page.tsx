@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { formatDateShort, toISODate, todayISO, nightsBetween } from "@/lib/dates";
 import { usd } from "@/lib/money";
 import { tierFor, nextTier } from "@/lib/loyalty";
+import { isLoyaltyEnabled } from "@/lib/features";
 import { PageHero } from "@/components/site/PageHero";
 import { GuestLoginForm } from "@/components/site/GuestLoginForm";
 
@@ -18,9 +19,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = getDict(locale);
+  const loyalty = await isLoyaltyEnabled();
   return {
     title: t.meta.titleAccount,
-    description: t.meta.descAccount,
+    description: loyalty ? t.meta.descAccount : t.meta.descAccountNoLoyalty,
     robots: { index: false },
   };
 }
@@ -86,6 +88,7 @@ export default async function AccountPage({
   const today = todayISO();
   const upcoming = client.reservations.filter((r) => toISODate(r.endDate) >= today);
   const past = client.reservations.filter((r) => toISODate(r.endDate) < today);
+  const loyaltyOn = await isLoyaltyEnabled();
   const points = client.loyalty?.points ?? 0;
   const lifetime = client.loyalty?.lifetimePoints ?? 0;
   const tier = tierFor(lifetime);
@@ -193,8 +196,9 @@ export default async function AccountPage({
             )}
           </div>
 
-          {/* Loyalty sidebar */}
+          {/* Sidebar — the loyalty panel only when the programme is on */}
           <aside className="space-y-6">
+            {loyaltyOn && (
             <div className="border border-gold/40 bg-night p-7 text-white">
               <h2 className="eyebrow mb-5">{t.account.loyaltyTitle}</h2>
               <div className="flex items-end justify-between">
@@ -236,7 +240,9 @@ export default async function AccountPage({
               </p>
             </div>
 
-            {(client.loyalty?.transactions.length ?? 0) > 0 && (
+            )}
+
+            {loyaltyOn && (client.loyalty?.transactions.length ?? 0) > 0 && (
               <div className="border border-ink/10 bg-white p-6">
                 <h3 className="eyebrow mb-4">{t.account.historyTitle}</h3>
                 <ul className="divide-y divide-ink/8 text-sm">

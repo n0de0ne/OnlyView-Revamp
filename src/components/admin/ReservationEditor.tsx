@@ -136,6 +136,7 @@ export function ReservationEditor({
   costs,
   prefill,
   inModal = false,
+  loyaltyEnabled = false,
 }: {
   reservationId: number | null;
   rates: RateConfig;
@@ -144,6 +145,8 @@ export function ReservationEditor({
   prefill: { start: string | null; end: string | null };
   /** rendered inside the intercepted route overlay — the modal owns the title bar */
   inModal?: boolean;
+  /** loyalty programme switched on in Réglages */
+  loyaltyEnabled?: boolean;
 }) {
   const router = useRouter();
   const { push } = useToast();
@@ -1276,8 +1279,10 @@ export function ReservationEditor({
             className="h-4 w-4 accent-emerald-600"
           />
           ✔ Paiement complet reçu
-          {form.balanceReceived && form.clientId && (
-            <span className="ml-auto text-xs font-normal">✦ points fidélité attribués à l&apos;enregistrement</span>
+          {loyaltyEnabled && form.balanceReceived && form.clientId && (
+            <span className="ml-auto text-xs font-normal">
+              ✦ points fidélité attribués à l&apos;enregistrement
+            </span>
           )}
         </label>
 

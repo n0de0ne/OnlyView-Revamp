@@ -11,6 +11,8 @@ const NAV: Array<{
   label: string;
   icon: string;
   minRole?: "owner" | "manager";
+  /** hidden unless the matching feature is enabled */
+  feature?: "loyalty";
 }> = [
   { href: "/admin", label: "Tableau de bord", icon: "📊" },
   { href: "/admin/calendar", label: "Calendrier", icon: "📅" },
@@ -19,7 +21,7 @@ const NAV: Array<{
   { href: "/admin/clients", label: "Clients", icon: "👥" },
   { href: "/admin/contracts", label: "Contrats", icon: "✍️" },
   { href: "/admin/finance", label: "Finances", icon: "💶", minRole: "owner" },
-  { href: "/admin/loyalty", label: "Fidélité", icon: "✦" },
+  { href: "/admin/loyalty", label: "Fidélité", icon: "✦", feature: "loyalty" },
   { href: "/admin/agencies", label: "Agences", icon: "🤝" },
   { href: "/admin/promotions", label: "Promotions", icon: "🏷️" },
   { href: "/admin/site", label: "Site & contenu", icon: "🖼️" },
@@ -30,9 +32,12 @@ const NAV: Array<{
 export function AdminShell({
   user,
   children,
+  features,
 }: {
   user: SessionUser;
   children: React.ReactNode;
+  /** optional modules, switched from Réglages */
+  features?: { loyalty?: boolean };
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -43,6 +48,7 @@ export function AdminShell({
   const [pwdBusy, setPwdBusy] = useState(false);
 
   const visibleNav = NAV.filter((item) => {
+    if (item.feature && !features?.[item.feature]) return false;
     if (!item.minRole) return true;
     if (item.minRole === "owner") return user.role === "owner";
     return user.role === "owner" || user.role === "manager";

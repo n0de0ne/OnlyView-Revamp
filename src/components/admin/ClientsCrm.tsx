@@ -39,7 +39,7 @@ const EMPTY_FORM = {
   tags: "",
 };
 
-export function ClientsCrm() {
+export function ClientsCrm({ loyaltyEnabled = false }: { loyaltyEnabled?: boolean }) {
   const { push } = useToast();
   const [clients, setClients] = useState<ClientRow[] | null>(null);
   const [q, setQ] = useState("");
@@ -156,7 +156,9 @@ export function ClientsCrm() {
                   <th className="pb-2.5 pr-3 font-medium">Pays</th>
                   <th className="pb-2.5 pr-3 text-center font-medium">Séjours</th>
                   <th className="pb-2.5 pr-3 text-right font-medium">Total dépensé</th>
-                  <th className="pb-2.5 pr-3 text-right font-medium">✦ Points</th>
+                  {loyaltyEnabled && (
+                    <th className="pb-2.5 pr-3 text-right font-medium">✦ Points</th>
+                  )}
                   <th className="pb-2.5 font-medium">Badges</th>
                 </tr>
               </thead>
@@ -189,9 +191,11 @@ export function ClientsCrm() {
                     <td className="py-3 pr-3 text-slate-500">{c.country ?? "—"}</td>
                     <td className="py-3 pr-3 text-center">{c.stats.stays}</td>
                     <td className="py-3 pr-3 text-right font-medium">{fmtUSD(c.stats.spent)}</td>
-                    <td className="py-3 pr-3 text-right text-gold-dark">
-                      {c.loyalty?.points ?? 0}
-                    </td>
+                    {loyaltyEnabled && (
+                      <td className="py-3 pr-3 text-right text-gold-dark">
+                        {c.loyalty?.points ?? 0}
+                      </td>
+                    )}
                     <td className="py-3">
                       {c.isVip && "⭐ "}
                       {c.blacklisted && "⛔ "}
@@ -305,7 +309,8 @@ export function ClientsCrm() {
           <div className="mt-4 flex items-center justify-between gap-3 rounded-xl bg-slate-50 px-4 py-2.5 text-sm text-slate-500">
             <span>
               {editing.stats.stays} séjours confirmés · {editing.stats.nights} nuits ·{" "}
-              {fmtUSD(editing.stats.spent)} · ✦ {editing.loyalty?.points ?? 0} points
+              {fmtUSD(editing.stats.spent)}
+              {loyaltyEnabled && ` · ✦ ${editing.loyalty?.points ?? 0} points`}
             </span>
             <ConfirmButton
               className="text-xs text-red-500 hover:underline"

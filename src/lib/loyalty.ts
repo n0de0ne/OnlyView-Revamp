@@ -1,5 +1,6 @@
 import { prisma } from "./db";
 import { getLoyaltyConfig } from "./settings";
+import { isLoyaltyEnabled } from "./features";
 
 export type LoyaltyTier = "guest" | "silver" | "gold" | "platinum";
 
@@ -40,6 +41,9 @@ export async function pointsForAmount(amountUSD: number): Promise<number> {
  * Credit points for a fully-paid reservation — idempotent per reservation.
  */
 export async function earnForReservation(reservationId: number): Promise<number> {
+  // programme suspended: no points are credited (existing balances are kept)
+  if (!(await isLoyaltyEnabled())) return 0;
+
   const reservation = await prisma.reservation.findUnique({
     where: { id: reservationId },
   });

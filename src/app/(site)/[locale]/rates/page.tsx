@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { isLoyaltyEnabled } from "@/lib/features";
 import { getDict, isLocale, localePath, tpl, type Locale } from "@/lib/i18n";
 import { altLanguages, breadcrumbJsonLd, jsonLd, SITE_URL } from "@/lib/seo";
 import { getRateConfig } from "@/lib/settings";
@@ -45,7 +46,11 @@ export default async function RatesPage({
   const locale = (isLocale(raw) ? raw : "en") as Locale;
   const t = getDict(locale);
   const fr = locale === "fr";
-  const [rates, promos] = await Promise.all([getRateConfig(), getWebsitePromotions()]);
+  const [rates, promos, loyalty] = await Promise.all([
+    getRateConfig(),
+    getWebsitePromotions(),
+    isLoyaltyEnabled(),
+  ]);
   const table = publicRateTable(rates);
 
   const offers = {
@@ -74,7 +79,7 @@ export default async function RatesPage({
           ]),
         }}
       />
-      <PageHero eyebrow={t.nav.rates} title={t.rates.title} intro={t.rates.intro} />
+      <PageHero eyebrow={t.nav.rates} title={t.rates.title} intro={loyalty ? t.rates.intro : t.rates.introNoLoyalty} />
 
       <section className="mx-auto max-w-5xl px-5 py-16 lg:px-8">
         {/* Season table */}

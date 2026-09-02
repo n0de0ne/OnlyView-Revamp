@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { isLoyaltyEnabled } from "@/lib/features";
 import { adminRoute, jsonError, jsonOk } from "@/lib/admin-api";
 import { adjustPoints } from "@/lib/loyalty";
 import { audit } from "@/lib/audit";
@@ -7,6 +8,7 @@ import { audit } from "@/lib/audit";
 export const dynamic = "force-dynamic";
 
 export const GET = adminRoute("viewer", async () => {
+  if (!(await isLoyaltyEnabled())) return jsonError("loyalty_disabled", 404);
   const accounts = await prisma.loyaltyAccount.findMany({
     include: {
       client: { select: { id: true, firstname: true, lastname: true, email: true, isVip: true } },
@@ -38,6 +40,7 @@ const Body = z.object({
 });
 
 export const POST = adminRoute("manager", async (req, _ctx, user) => {
+  if (!(await isLoyaltyEnabled())) return jsonError("loyalty_disabled", 404);
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return jsonError("invalid_input");
   const { clientId, points, reason } = parsed.data;

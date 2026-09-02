@@ -35,9 +35,12 @@ export const fr: Dict = {
       "La Villa ONLY VIEW domine la baie de Pointe Milou, Saint-Barthélemy : à 10 minutes de l'aéroport, 5 minutes de la plage de Lorient, voisine de l'hôtel Christopher.",
     titleAccount: "Mon séjour — Espace client",
     descAccount: "Gérez vos réservations, contrats et points de fidélité.",
+    descAccountNoLoyalty: "Gérez vos réservations et vos contrats.",
     titleWhyDirect: "Pourquoi réserver en direct",
     descWhyDirect:
       "Réserver la Villa ONLY VIEW en direct, c'est 15 à 25 % de commission d'agence économisés, un contact direct avec la maison et des points de fidélité à chaque séjour.",
+    descWhyDirectNoLoyalty:
+      "Réserver la Villa ONLY VIEW en direct, c'est 15 à 25 % de commission d'agence économisés et un contact direct avec la maison.",
   },
   nav: {
     villa: "La Villa",
@@ -127,6 +130,7 @@ export const fr: Dict = {
     from: "dès",
     perWeek: "/ semaine",
     note: "Réserver en direct, c'est 15 à 25 % de commission d'agence économisés — et des points de fidélité.",
+    noteNoLoyalty: "Réserver en direct, c'est 15 à 25 % de commission d'agence économisés — le juste prix, sans supplément.",
     cta: "Voir tous les tarifs & saisons",
   },
   location: {
@@ -216,6 +220,7 @@ export const fr: Dict = {
   rates: {
     title: "Tarifs & saisons",
     intro: "Tarifs hebdomadaires en USD, selon le nombre de chambres utilisées. Taxe de séjour locale de 5 %. En direct : pas de frais d'agence, des points de fidélité à chaque séjour.",
+    introNoLoyalty: "Tarifs hebdomadaires en USD, selon le nombre de chambres utilisées. Taxe de séjour locale de 5 %. En direct : pas de frais d'agence, aucune commission.",
     season: "Saison",
     dates: "Dates",
     br2: "2 chambres",
@@ -376,6 +381,7 @@ export const fr: Dict = {
       {
         q: "Que sont les points de fidélité ?",
         a: "Chaque réservation en direct rapporte 1 point par tranche de 100 $ de loyer. Chaque point vaut 1 $ et s'applique sur un prochain séjour (jusqu'à 10 % du tarif). Votre solde est visible dans votre espace client.",
+        tag: "loyalty",
       },
       {
         q: "Quelle est votre politique de paiement / annulation ?",
@@ -408,6 +414,7 @@ export const fr: Dict = {
       {
         t: "Gagnez des points de fidélité",
         d: "1 point par 100 $, valant de vrais dollars sur votre prochain séjour. Réservé aux réservations directes.",
+        tag: "loyalty",
       },
       {
         t: "Flexible par nature",

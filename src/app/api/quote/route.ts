@@ -4,6 +4,7 @@ import { computeQuote } from "@/lib/pricing";
 import { getRateConfig, getLoyaltyConfig } from "@/lib/settings";
 import { isRangeAvailable } from "@/lib/availability";
 import { resolvePromotion } from "@/lib/promotions";
+import { isLoyaltyEnabled } from "@/lib/features";
 import { nightsBetween, todayISO } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
@@ -53,9 +54,10 @@ export async function POST(req: NextRequest) {
     rates
   );
 
-  const [available, loyalty] = await Promise.all([
+  const [available, loyalty, loyaltyOn] = await Promise.all([
     isRangeAvailable(startDate, endDate),
     getLoyaltyConfig(),
+    isLoyaltyEnabled(),
   ]);
 
   return NextResponse.json({
@@ -76,6 +78,8 @@ export async function POST(req: NextRequest) {
       depositAmount: quote.depositAmount,
       balanceAmount: quote.balanceAmount,
     },
-    loyaltyPoints: Math.max(0, Math.floor(quote.subtotalHT * loyalty.earnPerDollar)),
+    loyaltyPoints: loyaltyOn
+      ? Math.max(0, Math.floor(quote.subtotalHT * loyalty.earnPerDollar))
+      : 0,
   });
 }

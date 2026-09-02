@@ -153,8 +153,16 @@ ok("balance payment recorded", bal.status === 200);
 after = (await call(`/api/admin/reservations/${rid}`)).body.reservation;
 ok("balanceReceived flag set after full payment", after.balanceReceived === true);
 const loyalty = await call(`/api/admin/clients/${clientId}`);
-const pts = loyalty.body.client?.loyalty?.points ?? loyalty.body.client?.loyalty?.lifetimePoints;
-ok("loyalty points earned on paid stay (1pt/$100 HT)", pts === Math.floor(r.priceHT / 100), `points ${pts} expected ${Math.floor(r.priceHT / 100)}`);
+const pts = loyalty.body.client?.loyalty?.points ?? loyalty.body.client?.loyalty?.lifetimePoints ?? 0;
+// the programme can be switched off in Réglages — then nothing is credited
+const loyaltyOn = (await call("/api/admin/loyalty")).status === 200;
+ok(
+  loyaltyOn
+    ? "loyalty points earned on paid stay (1pt/$100 HT)"
+    : "loyalty programme off: no points credited",
+  loyaltyOn ? pts === Math.floor(r.priceHT / 100) : pts === 0,
+  `points ${pts}${loyaltyOn ? ` expected ${Math.floor(r.priceHT / 100)}` : " expected 0"}`
+);
 
 /* ── contracts ── */
 const gen = await call(`/api/admin/reservations/${rid}/actions`, { method: "POST", json: { action: "send-contract", lang: "fr" } });

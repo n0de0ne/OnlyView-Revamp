@@ -53,6 +53,8 @@ const SETTINGS = {
   villa_lng: "-62.8272",
   // Immersive 3D walkthrough embedded on the tour page (empty = hidden)
   tour_3d_url: "https://tour.giraffe360.com/51046496fd2c4761933549f4dfe3cfab/",
+  // Loyalty programme: off for now — "1" brings it back everywhere
+  loyalty_enabled: "0",
 };
 
 async function seedBase() {

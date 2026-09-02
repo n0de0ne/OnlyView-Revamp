@@ -45,6 +45,11 @@ const GROUPS: Array<{
   {
     title: "Programme de fidélité",
     fields: [
+      [
+        "loyalty_enabled",
+        "Programme actif",
+        "1 = affiché partout (site, espace client, back-office) · 0 = masqué et suspendu",
+      ],
       ["loyalty_earn_per_dollar", "Points par $ payé", "0.01 = 1 point / 100 $"],
       ["loyalty_point_value", "Valeur d'un point ($)"],
       ["loyalty_min_redeem", "Utilisation minimum (points)"],

@@ -10,6 +10,7 @@ import {
   vacationRentalJsonLd,
 } from "@/lib/seo";
 import { getPhotos, firstOf } from "@/lib/photos";
+import { isLoyaltyEnabled } from "@/lib/features";
 import { getRateConfig } from "@/lib/settings";
 import { getApprovedTestimonials } from "@/lib/testimonials";
 import { usd } from "@/lib/money";
@@ -45,7 +46,8 @@ export default async function HomePage({
   const locale = (isLocale(raw) ? raw : "en") as Locale;
   const t = getDict(locale);
 
-  const [photos, rates, testimonials] = await Promise.all([
+  const [loyalty, photos, rates, testimonials] = await Promise.all([
+    isLoyaltyEnabled(),
     getPhotos(),
     getRateConfig(),
     getApprovedTestimonials(3),
@@ -94,7 +96,7 @@ export default async function HomePage({
               reviewCount: testimonials.length || undefined,
             }),
             lodgingBusinessJsonLd(locale),
-            faqJsonLd(t.faq.items.slice(0, 6)),
+            faqJsonLd(t.faq.items.filter((i) => loyalty || i.tag !== "loyalty").slice(0, 6)),
           ]),
         }}
       />
@@ -264,7 +266,7 @@ export default async function HomePage({
           <div>
             <p className="eyebrow mb-4">{t.ratesTeaser.label}</p>
             <h2 className="section-title mb-6">{t.ratesTeaser.title}</h2>
-            <p className="max-w-md leading-relaxed text-ink/70">{t.ratesTeaser.note}</p>
+            <p className="max-w-md leading-relaxed text-ink/70">{loyalty ? t.ratesTeaser.note : t.ratesTeaser.noteNoLoyalty}</p>
             <Link href={localePath(locale, "/rates")} className="btn-gold mt-8">
               {t.ratesTeaser.cta}
             </Link>

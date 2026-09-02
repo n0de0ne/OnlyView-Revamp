@@ -11,6 +11,7 @@ import { sendMail } from "@/lib/mailer";
 import { SITE_URL } from "@/lib/seo";
 import { earnForReservation } from "@/lib/loyalty";
 import { sendBookingConfirmation } from "@/lib/booking-emails";
+import { isLoyaltyEnabled } from "@/lib/features";
 
 export const dynamic = "force-dynamic";
 
@@ -251,6 +252,7 @@ export const POST = adminRoute<Ctx>("manager", async (req, { params }, user) => 
     }
 
     case "award-loyalty": {
+      if (!(await isLoyaltyEnabled())) return jsonError("loyalty_disabled", 404);
       const points = await earnForReservation(id);
       await auditIt("loyalty_awarded", { points });
       return jsonOk({ points });

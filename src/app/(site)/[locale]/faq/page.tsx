@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { isLoyaltyEnabled } from "@/lib/features";
 import { getDict, isLocale, localePath, type Locale } from "@/lib/i18n";
 import { altLanguages, faqJsonLd, jsonLd } from "@/lib/seo";
 import { PageHero } from "@/components/site/PageHero";
@@ -28,17 +29,19 @@ export default async function FaqPage({
   const { locale: raw } = await params;
   const locale = (isLocale(raw) ? raw : "en") as Locale;
   const t = getDict(locale);
+  const loyalty = await isLoyaltyEnabled();
+  const items = t.faq.items.filter((i) => loyalty || i.tag !== "loyalty");
 
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLd(faqJsonLd(t.faq.items)) }}
+        dangerouslySetInnerHTML={{ __html: jsonLd(faqJsonLd(items)) }}
       />
       <PageHero eyebrow="FAQ" title={t.faq.title} />
       <section className="mx-auto max-w-3xl px-5 py-16 lg:px-8">
         <div className="divide-y divide-ink/10">
-          {t.faq.items.map((item, i) => (
+          {items.map((item, i) => (
             <details key={i} className="group py-5" open={i === 0}>
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-display text-xl text-ink transition hover:text-gold [&::-webkit-details-marker]:hidden">
                 {item.q}

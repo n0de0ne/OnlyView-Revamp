@@ -33,9 +33,12 @@ export const en = {
       "Villa ONLY VIEW sits on the hillside of Pointe Milou, Saint-Barthélemy: 10 minutes from the airport, 5 minutes from Lorient beach, next to Christopher Hotel.",
     titleAccount: "My Stay — Guest Portal",
     descAccount: "Manage your reservations, contracts and loyalty points.",
+    descAccountNoLoyalty: "Manage your reservations and contracts.",
     titleWhyDirect: "Why Book Direct",
     descWhyDirect:
       "Booking Villa ONLY VIEW direct with the owner saves 15–25% in agency commissions, gives you a direct line to the house, and earns loyalty points on every stay.",
+    descWhyDirectNoLoyalty:
+      "Booking Villa ONLY VIEW direct with the owner saves 15–25% in agency commissions and gives you a direct line to the house.",
   },
   nav: {
     villa: "The Villa",
@@ -126,6 +129,7 @@ export const en = {
     from: "from",
     perWeek: "/ week",
     note: "Booking direct saves the 15–25% agency commission — and earns you loyalty points.",
+    noteNoLoyalty: "Booking direct saves the 15–25% agency commission — the honest rate, nothing on top.",
     cta: "See all rates & seasons",
   },
   location: {
@@ -215,6 +219,7 @@ export const en = {
   rates: {
     title: "Rates & seasons",
     intro: "Weekly rates in USD, by number of bedrooms in use. Local 5% tourist tax applies. Book direct: no agency fees, loyalty points on every stay.",
+    introNoLoyalty: "Weekly rates in USD, by number of bedrooms in use. Local 5% tourist tax applies. Book direct: no agency fees, no commission.",
     season: "Season",
     dates: "Dates",
     br2: "2 bedrooms",
@@ -375,12 +380,14 @@ export const en = {
       {
         q: "What are loyalty points?",
         a: "Every direct booking earns 1 point per $100 of rental. Points are worth $1 each and can be applied to a future stay (up to 10% of the rate). Your balance lives in your guest portal.",
+        tag: "loyalty",
       },
       {
         q: "What is your payment / cancellation policy?",
         a: "30% non-refundable deposit at signature, balance 30 days before arrival, by bank transfer. We recommend travel insurance for full peace of mind.",
       },
-    ],
+      // `tag: "loyalty"` items are hidden while the loyalty programme is off
+    ] as Array<{ q: string; a: string; tag?: string }>,
   },
   reviews: {
     title: "Guest reviews",
@@ -407,12 +414,13 @@ export const en = {
       {
         t: "Earn loyalty points",
         d: "1 point per $100, worth real dollars on your next stay. Only for direct bookings.",
+        tag: "loyalty",
       },
       {
         t: "Flexible by nature",
         d: "Variable bedroom pricing, early check-in when possible, personal concierge — decisions are made by a person, not a policy.",
       },
-    ],
+    ] as Array<{ t: string; d: string; tag?: string }>,
   },
   footer: {
     tagline: "Less is more. The view is everything.",
