@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import {
   api,
@@ -16,6 +17,7 @@ import {
 import type { SerializedReservation } from "@/lib/reservations";
 
 export function ReservationList() {
+  const router = useRouter();
   const [reservations, setReservations] = useState<SerializedReservation[] | null>(null);
   const [season, setSeason] = useState<string>(() => String(seasonOfDate(new Date())));
   const [status, setStatus] = useState<string>("all");
@@ -147,7 +149,22 @@ export function ReservationList() {
                   return (
                     <tr
                       key={r.id}
-                      className="group cursor-pointer border-b border-slate-100 last:border-0 hover:bg-slate-50"
+                      onClick={(e) => {
+                        // the name is a real link — let the browser have
+                        // cmd/ctrl/middle-clicks and its own anchor handling
+                        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+                        if ((e.target as HTMLElement).closest("a")) return;
+                        router.push(`/admin/reservations/${r.id}`);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          router.push(`/admin/reservations/${r.id}`);
+                        }
+                      }}
+                      tabIndex={0}
+                      aria-label={`Réservation #${r.id} — ${r.clientName ?? "sans nom"}`}
+                      className="group cursor-pointer border-b border-slate-100 last:border-0 hover:bg-slate-50 focus:outline-none focus-visible:bg-slate-50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-navy"
                     >
                       <td className="py-3 pr-3">
                         <Link

@@ -127,8 +127,10 @@ export function MobileTabBar({ locale }: { locale: Locale }) {
       style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
       aria-label="Principal"
     >
+      {/* justify-between so the pill collapses onto the leading edge and the
+          booking capsule keeps the trailing one, like the header above */}
       <div
-        className="mx-3 flex items-center justify-center gap-2"
+        className="mx-3 flex items-center justify-between gap-2"
         style={{
           transition: `transform 520ms ${SPRING}`,
           transform: collapsed ? "translateY(2px)" : "none",
