@@ -91,21 +91,25 @@ async function seedBase() {
     }
   }
 
-  // Admin accounts
-  const ownerPass = process.env.SEED_ADMIN_PASSWORD ?? "onlyview2026";
-  await prisma.user.upsert({
-    where: { username: "admin" },
-    create: {
-      username: "admin",
-      email: "annaerick971@gmail.com",
-      passwordHash: await bcrypt.hash(ownerPass, 12),
-      firstname: "Annie",
-      lastname: "Chriqui",
-      role: "owner",
-      mustChangePassword: true,
-    },
-    update: {},
-  });
+  // First-boot owner account — only when the instance has no users at all.
+  // Once the legacy migration or the admin has created accounts (possibly
+  // renaming this one, or giving another the owner's email), the seed leaves
+  // users alone: an upsert on the username used to try to *create* a second
+  // account with the same email and abort the whole boot on the unique index.
+  if ((await prisma.user.count()) === 0) {
+    const ownerPass = process.env.SEED_ADMIN_PASSWORD ?? "onlyview2026";
+    await prisma.user.create({
+      data: {
+        username: "admin",
+        email: "annaerick971@gmail.com",
+        passwordHash: await bcrypt.hash(ownerPass, 12),
+        firstname: "Annie",
+        lastname: "Chriqui",
+        role: "owner",
+        mustChangePassword: true,
+      },
+    });
+  }
 
   // Agencies (from the PHP admin selector)
   for (const a of [

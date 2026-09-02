@@ -57,8 +57,10 @@ fi
 echo "[onlyview] database: $(echo "$DATABASE_URL" | sed 's|//[^@]*@|//***@|')"
 node prisma-cli/node_modules/prisma/build/index.js db push --skip-generate --schema prisma/schema.prisma
 
-# Base settings/admin/photos; add SEED_DEMO=1 for a demo dataset
-node prisma/seed.mjs
+# Base settings/admin/photos; add SEED_DEMO=1 for a demo dataset.
+# Idempotent and non-essential once the instance is set up — a seed problem
+# is logged, never allowed to keep the site from starting.
+node prisma/seed.mjs || echo "[onlyview] WARNING: seed failed (see above) — starting anyway"
 
 echo "[onlyview] starting on port ${PORT:-3000}"
 exec node server.js
