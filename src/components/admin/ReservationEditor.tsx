@@ -150,6 +150,8 @@ export function ReservationEditor({
   const depositTouched = useRef(false);
   const [showProfit, setShowProfit] = useState(false);
   const [payModal, setPayModal] = useState(false);
+  // opt-in, like the legacy "envoyer l'email de confirmation" checkbox
+  const [sendConfirmation, setSendConfirmation] = useState(false);
   const [payForm, setPayForm] = useState({
     kind: "deposit",
     amount: "",
@@ -388,6 +390,7 @@ export function ReservationEditor({
       depositAmount: form.depositAmount ? parseFloat(form.depositAmount) : null,
       depositReceived: form.depositReceived,
       balanceReceived: form.balanceReceived,
+      sendConfirmationEmail: sendConfirmation && form.status === "confirmed",
       earlyCheckin: form.earlyCheckin,
       arrivalTime: form.earlyCheckin && form.arrivalTime ? form.arrivalTime : null,
       lateCheckout: form.lateCheckout,
@@ -574,6 +577,57 @@ export function ReservationEditor({
               value={form.optionExpires}
               onChange={(e) => set("optionExpires", e.target.value)}
             />
+          </div>
+        )}
+        {form.status === "confirmed" && (
+          <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-emerald-100 bg-emerald-50/60 px-4 py-3 text-sm">
+            {loaded?.confirmationEmailSent ? (
+              <>
+                <span className="font-medium text-emerald-700">
+                  ✓ Email de confirmation envoyé au client
+                </span>
+                <button
+                  type="button"
+                  className="abtn-ghost !py-1 text-xs"
+                  onClick={async () => {
+                    const res = await doAction("send-confirmation");
+                    if (res?.success) {
+                      push(res.emailSent ? "Email de confirmation renvoyé" : "Email en file (SMTP non configuré)");
+                      load();
+                    }
+                  }}
+                >
+                  Renvoyer
+                </button>
+              </>
+            ) : (
+              <>
+                <label className="flex cursor-pointer items-center gap-2 text-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={sendConfirmation}
+                    onChange={(e) => setSendConfirmation(e.target.checked)}
+                    className="accent-navy"
+                  />
+                  ✉️ Envoyer l&apos;email de confirmation au client à l&apos;enregistrement
+                </label>
+                {reservationId && (
+                  <button
+                    type="button"
+                    className="abtn-ghost !py-1 text-xs"
+                    onClick={async () => {
+                      const res = await doAction("send-confirmation");
+                      if (res?.success) {
+                        push(res.emailSent ? "Email de confirmation envoyé" : "Email en file (SMTP non configuré)");
+                        load();
+                      }
+                    }}
+                  >
+                    Envoyer maintenant
+                  </button>
+                )}
+              </>
+            )}
           </div>
         )}
       </Card>

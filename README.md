@@ -55,7 +55,8 @@ renders the full page.
 - **Calendar** — 12-month season view (September → August), colored spans, back-to-back split days, click-to-create.
 - **Reservations** — list + full editor with *all* the legacy PHP options:
   statuses (option 🟠 / confirmed 🔴 / pending / blocked / cancelled), option expiry, client autocomplete + VIP/blacklist badges, bedrooms/guests, agency & commission %, **variable periods (multi-pricing: different bedrooms and custom weekly rate per period)**, custom weekly rate, manual final price, discount %, *offer one bedroom*, free nights, offered tax, live season breakdown (incl. Christmas/New Year 7-night packages), revenue preview (HT/TTC/net), **profitability analysis** (cleaning + fixed charges, EUR), auto 30% deposit, payment ledger, early check-in / late check-out times.
-- **Contracts** — one-click EN/FR generation from the reservation, signature link, email sending, view tracking, e-signature, PDF (pdf-lib) with embedded signature, void/extend.
+- **Contracts** — one-click EN/FR generation from the reservation (total = TTC, deposit 30 %, balance 30 days before arrival), signature link, email sending, view tracking, e-signature (draw + type-to-confirm), PDF (pdf-lib) with embedded signature and an **electronic-signature certification** (date/time, signatory, IP); on signing the client receives the signed PDF and the owner a detailed notification. Void/extend.
+- **Emails** — booking-request acknowledgement + owner alert, contract signature request, signed-contract copies, guest-portal link, and the **booking confirmation** (opt-in checkbox when confirming a stay, or "send now"/"resend" in the editor). Without SMTP every message is kept in the admin **Email log** as *queued*.
 - **Finance** (owner) — expenses with **recurring fixed costs** (monthly/quarterly/…), P&L per season: accrual revenue vs cash-in vs expenses, commissions, collected tax.
 - **Requests** — website booking-request inbox → one-click convert to option/confirmed reservation (creates/links the client).
 - **Clients** — CRM with stats, standing discounts, VIP, blacklist, tags.
@@ -88,6 +89,18 @@ src/
 prisma/schema.prisma       full data model  ·  prisma/seed.mjs
 scripts/migrate-legacy.mjs legacy PHP data → new schema importer
 scripts/prepare-media.ts   photo pipeline from the legacy repo
+```
+
+## Smoke test
+
+`scripts/e2e-audit.mjs` drives the core back-office flows against a running
+instance — agencies, clients, reservations (pricing, conflicts, seasons),
+availability + iCal, payments + loyalty, contracts (generate → sign → PDF),
+expenses, stats cross-checks and every email path — creating its own data in
+2027 and deleting it afterwards:
+
+```bash
+BASE_URL=http://localhost:3000 ADMIN_USER=admin ADMIN_PASS=… node scripts/e2e-audit.mjs
 ```
 
 ## Configuration

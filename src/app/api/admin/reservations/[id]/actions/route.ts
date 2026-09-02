@@ -10,6 +10,7 @@ import { newPortalToken } from "@/lib/guest-auth";
 import { sendMail } from "@/lib/mailer";
 import { SITE_URL } from "@/lib/seo";
 import { earnForReservation } from "@/lib/loyalty";
+import { sendBookingConfirmation } from "@/lib/booking-emails";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +27,7 @@ const Body = z.object({
     "add-payment",
     "delete-payment",
     "award-loyalty",
+    "send-confirmation",
   ]),
   lang: z.enum(["en", "fr"]).optional(),
   payment: z
@@ -252,6 +254,14 @@ export const POST = adminRoute<Ctx>("manager", async (req, { params }, user) => 
       const points = await earnForReservation(id);
       await auditIt("loyalty_awarded", { points });
       return jsonOk({ points });
+    }
+
+    case "send-confirmation": {
+      if (reservation.status !== "confirmed") return jsonError("not_confirmed");
+      const res = await sendBookingConfirmation(id, { force: true });
+      if (res.skipped === "no_email") return jsonError("missing_client_email");
+      await auditIt("confirmation_email_sent", res);
+      return jsonOk({ emailSent: res.sent, queued: res.queued });
     }
   }
 });

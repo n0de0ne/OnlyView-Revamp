@@ -181,7 +181,9 @@ model Reservation {
   departureTime String?
   notes         String?
 
-  // ── Guest portal ──
+  // ── Guest communication ──
+  /// booking confirmation email sent to the client (opt-in when confirming)
+  confirmationEmailSent Boolean @default(false)
   portalToken     String?   @unique
   portalEmailSent Boolean   @default(false)
 

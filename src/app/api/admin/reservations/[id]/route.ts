@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { adminRoute, jsonError, jsonOk } from "@/lib/admin-api";
 import { audit } from "@/lib/audit";
 import { isRangeAvailable } from "@/lib/availability";
+import { sendBookingConfirmation } from "@/lib/booking-emails";
 import {
   ReservationInput,
   computePersistedPricing,
@@ -61,6 +62,10 @@ export const PUT = adminRoute<Ctx>("manager", async (req, { params }, user) => {
   ]);
 
   await afterSaveHooks(id);
+  // opt-in confirmation email once the stay is confirmed (never re-sent silently)
+  if (input.sendConfirmationEmail && input.status === "confirmed") {
+    await sendBookingConfirmation(id);
+  }
   await audit({
     action: "reservation_update",
     entityType: "reservation",

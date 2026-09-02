@@ -259,6 +259,8 @@ async function main() {
         lateCheckout: bool(r.late_checkout),
         departureTime: r.departure_time ?? null,
         notes: r.notes ?? null,
+        confirmationEmailSent: bool(r.confirmation_email_sent),
+        portalEmailSent: bool(r.portal_email_sent),
         isArchived: bool(r.is_archived),
         archivedAt: date(r.archived_at),
         createdAt: date(r.created_at) ?? new Date(),

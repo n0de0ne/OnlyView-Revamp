@@ -42,6 +42,8 @@ export const ReservationInput = z.object({
   lateCheckout: z.boolean().default(false),
   departureTime: z.string().max(20).nullable().optional(),
   notes: z.string().max(4000).nullable().optional(),
+  /** send the booking confirmation email to the client when saving as confirmed */
+  sendConfirmationEmail: z.boolean().default(false),
   periods: z
     .array(
       z.object({
@@ -184,6 +186,7 @@ export function serializeReservation(r: ReservationWithRelations) {
     notes: r.notes,
     portalToken: r.portalToken,
     isArchived: r.isArchived,
+    confirmationEmailSent: r.confirmationEmailSent,
     periods: r.periods.map((p) => ({
       id: p.id,
       startDate: toISODate(p.startDate),

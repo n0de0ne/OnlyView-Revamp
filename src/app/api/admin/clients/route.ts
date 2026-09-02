@@ -33,9 +33,8 @@ export const GET = adminRoute("viewer", async (req) => {
   return jsonOk({
     clients: clients.map((c) => {
       const confirmed = c.reservations;
-      const totalSpent = confirmed
-        .filter((r) => r.balanceReceived)
-        .reduce((s, r) => s + r.priceHT, 0);
+      // like the legacy total_spent: every confirmed stay's HT, paid or not
+      const totalSpent = confirmed.reduce((s, r) => s + r.priceHT, 0);
       const totalNights = confirmed.reduce(
         (s, r) =>
           s + Math.round((r.endDate.getTime() - r.startDate.getTime()) / 86400000),

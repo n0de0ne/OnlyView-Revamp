@@ -106,7 +106,33 @@ export interface SignatureBlock {
   signedAtLabel?: string;
   ownerName: string;
   labels: { owner: string; tenant: string; date: string };
+  /** e-signature audit trail, printed once the contract is signed */
+  certification?: {
+    lang: "en" | "fr";
+    signerName: string;
+    signedAt: string; // full date + time label
+    ip: string | null;
+  };
 }
+
+const CERT_TEXT = {
+  en: {
+    title: "ELECTRONIC SIGNATURE CERTIFICATION",
+    signedAt: "Document electronically signed on:",
+    signatory: "Signatory:",
+    ip: "IP address:",
+    legal:
+      "This document was signed electronically via onlyviewstbarth.com and constitutes a legally binding agreement under applicable electronic signature laws.",
+  },
+  fr: {
+    title: "CERTIFICATION DE SIGNATURE ÉLECTRONIQUE",
+    signedAt: "Document signé électroniquement le :",
+    signatory: "Signataire :",
+    ip: "Adresse IP :",
+    legal:
+      "Ce document a été signé électroniquement via onlyviewstbarth.com et constitue un accord juridiquement contraignant en vertu des lois applicables sur la signature électronique.",
+  },
+};
 
 export async function renderContractPdf(
   content: ContractContent,
@@ -226,6 +252,49 @@ export async function renderContractPdf(
       font,
       color: GREY,
     });
+  }
+  ctx.y = topY - 100;
+
+  // E-signature certification box (audit trail), like the legacy signed PDF
+  if (signature.certification) {
+    const t = CERT_TEXT[signature.certification.lang];
+    const legalLines = wrap(safe(t.legal), font, 8.5, WIDTH - 24);
+    const boxH = 20 + 3 * 13 + legalLines.length * 11 + 14;
+    ensure(ctx, boxH + 10);
+    ctx.y -= 10;
+    const top = ctx.y;
+    ctx.page.drawRectangle({
+      x: MARGIN,
+      y: top - boxH,
+      width: WIDTH,
+      height: boxH,
+      borderColor: GOLD,
+      borderWidth: 0.8,
+      color: rgb(0.985, 0.975, 0.95),
+    });
+    let y = top - 14;
+    ctx.page.drawText(safe(t.title), { x: MARGIN + 12, y, size: 9, font: bold, color: NAVY });
+    y -= 15;
+    const row = (label: string, value: string) => {
+      ctx.page.drawText(safe(label), { x: MARGIN + 12, y, size: 8.5, font: bold, color: INK });
+      ctx.page.drawText(safe(value), {
+        x: MARGIN + 12 + bold.widthOfTextAtSize(safe(label), 8.5) + 6,
+        y,
+        size: 8.5,
+        font,
+        color: INK,
+      });
+      y -= 13;
+    };
+    row(t.signedAt, signature.certification.signedAt);
+    row(t.signatory, signature.certification.signerName);
+    row(t.ip, signature.certification.ip ?? "-");
+    y -= 2;
+    for (const line of legalLines) {
+      ctx.page.drawText(line, { x: MARGIN + 12, y, size: 8.5, font, color: GREY });
+      y -= 11;
+    }
+    ctx.y = top - boxH;
   }
 
   // Footer on each page

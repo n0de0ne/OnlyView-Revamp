@@ -2,6 +2,12 @@ import "server-only";
 import nodemailer from "nodemailer";
 import { prisma } from "./db";
 
+export interface MailAttachment {
+  filename: string;
+  content: Buffer | Uint8Array;
+  contentType?: string;
+}
+
 export interface MailInput {
   to: string;
   toName?: string;
@@ -10,6 +16,8 @@ export interface MailInput {
   templateSlug?: string;
   reservationId?: number;
   clientId?: number;
+  /** e.g. the signed contract PDF */
+  attachments?: MailAttachment[];
 }
 
 function smtpConfigured(): boolean {
@@ -34,7 +42,11 @@ export async function sendMail(input: MailInput): Promise<{ sent: boolean }> {
         reservationId: input.reservationId,
         clientId: input.clientId,
         status: "queued",
-        errorMessage: "SMTP not configured — email stored, not sent",
+        errorMessage:
+          "SMTP not configured — email stored, not sent" +
+          (input.attachments?.length
+            ? ` (${input.attachments.map((a) => a.filename).join(", ")} not stored)`
+            : ""),
       },
     });
     return { sent: false };
@@ -52,6 +64,11 @@ export async function sendMail(input: MailInput): Promise<{ sent: boolean }> {
       to: input.toName ? `"${input.toName}" <${input.to}>` : input.to,
       subject: input.subject,
       html: wrapped,
+      attachments: input.attachments?.map((a) => ({
+        filename: a.filename,
+        content: Buffer.from(a.content),
+        contentType: a.contentType,
+      })),
     });
     await prisma.emailLog.create({
       data: {

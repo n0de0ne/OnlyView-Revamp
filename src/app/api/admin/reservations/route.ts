@@ -3,6 +3,7 @@ import { adminRoute, jsonError, jsonOk } from "@/lib/admin-api";
 import { audit } from "@/lib/audit";
 import { isRangeAvailable } from "@/lib/availability";
 import { fromISODate, seasonRange } from "@/lib/dates";
+import { sendBookingConfirmation } from "@/lib/booking-emails";
 import {
   ReservationInput,
   computePersistedPricing,
@@ -68,6 +69,9 @@ export const POST = adminRoute("manager", async (req, _ctx, user) => {
   });
 
   await afterSaveHooks(created.id);
+  if (input.sendConfirmationEmail && input.status === "confirmed") {
+    await sendBookingConfirmation(created.id);
+  }
   await audit({
     action: "reservation_create",
     entityType: "reservation",
