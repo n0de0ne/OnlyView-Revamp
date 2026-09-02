@@ -11,7 +11,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
-  // Transparent over the home hero, solid everywhere else / on scroll
+  // Transparent over the home hero, glass everywhere else / on scroll
   const isHome = pathname === "/" || pathname === "/fr";
 
   useEffect(() => {
@@ -23,7 +23,14 @@ export function SiteHeader({ locale }: { locale: Locale }) {
 
   useEffect(() => setOpen(false), [pathname]);
 
-  const solid = scrolled || !isHome || open;
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
+
+  const solid = scrolled || !isHome;
 
   const links: Array<[string, string]> = [
     [localePath(locale, "/villa"), t.nav.villa],
@@ -34,131 +41,184 @@ export function SiteHeader({ locale }: { locale: Locale }) {
     [localePath(locale, "/reviews"), t.nav.reviews],
     [localePath(locale, "/contact"), t.nav.contact],
   ];
+  /** the tab bar already carries villa / tour / gallery / rates / booking */
+  const secondary: Array<[string, string]> = [
+    [localePath(locale, "/guide"), t.nav.guide],
+    [localePath(locale, "/reviews"), t.nav.reviews],
+    [localePath(locale, "/why-book-direct"), t.footer.whyDirect],
+    [localePath(locale, "/location"), t.location.title],
+    [localePath(locale, "/faq"), "FAQ"],
+    [localePath(locale, "/contact"), t.nav.contact],
+    [localePath(locale, "/account"), t.nav.account],
+  ];
 
   // Language switch keeps the current page
   const pathNoLocale = pathname.replace(/^\/fr(?=\/|$)/, "") || "/";
+  const frHref = pathNoLocale === "/" ? "/fr" : `/fr${pathNoLocale}`;
 
   return (
-    <header
-      className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${
-        solid
-          ? "bg-night/95 backdrop-blur-md shadow-lg shadow-black/10"
-          : "bg-gradient-to-b from-black/55 to-transparent"
-      }`}
-    >
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-8">
-        <Link
-          href={localePath(locale, "/")}
-          className="group flex flex-col leading-none"
-          aria-label="Villa ONLY VIEW — home"
-        >
-          <span className="font-display text-[1.35rem] tracking-[0.32em] text-white transition group-hover:text-gold">
-            ONLY&nbsp;VIEW
-          </span>
-          <span className="mt-1 text-[0.55rem] font-medium uppercase tracking-[0.42em] text-gold">
-            Saint-Barthélemy
-          </span>
-        </Link>
-
-        <nav className="hidden items-center gap-7 xl:flex" aria-label="Main">
-          {links.map(([href, label]) => (
-            <Link
-              key={href}
-              href={href}
-              className={`text-[0.72rem] font-medium uppercase tracking-[0.18em] transition hover:text-gold ${
-                pathname === href ? "text-gold" : "text-white/85"
-              }`}
-            >
-              {label}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="hidden items-center gap-5 xl:flex">
-          <div className="flex items-center gap-2 text-[0.72rem] font-semibold uppercase tracking-widest">
-            <Link
-              href={pathNoLocale}
-              className={locale === "en" ? "text-gold" : "text-white/60 hover:text-white"}
-            >
-              EN
-            </Link>
-            <span className="text-white/30">·</span>
-            <Link
-              href={pathNoLocale === "/" ? "/fr" : `/fr${pathNoLocale}`}
-              className={locale === "fr" ? "text-gold" : "text-white/60 hover:text-white"}
-            >
-              FR
-            </Link>
-          </div>
-          <Link
-            href={localePath(locale, "/account")}
-            className="text-[0.72rem] font-medium uppercase tracking-[0.18em] text-white/85 transition hover:text-gold"
-          >
-            {t.nav.account}
-          </Link>
-          <Link href={localePath(locale, "/booking")} className="btn-gold !px-5 !py-2.5">
-            {t.nav.booking}
-          </Link>
-        </div>
-
-        <button
-          className="flex h-10 w-10 flex-col items-center justify-center gap-1.5 xl:hidden"
-          onClick={() => setOpen((v) => !v)}
-          aria-label="Menu"
-          aria-expanded={open}
-        >
-          <span
-            className={`h-px w-6 bg-white transition-all ${open ? "translate-y-[3.5px] rotate-45" : ""}`}
-          />
-          <span
-            className={`h-px w-6 bg-white transition-all ${open ? "-translate-y-[3.5px] -rotate-45" : ""}`}
-          />
-        </button>
-      </div>
-
-      {/* Mobile menu */}
-      <div
-        className={`xl:hidden overflow-hidden bg-night/98 transition-all duration-400 ${
-          open ? "max-h-[560px] border-t border-white/10" : "max-h-0"
+    <>
+      {/* ── Desktop / large screens ── */}
+      <header
+        className={`fixed inset-x-0 top-0 z-50 hidden transition-all duration-500 xl:block ${
+          solid ? "glass-dark" : "bg-gradient-to-b from-black/55 to-transparent"
         }`}
       >
-        <nav className="flex flex-col gap-1 px-6 py-5" aria-label="Mobile">
-          {[[localePath(locale, "/"), t.nav.home] as [string, string], ...links].map(
-            ([href, label]) => (
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-8 py-4">
+          <Link
+            href={localePath(locale, "/")}
+            className="group flex flex-col leading-none"
+            aria-label="Villa ONLY VIEW — home"
+          >
+            <span className="font-display text-[1.35rem] tracking-[0.32em] text-white transition group-hover:text-gold">
+              ONLY&nbsp;VIEW
+            </span>
+            <span className="mt-1 text-[0.55rem] font-medium uppercase tracking-[0.42em] text-gold">
+              Saint-Barthélemy
+            </span>
+          </Link>
+
+          <nav className="flex items-center gap-7" aria-label="Main">
+            {links.map(([href, label]) => (
               <Link
                 key={href}
                 href={href}
-                className="py-2.5 text-sm font-medium uppercase tracking-[0.18em] text-white/85 transition hover:text-gold"
+                className={`text-[0.72rem] font-medium uppercase tracking-[0.18em] transition hover:text-gold ${
+                  pathname === href ? "text-gold" : "text-white/85"
+                }`}
               >
                 {label}
               </Link>
-            )
-          )}
-          <Link
-            href={localePath(locale, "/account")}
-            className="py-2.5 text-sm font-medium uppercase tracking-[0.18em] text-white/85 hover:text-gold"
-          >
-            {t.nav.account}
-          </Link>
-          <div className="mt-3 flex items-center gap-4">
-            <Link href={localePath(locale, "/booking")} className="btn-gold flex-1">
-              {t.nav.booking}
-            </Link>
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase text-white/60">
-              <Link href={pathNoLocale} className={locale === "en" ? "text-gold" : ""}>
+            ))}
+          </nav>
+
+          <div className="flex items-center gap-5">
+            <div className="flex items-center gap-2 text-[0.72rem] font-semibold uppercase tracking-widest">
+              <Link
+                href={pathNoLocale}
+                className={locale === "en" ? "text-gold" : "text-white/60 hover:text-white"}
+              >
                 EN
               </Link>
-              <span>·</span>
+              <span className="text-white/30">·</span>
               <Link
-                href={pathNoLocale === "/" ? "/fr" : `/fr${pathNoLocale}`}
-                className={locale === "fr" ? "text-gold" : ""}
+                href={frHref}
+                className={locale === "fr" ? "text-gold" : "text-white/60 hover:text-white"}
               >
                 FR
               </Link>
             </div>
+            <Link
+              href={localePath(locale, "/account")}
+              className="text-[0.72rem] font-medium uppercase tracking-[0.18em] text-white/85 transition hover:text-gold"
+            >
+              {t.nav.account}
+            </Link>
+            <Link href={localePath(locale, "/booking")} className="btn-gold !px-5 !py-2.5">
+              {t.nav.booking}
+            </Link>
           </div>
-        </nav>
+        </div>
+      </header>
+
+      {/* ── Mobile: floating glass bar (the tab bar carries navigation) ── */}
+      <header
+        className="fixed inset-x-0 top-0 z-50 xl:hidden"
+        style={{ paddingTop: "max(0.6rem, env(safe-area-inset-top))" }}
+      >
+        <div className="mx-3 flex items-center justify-between gap-3 rounded-full glass-dark py-2.5 pl-5 pr-2.5">
+          <Link
+            href={localePath(locale, "/")}
+            className="flex flex-col leading-none"
+            aria-label="Villa ONLY VIEW"
+          >
+            <span className="font-display text-[1.05rem] tracking-[0.3em] text-white">
+              ONLY&nbsp;VIEW
+            </span>
+            <span className="mt-0.5 text-[0.45rem] font-medium uppercase tracking-[0.4em] text-gold">
+              Saint-Barthélemy
+            </span>
+          </Link>
+
+          <button
+            className="tap flex h-10 w-10 items-center justify-center rounded-full bg-white/12 text-white"
+            onClick={() => setOpen(true)}
+            aria-label={t.navShort.more}
+            aria-expanded={open}
+          >
+            <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
+              <path
+                d="M4 7h16M4 12h16M4 17h16"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                strokeLinecap="round"
+              />
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      {/* ── Mobile sheet: everything the tab bar doesn't carry ── */}
+      <div
+        className={`fixed inset-0 z-[60] xl:hidden ${open ? "" : "pointer-events-none"}`}
+        aria-hidden={!open}
+      >
+        <div
+          className={`absolute inset-0 bg-night/45 transition-opacity duration-300 ${
+            open ? "opacity-100" : "opacity-0"
+          }`}
+          onClick={() => setOpen(false)}
+        />
+        <div
+          className={`glass absolute inset-x-2 bottom-2 rounded-[2rem] p-5 transition-all duration-400 ${
+            open ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
+          }`}
+          style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-ink/20" />
+          <nav className="grid gap-0.5" aria-label="Secondaire">
+            {secondary.map(([href, label]) => (
+              <Link
+                key={href}
+                href={href}
+                className={`tap rounded-2xl px-4 py-3 text-[0.95rem] font-medium ${
+                  pathname === href ? "bg-white/70 text-navy" : "text-ink/80 hover:bg-white/50"
+                }`}
+              >
+                {label}
+              </Link>
+            ))}
+          </nav>
+          <div className="mt-4 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-1 rounded-full bg-white/60 p-1 text-xs font-semibold uppercase tracking-widest">
+              <Link
+                href={pathNoLocale}
+                className={`rounded-full px-3 py-1.5 ${
+                  locale === "en" ? "bg-navy text-white" : "text-ink/60"
+                }`}
+              >
+                EN
+              </Link>
+              <Link
+                href={frHref}
+                className={`rounded-full px-3 py-1.5 ${
+                  locale === "fr" ? "bg-navy text-white" : "text-ink/60"
+                }`}
+              >
+                FR
+              </Link>
+            </div>
+            <button
+              onClick={() => setOpen(false)}
+              className="tap rounded-full bg-ink/8 px-5 py-2.5 text-sm font-medium text-ink/70"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
       </div>
-    </header>
+    </>
   );
 }

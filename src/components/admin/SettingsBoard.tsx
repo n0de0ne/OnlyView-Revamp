@@ -71,6 +71,16 @@ const GROUPS: Array<{
     ],
   },
   {
+    title: "Visite 3D",
+    fields: [
+      [
+        "tour_3d_url",
+        "Lien de la visite 3D",
+        "Visite immersive (Giraffe360, Matterport…) intégrée sur la page Visite virtuelle. Vider pour la masquer.",
+      ],
+    ],
+  },
+  {
     title: "Contact & villa",
     fields: [
       ["contact_email", "Email de contact"],

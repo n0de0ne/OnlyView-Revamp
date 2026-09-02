@@ -49,6 +49,15 @@ export const en = {
     account: "My Stay",
     home: "Home",
   },
+  /** one-word labels for the mobile tab bar */
+  navShort: {
+    villa: "Villa",
+    tour: "Tour",
+    gallery: "Photos",
+    rates: "Rates",
+    booking: "Book",
+    more: "More",
+  },
   hero: {
     location: "Pointe Milou · Saint-Barthélemy",
     tagline: "Less is more. The view is everything.",
@@ -157,6 +166,12 @@ export const en = {
     label: "Virtual tour",
     title: "Walk through the villa",
     intro: "Nine spaces, one view. Scroll to move room by room — as if you had just pushed the front door.",
+    threeD: {
+      label: "3D walkthrough",
+      title: "Step inside, room by room",
+      text: "Move freely through the whole villa in an interactive 3D model — measure the spaces, look out of every window.",
+      cta: "Start the 3D tour",
+    },
     stops: {
       exterior: {
         title: "Arrival",

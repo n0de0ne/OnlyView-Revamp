@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { getDict, isLocale, type Locale } from "@/lib/i18n";
 import { altLanguages, breadcrumbJsonLd, jsonLd } from "@/lib/seo";
 import { getPhotos } from "@/lib/photos";
+import { getSettings } from "@/lib/settings";
 import { TourExperience, type TourStop } from "@/components/site/TourExperience";
+import { Tour3D } from "@/components/site/Tour3D";
 import { PageHero } from "@/components/site/PageHero";
 
 export const revalidate = 300;
@@ -41,7 +43,8 @@ export default async function TourPage({
   const { locale: raw } = await params;
   const locale = (isLocale(raw) ? raw : "en") as Locale;
   const t = getDict(locale);
-  const photos = await getPhotos();
+  const [photos, settings] = await Promise.all([getPhotos(), getSettings()]);
+  const tour3dUrl = settings.tour_3d_url?.trim();
 
   const stops: TourStop[] = STOP_ORDER.map(({ key, cat }) => ({
     key,
@@ -64,6 +67,16 @@ export default async function TourPage({
         }}
       />
       <PageHero eyebrow={t.tour.label} title={t.tour.title} intro={t.tour.intro} />
+      {tour3dUrl && (
+        <Tour3D
+          url={tour3dUrl}
+          poster={stops[0]?.photos[0]}
+          label={t.tour.threeD.label}
+          title={t.tour.threeD.title}
+          text={t.tour.threeD.text}
+          cta={t.tour.threeD.cta}
+        />
+      )}
       <TourExperience stops={stops} locale={locale} bookCta={t.tour.bookCta} />
     </>
   );

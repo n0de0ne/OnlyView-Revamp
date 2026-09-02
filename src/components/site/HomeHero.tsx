@@ -55,7 +55,7 @@ export function HomeHero(props: {
       <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/10 to-black/65" />
 
       <div className="relative z-10 mb-24 px-5 text-center text-white">
-        <p className="mb-5 text-[0.7rem] font-medium uppercase tracking-[0.5em] text-gold">
+        <p className="mb-5 text-[0.6rem] font-medium uppercase tracking-[0.22em] text-gold sm:text-[0.7rem] sm:tracking-[0.5em]">
           {props.location}
         </p>
         <h1 className="font-display text-5xl leading-[1.05] tracking-wide sm:text-6xl md:text-7xl">

@@ -51,6 +51,8 @@ const SETTINGS = {
   villa_address: "Pointe Milou, 97133 Saint-Barthélemy",
   villa_lat: "17.9124",
   villa_lng: "-62.8272",
+  // Immersive 3D walkthrough embedded on the tour page (empty = hidden)
+  tour_3d_url: "https://tour.giraffe360.com/51046496fd2c4761933549f4dfe3cfab/",
 };
 
 async function seedBase() {

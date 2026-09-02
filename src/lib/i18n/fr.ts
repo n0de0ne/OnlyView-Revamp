@@ -51,6 +51,14 @@ export const fr: Dict = {
     account: "Mon séjour",
     home: "Accueil",
   },
+  navShort: {
+    villa: "Villa",
+    tour: "Visite",
+    gallery: "Photos",
+    rates: "Tarifs",
+    booking: "Réserver",
+    more: "Plus",
+  },
   hero: {
     location: "Pointe Milou · Saint-Barthélemy",
     tagline: "Less is more. The view is everything.",
@@ -159,6 +167,12 @@ export const fr: Dict = {
     label: "Visite virtuelle",
     title: "Traversez la villa",
     intro: "Neuf espaces, une vue. Faites défiler pour passer de pièce en pièce — comme si vous veniez de pousser la porte.",
+    threeD: {
+      label: "Visite 3D",
+      title: "Entrez, pièce par pièce",
+      text: "Déplacez-vous librement dans toute la villa grâce à un modèle 3D interactif — mesurez les espaces, regardez par chaque fenêtre.",
+      cta: "Lancer la visite 3D",
+    },
     stops: {
       exterior: {
         title: "L'arrivée",

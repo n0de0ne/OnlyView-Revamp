@@ -6,6 +6,7 @@ import { getDict, isLocale, LOCALES, type Locale } from "@/lib/i18n";
 import { SITE_URL } from "@/lib/seo";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
+import { MobileTabBar } from "@/components/site/MobileTabBar";
 
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));
@@ -44,10 +45,11 @@ export default async function SiteLayout({
 
   return (
     <html lang={locale} className={fontClasses}>
-      <body>
+      <body className="has-tabbar">
         <SiteHeader locale={locale as Locale} />
         <main>{children}</main>
         <SiteFooter locale={locale as Locale} />
+        <MobileTabBar locale={locale as Locale} />
       </body>
     </html>
   );
