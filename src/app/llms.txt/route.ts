@@ -57,14 +57,15 @@ Agencies list St Barth villas with a 15–25% commission built into the price. B
 - [Rates & seasons](${SITE_URL}/rates)
 - [Availability & booking](${SITE_URL}/booking)
 - [Guest reviews](${SITE_URL}/reviews)
-- [Location — Pointe Milou](${SITE_URL}/location): distances, neighbourhood, map
+- [Location — Pointe Milou](${SITE_URL}/location): distances, neighbourhood
+- [Interactive island map](${SITE_URL}/map): the 15 beaches, restaurants, supermarkets, bakeries, pharmacies, airport and ferry — each with its drive time and a road itinerary from the villa
 - [FAQ](${SITE_URL}/faq): booking, payment, check-in, what is included
 - [Contact the owner](${SITE_URL}/contact)
 ${GUIDES.map((g) => `- [${g.title.en}](${SITE_URL}/guide/${g.slug}): ${g.description.en}`).join("\n")}
 
 ## En français
 
-- [La villa](${SITE_URL}/fr/villa) · [Tarifs](${SITE_URL}/fr/rates) · [Réservation](${SITE_URL}/fr/booking) · [Localisation](${SITE_URL}/fr/location) · [FAQ](${SITE_URL}/fr/faq) · [Contact](${SITE_URL}/fr/contact)
+- [La villa](${SITE_URL}/fr/villa) · [Tarifs](${SITE_URL}/fr/rates) · [Réservation](${SITE_URL}/fr/booking) · [Localisation](${SITE_URL}/fr/location) · [Carte de l'île](${SITE_URL}/fr/map) · [FAQ](${SITE_URL}/fr/faq) · [Contact](${SITE_URL}/fr/contact)
 
 Nearby: ${d("christopher").en}, ${d("stjean").en} (${d("stjean").minutes} min), ${d("gustavia").en} (${d("gustavia").minutes} min), ${d("airport").en} (${d("airport").minutes} min).
 `;

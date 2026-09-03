@@ -278,3 +278,88 @@ body {
 .abtn-danger {
   @apply bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
 }
+
+/* ─────────────────────────── Island map ───────────────────────────
+ * Leaflet popups and the legend of /map. Leaflet's own stylesheet ships
+ * with the component; these are the site's typography on top of it.
+ */
+.leaflet-container {
+  font-family: var(--font-sans);
+  z-index: 0;
+}
+.leaflet-popup-content-wrapper {
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(16, 24, 32, 0.18);
+}
+.leaflet-popup-content {
+  margin: 14px 16px;
+  line-height: 1.45;
+}
+.map-popup {
+  min-width: 180px;
+  max-width: 260px;
+}
+.map-popup-name {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--color-navy);
+  margin-bottom: 4px;
+}
+.map-popup-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.6rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+.map-popup-desc {
+  font-size: 0.8rem;
+  color: #4b5563;
+  margin-bottom: 6px;
+}
+.map-popup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 8px;
+}
+.map-popup-btn,
+.map-popup-btn-alt {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.75rem;
+  font-family: inherit;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  line-height: 1.2;
+}
+.map-popup-btn {
+  background: var(--color-navy);
+  color: #fff !important;
+  border: 1px solid var(--color-navy);
+}
+.map-popup-btn:hover {
+  background: var(--color-navy-deep);
+}
+.map-popup-btn-alt {
+  background: #fff;
+  color: var(--color-ink) !important;
+  border: 1px solid rgba(16, 24, 32, 0.15);
+}
+.map-popup-btn-alt:hover {
+  border-color: var(--color-navy);
+  color: var(--color-navy) !important;
+}
+.legend-dot {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}

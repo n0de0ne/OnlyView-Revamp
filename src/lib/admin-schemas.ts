@@ -89,3 +89,33 @@ export const UserInput = z.object({
 
 export const dateOrNull = (s: string | null | undefined) =>
   s ? new Date(`${s}T00:00:00Z`) : null;
+
+/* ───────────────────────── island map ───────────────────────── */
+
+const WAYPOINTS_RE = /^\s*-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?\s*(\|\s*-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?\s*)*$/;
+
+export const MapPlaceInput = z.object({
+  category: z.enum(["beach", "restaurant", "supermarket", "bakery", "pharmacy", "transport", "sport"]),
+  kind: z.string().max(30).nullable().optional().or(z.literal("").transform(() => null)),
+  name: z.string().trim().min(1).max(150),
+  zone: z.string().trim().max(100).nullable().optional().or(z.literal("").transform(() => null)),
+  lat: z.number().min(-90).max(90),
+  lng: z.number().min(-180).max(180),
+  descriptionEn: z.string().trim().max(1000).nullable().optional().or(z.literal("").transform(() => null)),
+  descriptionFr: z.string().trim().max(1000).nullable().optional().or(z.literal("").transform(() => null)),
+  driveMinutes: z.number().int().min(0).max(600).nullable().optional(),
+  /** "lat,lng|lat,lng" — the via-points of the drive from the villa */
+  waypoints: z
+    .string()
+    .trim()
+    .max(1000)
+    .regex(WAYPOINTS_RE)
+    .nullable()
+    .optional()
+    .or(z.literal("").transform(() => null)),
+  walkFromLastWaypoint: z.boolean().default(false),
+  website: z.string().trim().url().max(500).nullable().optional().or(z.literal("").transform(() => null)),
+  phone: z.string().trim().max(50).nullable().optional().or(z.literal("").transform(() => null)),
+  sortOrder: z.number().int().min(-100000).max(100000).default(0),
+  isActive: z.boolean().default(true),
+});

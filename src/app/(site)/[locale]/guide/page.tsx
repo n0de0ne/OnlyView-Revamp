@@ -69,6 +69,19 @@ export default async function GuideIndex({
       />
       <section className="mx-auto max-w-5xl px-5 py-16 lg:px-8">
         <div className="grid gap-6 sm:grid-cols-2">
+          <Link
+            href={localePath(locale, "/map")}
+            className="group border border-gold/50 bg-sand p-8 transition hover:border-gold"
+          >
+            <p className="eyebrow mb-3">{t.map.label}</p>
+            <h2 className="font-display text-2xl leading-snug transition group-hover:text-gold">
+              {fr ? "Carte interactive de l'île" : "Interactive island map"}
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-ink/65">{t.map.directoryIntro}</p>
+            <span className="mt-5 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-gold">
+              {t.nav.map} →
+            </span>
+          </Link>
           {GUIDES.map((g) => (
             <Link
               key={g.slug}

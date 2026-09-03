@@ -34,6 +34,7 @@ SEED_DEMO=1 npm run setup
 | **Booking module** — live availability calendar, instant quote (seasons, holiday packages, promo codes), request form | `/booking` |
 | **Guest portal** — passwordless magic-link login, reservations, payment status, contract signing (loyalty panel when the programme is on) | `/account` |
 | Online **contract e-signature** (draw + type-to-confirm) & PDF download | `/contracts/sign/[token]` |
+| **Interactive island map** — 15 beaches, 40+ restaurants, supermarkets, bakeries, pharmacies, airport/ferry/gas, sports, each with its drive time and a road itinerary from the villa (via-points for St Barth's tricky lanes, walk-in beaches drawn as a dashed leg), Google Maps / Waze hand-off, search, category filters, a text directory + `TouristDestination` JSON-LD for SEO/GEO | `/map` |
 | Reviews with moderation, St Barth guide hub, FAQ, location, why-book-direct, legal/privacy | … |
 
 **SEO / GEO:** one canonical per language + `hreflang` en/fr/x-default, complete Open Graph / Twitter cards on every page, one H1 per page, a linked JSON-LD graph (`VacationRental`, `LodgingBusiness`, `Organization`, `Person` owner, `WebSite`, `AggregateOffer`, `FAQPage`, `Review`, `Article`, `ImageGallery`, `ContactPage`, `BreadcrumbList`), plain-text key facts and a named-neighbourhood section that answer engines can quote, `/llms.txt`, a robots.txt that welcomes 21 AI crawlers by name, a bilingual image sitemap with real `lastmod`, 301s from every legacy `.php` URL and from `www`. `scripts/seo-audit.mjs` crawls a running instance and fails on any regression; `docs/seo-playbook.md` is the off-site checklist (Google Business Profile, Search Console, reviews, `sameAs` profiles).
@@ -63,6 +64,7 @@ renders the full page.
 - **Loyalty** *(switched off by default)* — automatic earning (1 pt/$100 paid, configurable), tiers (Silver/Gold/Platinum), manual adjustments. The whole programme is behind the `loyalty_enabled` setting (Réglages → Programme de fidélité): at `0` nothing is shown or credited anywhere — site copy, guest portal, admin menu and API — and `1` brings it all back without a deploy.
 - **Agencies / Promotions** — CRUD, commission stats, promo-code rules (nights, windows, must-include date, usage caps).
 - **Site & content** — photo manager (upload → auto WebP/resize), review moderation, email log.
+- **Island map** — the pins of `/map`: add/edit/hide places by category, drop the pin on a map, add the via-points the drive from the villa must follow (drag to adjust), flag "park here, walk the rest", and test the itinerary against the router before saving.
 - **Settings** (owner) — all rates & seasons, tax, min-stay, deposit %, loyalty config, profitability constants, bank details for contracts, contact info.
 - **Users** (owner) — multiple accounts with roles, forced password change, self-lockout protection, audit log on every action.
 

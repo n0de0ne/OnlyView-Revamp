@@ -59,8 +59,8 @@ const SETTINGS = {
   social_youtube: "",
   google_site_verification: "",
   bing_site_verification: "",
-  villa_lat: "17.9124",
-  villa_lng: "-62.8272",
+  villa_lat: "17.914904",
+  villa_lng: "-62.816212",
   // Immersive 3D walkthrough embedded on the tour page (empty = hidden)
   tour_3d_url: "https://tour.giraffe360.com/51046496fd2c4761933549f4dfe3cfab/",
   // Loyalty programme: off for now — "1" brings it back everywhere
@@ -83,6 +83,10 @@ async function seedBase() {
     contact_email: "contact@onlyviewstbarth.com",
     contact_phone: "+590 690 00 00 00",
     contact_whatsapp: "+590690000000",
+    // the first seed guessed a pin 1.2 km west of the house; the island map
+    // routes every itinerary from this point, so it has to be the real one
+    villa_lat: "17.9124",
+    villa_lng: "-62.8272",
   };
   for (const [key, placeholder] of Object.entries(PLACEHOLDERS)) {
     const current = await prisma.setting.findUnique({ where: { key } });
@@ -232,6 +236,17 @@ async function seedBase() {
       ],
     });
     console.log("Seeded testimonials");
+  }
+
+  // Island map pins (beaches, restaurants, shops…) from the legacy map.php
+  // and restaurants table. Create-only: a pin the owner has moved, renamed
+  // or given via-points in the admin keeps its edits; a deleted pin stays
+  // deleted unless it is missing from the table entirely.
+  const placesPath = path.join(__dirname, "..", "src", "data", "map-places.json");
+  if (fs.existsSync(placesPath) && (await prisma.mapPlace.count()) === 0) {
+    const places = JSON.parse(fs.readFileSync(placesPath, "utf8"));
+    await prisma.mapPlace.createMany({ data: places, skipDuplicates: true });
+    console.log(`Seeded ${places.length} map places`);
   }
 
   // A visible promotion example

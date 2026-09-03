@@ -108,6 +108,12 @@ export default async function LocationPage({
                 {fr ? "Comment venir" : "Getting here"}
               </Link>
             </div>
+            <Link
+              href={localePath(locale, "/map")}
+              className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-navy hover:text-gold"
+            >
+              🗺️ {t.location.islandMapCta} →
+            </Link>
           </div>
           <div className="space-y-4">
             {firstOf(photos, "exterior") && (
