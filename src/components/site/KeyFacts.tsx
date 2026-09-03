@@ -16,18 +16,24 @@ export function KeyFacts({
 }) {
   return (
     <section className={`bg-white ${className}`} aria-labelledby="key-facts">
-      <div className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
-        <p className="eyebrow mb-4">{label}</p>
-        <h2 id="key-facts" className="section-title mb-10 !text-3xl md:!text-4xl">
-          {title}
-        </h2>
-        <dl className="grid gap-x-10 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mx-auto max-w-7xl px-5 py-10 lg:px-8 lg:py-12">
+        <div className="mb-6 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+          <h2 id="key-facts" className="font-display text-2xl text-ink md:text-3xl">
+            {title}
+          </h2>
+          <p className="eyebrow !mb-0">{label}</p>
+        </div>
+        {/* dense two-column ledger: label left, fact right — reads in one glance */}
+        <dl className="grid gap-x-10 border-t border-ink/10 sm:grid-cols-2 lg:grid-cols-3">
           {Object.entries(facts).map(([key, [term, detail]]) => (
-            <div key={key} className="border-t border-ink/10 pt-4">
-              <dt className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-gold">
+            <div
+              key={key}
+              className="grid grid-cols-[6.5rem_1fr] items-baseline gap-x-3 border-b border-ink/10 py-2.5 text-sm"
+            >
+              <dt className="text-[0.66rem] font-semibold uppercase tracking-[0.18em] text-gold">
                 {term}
               </dt>
-              <dd className="mt-1.5 leading-relaxed text-ink/80">{detail}</dd>
+              <dd className="leading-snug text-ink/80">{detail}</dd>
             </div>
           ))}
         </dl>
