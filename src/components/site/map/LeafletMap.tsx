@@ -5,32 +5,25 @@
  * category (restaurants clustered), popups, and the itinerary drawing.
  * Loaded with `ssr: false` — Leaflet touches `window` at import time.
  *
- * The parent drives it with a `command` (focus a pin, clear the route) and
- * listens to `onRoute` for the itinerary panel; everything else is local.
+ * The parent drives it with a `command` (focus a pin, draw or clear a
+ * route) and listens to `onRoute` / `onSelect`; everything else is local.
  */
 import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet.markercluster/dist/MarkerCluster.css";
-import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import {
-  KIND_META,
   MAP_CATEGORIES,
   ROUTE_COLOR,
   VILLA_PIN_COLOR,
   WALK_COLOR,
+  kindLabel,
   pinStyle,
   type LatLng,
   type MapCategory,
   type MapPlaceDTO,
 } from "./map-meta";
-import {
-  buildItinerary,
-  fetchDrivingRoute,
-  googleMapsDirectionsUrl,
-  haversineM,
-  walkMinutes,
-} from "./routing";
+import { buildItinerary, fetchDrivingRoute, googleMapsDirectionsUrl, haversineM } from "./routing";
 
 export type MapCommand =
   | { type: "focus"; id: number; nonce: number }
@@ -50,7 +43,6 @@ export interface RouteState {
 export interface MapLabels {
   villa: string;
   villaSub: string;
-  fromVilla: string;
   min: string;
   route: string;
   openMaps: string;
@@ -60,21 +52,22 @@ export interface MapLabels {
   locale: "en" | "fr";
 }
 
-const ISLAND_CENTER: LatLng = [17.9, -62.83];
+const ISLAND_CENTER: LatLng = [17.9015, -62.832];
 
-function pinIcon(color: string, emoji: string, size = 32) {
+/** a round pin in a category colour with a fine white ring — the site's dots */
+function pinIcon(color: string, emoji: string, size = 30) {
   return L.divIcon({
-    html: `<div style="background:${color};border:2px solid #fff;border-radius:50%;width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;font-size:${Math.round(size * 0.55)}px;box-shadow:0 2px 6px rgba(0,0,0,.3)">${emoji}</div>`,
+    html: `<span class="map-pin" style="--pin:${color};--size:${size}px">${emoji}</span>`,
     className: "",
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
-    popupAnchor: [0, -(size / 2 + 2)],
+    popupAnchor: [0, -(size / 2 + 4)],
   });
 }
 
 const dotIcon = (color: string, size: number, text = "") =>
   L.divIcon({
-    html: `<div style="background:${color};border:2px solid #fff;border-radius:50%;width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;font-size:${Math.round(size * 0.6)}px;font-weight:700;color:#fff;box-shadow:0 2px 6px rgba(0,0,0,.4)">${text}</div>`,
+    html: `<span class="map-dot" style="--pin:${color};--size:${size}px">${text}</span>`,
     className: "",
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
@@ -90,6 +83,7 @@ export function LeafletMap({
   command,
   labels,
   onRoute,
+  onSelect,
 }: {
   villa: LatLng;
   places: MapPlaceDTO[];
@@ -98,6 +92,8 @@ export function LeafletMap({
   command: MapCommand | null;
   labels: MapLabels;
   onRoute: (state: RouteState | null) => void;
+  /** a pin's popup opened (null: closed) */
+  onSelect: (id: number | null) => void;
 }) {
   const elRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -105,8 +101,8 @@ export function LeafletMap({
   const markersRef = useRef<Map<number, { marker: L.Marker; group: L.LayerGroup }>>(new Map());
   const routeLayerRef = useRef<L.LayerGroup | null>(null);
   const routeAbortRef = useRef<AbortController | null>(null);
-  const onRouteRef = useRef(onRoute);
-  onRouteRef.current = onRoute;
+  const cb = useRef({ onRoute, onSelect });
+  cb.current = { onRoute, onSelect };
   const labelsRef = useRef(labels);
   labelsRef.current = labels;
   const visibleRef = useRef(visible);
@@ -124,17 +120,18 @@ export function LeafletMap({
       await import("leaflet.markercluster");
       if (cancelled) return;
 
-      const map = L.map(el, { center: ISLAND_CENTER, zoom: 14, zoomControl: true });
+      const map = L.map(el, { center: ISLAND_CENTER, zoom: 13, zoomControl: false });
       mapRef.current = map;
+      L.control.zoom({ position: "topright" }).addTo(map);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
         maxZoom: 19,
       }).addTo(map);
 
-      L.marker(villa, { icon: pinIcon(VILLA_PIN_COLOR, "🏠", 36), zIndexOffset: 1000 })
+      L.marker(villa, { icon: pinIcon(VILLA_PIN_COLOR, "🏠", 38), zIndexOffset: 1000 })
         .addTo(map)
         .bindPopup(
-          `<div class="map-popup"><div class="map-popup-name">${esc(labelsRef.current.villa)}</div><div class="map-popup-meta">${esc(labelsRef.current.villaSub)}</div></div>`
+          `<div class="map-popup"><p class="map-popup-kicker">${esc(labelsRef.current.villaSub)}</p><p class="map-popup-name">${esc(labelsRef.current.villa)}</p></div>`
         );
 
       const groups = groupsRef.current;
@@ -142,9 +139,16 @@ export function LeafletMap({
         const g =
           cat === "restaurant"
             ? L.markerClusterGroup({
-                maxClusterRadius: 40,
+                maxClusterRadius: 36,
                 showCoverageOnHover: false,
                 disableClusteringAtZoom: 16,
+                iconCreateFunction: (cluster) =>
+                  L.divIcon({
+                    html: `<span class="map-cluster">${cluster.getChildCount()}</span>`,
+                    className: "",
+                    iconSize: [34, 34],
+                    iconAnchor: [17, 17],
+                  }),
               })
             : L.layerGroup();
         groups.set(cat, g);
@@ -154,35 +158,34 @@ export function LeafletMap({
       const lb = labelsRef.current;
       for (const p of places) {
         const { color, emoji } = pinStyle(p);
-        const marker = L.marker([p.lat, p.lng], { icon: pinIcon(color, emoji) });
+        const marker = L.marker([p.lat, p.lng], { icon: pinIcon(color, emoji), title: p.name });
         const popup = document.createElement("div");
         popup.className = "map-popup";
-        const meta: string[] = [];
-        if (p.driveMinutes) meta.push(`🚗 ${p.driveMinutes} ${lb.min} ${lb.fromVilla}`);
-        if (p.zone) meta.push(esc(p.zone));
-        const kind = p.kind && p.kind !== "restaurant" ? KIND_META[p.kind] : undefined;
-        if (kind) meta.push(esc(lb.locale === "fr" ? kind.fr : kind.en));
+        const kicker = [kindLabel(p, lb.locale), p.zone, p.driveMinutes ? `${p.driveMinutes} ${lb.min}` : null]
+          .filter(Boolean)
+          .map((s) => esc(String(s)))
+          .join(" · ");
         const it = buildItinerary(villa, p);
         const mapsUrl = googleMapsDirectionsUrl(villa, it.navTarget, it.via);
         popup.innerHTML =
-          `<div class="map-popup-name">${esc(p.name)}</div>` +
-          (meta.length ? `<div class="map-popup-meta">${meta.map((m) => `<span>${m}</span>`).join("")}</div>` : "") +
-          (p.description ? `<div class="map-popup-desc">${esc(p.description)}</div>` : "") +
-          (p.walkFromLastWaypoint ? `<div class="map-popup-desc">🅿️ ${esc(lb.parking)}</div>` : "") +
+          `<p class="map-popup-kicker">${kicker}</p>` +
+          `<p class="map-popup-name">${esc(p.name)}</p>` +
+          (p.description ? `<p class="map-popup-desc">${esc(p.description)}</p>` : "") +
+          (p.walkFromLastWaypoint ? `<p class="map-popup-note">${esc(lb.parking)}</p>` : "") +
           `<div class="map-popup-actions">` +
-          `<button type="button" class="map-popup-btn" data-route>🚗 ${esc(lb.route)}</button>` +
-          `<a class="map-popup-btn-alt" href="${mapsUrl}" target="_blank" rel="noopener noreferrer">🗺️ ${esc(lb.openMaps)}</a>` +
+          `<button type="button" class="map-popup-btn" data-route>${esc(lb.route)}</button>` +
+          `<a class="map-popup-link" href="${mapsUrl}" target="_blank" rel="noopener noreferrer">${esc(lb.openMaps)} ↗</a>` +
           (p.website
-            ? `<a class="map-popup-btn-alt" href="${esc(p.website)}" target="_blank" rel="noopener noreferrer">↗ ${esc(lb.website)}</a>`
+            ? `<a class="map-popup-link" href="${esc(p.website)}" target="_blank" rel="noopener noreferrer">${esc(lb.website)} ↗</a>`
             : "") +
-          (p.phone
-            ? `<a class="map-popup-btn-alt" href="tel:${esc(p.phone.replace(/\s+/g, ""))}">📞 ${esc(lb.call)}</a>`
-            : "") +
+          (p.phone ? `<a class="map-popup-link" href="tel:${esc(p.phone.replace(/\s+/g, ""))}">${esc(lb.call)}</a>` : "") +
           `</div>`;
         popup.querySelector<HTMLButtonElement>("[data-route]")!.addEventListener("click", () => {
           void drawRoute(p);
         });
-        marker.bindPopup(popup, { maxWidth: 280 });
+        marker.bindPopup(popup, { maxWidth: 300, closeButton: false });
+        marker.on("popupopen", () => cb.current.onSelect(p.id));
+        marker.on("popupclose", () => cb.current.onSelect(null));
         const group = groups.get(p.category)!;
         group.addLayer(marker);
         markersRef.current.set(p.id, { marker, group });
@@ -225,7 +228,7 @@ export function LeafletMap({
     routeAbortRef.current?.abort();
     routeAbortRef.current = null;
     routeLayerRef.current?.clearLayers();
-    onRouteRef.current(null);
+    cb.current.onRoute(null);
   }
 
   async function drawRoute(place: MapPlaceDTO) {
@@ -240,34 +243,32 @@ export function LeafletMap({
     const it = buildItinerary(villa, place);
     const dest: LatLng = [place.lat, place.lng];
     let walkM = 0;
-    for (const v of it.via) layer.addLayer(L.marker(v, { icon: dotIcon(WALK_COLOR, 14), zIndexOffset: 500 }));
+    for (const v of it.via) layer.addLayer(L.marker(v, { icon: dotIcon(ROUTE_COLOR, 12), zIndexOffset: 500 }));
     if (it.walk) {
       const [park, end] = it.walk;
       layer.addLayer(L.marker(park, { icon: dotIcon(WALK_COLOR, 22, "P"), zIndexOffset: 600 }));
       layer.addLayer(
-        L.polyline([park, end], { color: WALK_COLOR, weight: 3, opacity: 0.85, dashArray: "8, 12", lineCap: "round" })
+        L.polyline([park, end], { color: WALK_COLOR, weight: 3, opacity: 0.95, dashArray: "2, 9", lineCap: "round" })
       );
-      layer.addLayer(L.marker(end, { icon: pinIcon(WALK_COLOR, "🚶", 22), zIndexOffset: 600 }));
       walkM = haversineM(park, end);
     }
     const base = { place, walkM, navTarget: it.navTarget, via: it.via };
-    onRouteRef.current({ ...base, status: "loading", distanceM: 0, durationS: 0 });
-    map.fitBounds(L.latLngBounds([villa, ...it.drive, dest]), { padding: [50, 50] });
+    cb.current.onRoute({ ...base, status: "loading", distanceM: 0, durationS: 0 });
+    map.fitBounds(L.latLngBounds([villa, ...it.drive, dest]), { padding: [60, 60] });
 
     const route = await fetchDrivingRoute(it.drive, abort.signal);
     if (abort.signal.aborted) return;
     if (route) {
-      layer.addLayer(L.polyline(route.coords, { color: ROUTE_COLOR, weight: 5, opacity: 0.8 }));
-      map.fitBounds(L.latLngBounds([...route.coords, dest]), { padding: [50, 50] });
-      onRouteRef.current({ ...base, status: "ok", distanceM: route.distanceM, durationS: route.durationS });
+      layer.addLayer(L.polyline(route.coords, { color: "#fff", weight: 8, opacity: 0.9 }));
+      layer.addLayer(L.polyline(route.coords, { color: ROUTE_COLOR, weight: 4, opacity: 0.95 }));
+      map.fitBounds(L.latLngBounds([...route.coords, dest]), { padding: [60, 60] });
+      cb.current.onRoute({ ...base, status: "ok", distanceM: route.distanceM, durationS: route.durationS });
     } else {
       // no router: a straight dashed line and a crow-flies estimate
-      layer.addLayer(
-        L.polyline(it.drive, { color: ROUTE_COLOR, weight: 4, opacity: 0.5, dashArray: "6, 10" })
-      );
+      layer.addLayer(L.polyline(it.drive, { color: ROUTE_COLOR, weight: 3, opacity: 0.5, dashArray: "6, 10" }));
       let d = 0;
       for (let i = 1; i < it.drive.length; i++) d += haversineM(it.drive[i - 1], it.drive[i]);
-      onRouteRef.current({ ...base, status: "approx", distanceM: d, durationS: 0 });
+      cb.current.onRoute({ ...base, status: "approx", distanceM: d, durationS: 0 });
     }
   }
 
@@ -283,23 +284,21 @@ export function LeafletMap({
     const entry = markersRef.current.get(command.id);
     if (!entry) return;
     const { marker, group } = entry;
-    const open = () => {
-      const g = group as L.LayerGroup & { zoomToShowLayer?: (m: L.Marker, cb: () => void) => void };
-      if (typeof g.zoomToShowLayer === "function") g.zoomToShowLayer(marker, () => marker.openPopup());
-      else marker.openPopup();
-    };
     if (command.type === "route") {
       const place = places.find((p) => p.id === command.id);
       if (place) void drawRoute(place);
       return;
     }
-    map.flyTo(marker.getLatLng(), 16, { duration: 0.8 });
-    const t = setTimeout(open, 900);
+    const open = () => {
+      const g = group as L.LayerGroup & { zoomToShowLayer?: (m: L.Marker, cb: () => void) => void };
+      if (typeof g.zoomToShowLayer === "function") g.zoomToShowLayer(marker, () => marker.openPopup());
+      else marker.openPopup();
+    };
+    map.flyTo(marker.getLatLng(), Math.max(map.getZoom(), 16), { duration: 0.8 });
+    const t = setTimeout(open, 850);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [command]);
 
-  return <div ref={elRef} className="h-full w-full" aria-label="Map" role="application" />;
+  return <div ref={elRef} className="h-full w-full" role="application" aria-label={labels.villaSub} />;
 }
-
-export { walkMinutes };
