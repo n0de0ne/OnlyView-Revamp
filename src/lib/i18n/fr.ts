@@ -559,16 +559,17 @@ export const fr: Dict = {
   goldenHour: {
     eyebrow: "Golden hour",
     title: "Le soleil se couche face à la terrasse, chaque soir",
-    text: "Nos propres photos, depuis la piscine, à cinq heures d'écart. Faites glisser l'heure et regardez la baie passer du bleu de l'après-midi à la golden hour, au soleil derrière les collines, au crépuscule violet et aux premières lumières — au plus beau de novembre à mars.",
+    text: "Une seule photo, prise depuis la piscine à la golden hour, et tout y vit : la houle sur la baie, le chemin du soleil sur l'eau, les nuages, la brise dans les arbres. Faites glisser l'heure pour voir le soleil passer derrière les collines, le ciel virer au violet, les premières étoiles et la piscine s'allumer — au plus beau de novembre à mars.",
+    hint: "Touchez l'eau",
     hour: "Heure",
     play: "Lecture",
     pause: "Pause",
     moments: [
-      [15.3, "Après-midi"],
-      [17.7, "Golden hour"],
-      [18.2, "Coucher"],
-      [18.7, "Crépuscule"],
-      [19.3, "Tombée du soir"],
+      [17.6, "Golden hour"],
+      [17.95, "Coucher"],
+      [18.3, "Crépuscule"],
+      [18.75, "Heure bleue"],
+      [19.3, "Nuit"],
     ] as Array<[number, string]>,
   },
   guideIntro:

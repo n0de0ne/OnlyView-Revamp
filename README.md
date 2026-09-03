@@ -35,7 +35,7 @@ SEED_DEMO=1 npm run setup
 | **Guest portal** — passwordless magic-link login, reservations, payment status, contract signing (loyalty panel when the programme is on) | `/account` |
 | Online **contract e-signature** (draw + type-to-confirm) & PDF download | `/contracts/sign/[token]` |
 | **Interactive island map** — 15 beaches, 40+ restaurants, supermarkets, bakeries, pharmacies, airport/ferry/gas, sports, each with its drive time and a road itinerary from the villa (via-points for St Barth's tricky lanes, walk-in beaches drawn as a dashed leg), Google Maps / Waze hand-off, search, category filters, a text directory + `TouristDestination` JSON-LD for SEO/GEO | `/map` |
-| **Golden hour** — the villa's own photos of the bay, afternoon to nightfall, dissolved by the hour in WebGL (three.js / react-three-fiber) with a pointer parallax | `/`, `/location` |
+| **Golden hour** — a living photograph: the villa's own shot of the bay from the pool, animated region by region in WebGL (three.js / react-three-fiber): the sea swells and glitters, the pool ripples where you touch it, clouds and trees move, and the hour sinks the sun, turns the sky violet then navy, brings out the stars and lights the pool. Masks are traced in `scripts/golden-mask.mjs` | `/`, `/location` |
 | Reviews with moderation, St Barth guide hub, FAQ, location, why-book-direct, legal/privacy | … |
 
 **SEO / GEO:** one canonical per language + `hreflang` en/fr/x-default, complete Open Graph / Twitter cards on every page, one H1 per page, a linked JSON-LD graph (`VacationRental`, `LodgingBusiness`, `Organization`, `Person` owner, `WebSite`, `AggregateOffer`, `FAQPage`, `Review`, `Article`, `ImageGallery`, `ContactPage`, `BreadcrumbList`), plain-text key facts and a named-neighbourhood section that answer engines can quote, `/llms.txt`, a robots.txt that welcomes 21 AI crawlers by name, a bilingual image sitemap with real `lastmod`, 301s from every legacy `.php` URL and from `www`. `scripts/seo-audit.mjs` crawls a running instance and fails on any regression; `docs/seo-playbook.md` is the off-site checklist (Google Business Profile, Search Console, reviews, `sameAs` profiles).
@@ -79,7 +79,7 @@ renders the full page.
 
 ### Motion
 
-Inertial scrolling (Lenis, driven by GSAP's ticker and synced with ScrollTrigger), scroll reveals that never hide content from crawlers or no-script readers, word-by-word heading reveals in pure CSS, count-up figures (GSAP), magnetic buttons and tilting cards (Framer Motion), route transitions that skip the first paint, parallax photos, and the golden-hour photo dissolve (WebGL) that mounts only near the viewport and renders only while visible. Everything respects `prefers-reduced-motion`.
+Inertial scrolling (Lenis, driven by GSAP's ticker and synced with ScrollTrigger), scroll reveals that never hide content from crawlers or no-script readers, word-by-word heading reveals in pure CSS, count-up figures (GSAP), magnetic buttons and tilting cards (Framer Motion), route transitions that skip the first paint, parallax photos, and the golden-hour living photograph (WebGL) that mounts only near the viewport and renders only while visible. Everything respects `prefers-reduced-motion`.
 
 ## Stack
 

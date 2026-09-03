@@ -1,33 +1,31 @@
 "use client";
 
 /**
- * "Golden hour at Pointe Milou": the villa's own photographs of the bay,
- * from afternoon to nightfall, dissolved by the hour. The current frame is
- * a plain image (fast, indexable); the WebGL dissolve loads only when the
- * block nears the viewport and runs only while it is visible.
+ * "Golden hour at Pointe Milou": the villa's own photograph of the bay from
+ * the pool, brought to life in WebGL — the sea, the pool, the clouds and the
+ * light move, the hour sinks the sun and brings the night. The still is a
+ * plain image (fast, indexable); the scene loads only when the block nears
+ * the viewport and renders only while it is visible.
  */
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import type { SitePhoto } from "@/lib/photos";
-import type { Frame } from "./GoldenHourScene";
+import type { SceneControls } from "./GoldenHourScene";
 
 const Scene = dynamic(() => import("./GoldenHourScene"), { ssr: false });
 
-/** the same view, five hours apart — file → the hour it was taken */
-const SEQUENCE: Array<[string, number]> = [
-  ["pool-terrace/pool-terrace-02.webp", 15.3],
-  ["night/night-04.webp", 17.7],
-  ["night/night-02.webp", 18.2],
-  ["night/night-05.webp", 18.7],
-  ["night/night-06.webp", 19.3],
-];
+const PHOTO = "night/night-01.webp";
+const MASK = "/media/golden/mask-night-01.png";
+const START = 17.3;
+const END = 19.5;
 
 export interface GoldenHourLabels {
   eyebrow: string;
   title: string;
   text: string;
+  hint: string;
   hour: string;
   play: string;
   pause: string;
@@ -50,19 +48,17 @@ export function GoldenHour({
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const pointer = useRef({ x: 0, y: 0 });
+  const stage = useRef<HTMLDivElement>(null);
+  const controls = useRef<SceneControls>({ pointer: { x: 0, y: 0 }, taps: [] });
   const reduced = useReducedMotion();
   const [near, setNear] = useState(false);
   const [visible, setVisible] = useState(false);
-  const [hour, setHour] = useState(17.9);
+  const [hour, setHour] = useState(17.6);
+  const [dim, setDim] = useState(0);
   const [playing, setPlaying] = useState(true);
 
-  const frames: Array<Frame & { alt: string }> = SEQUENCE.map(([file, h]) => {
-    const p = photos.find((x) => x.url.endsWith(file));
-    return { url: p?.url ?? `/media/photos/${file}`, alt: p?.alt ?? "", hour: h };
-  });
-  // the still behind the canvas: the frame the hour is closest to
-  const current = frames.reduce((best, f) => (Math.abs(f.hour - hour) < Math.abs(best.hour - hour) ? f : best), frames[0]);
+  const photo = photos.find((p) => p.url.endsWith(PHOTO));
+  const src = photo?.url ?? `/media/photos/${PHOTO}`;
 
   useEffect(() => {
     const el = ref.current;
@@ -78,15 +74,37 @@ export function GoldenHour({
     return () => io.disconnect();
   }, []);
 
-  // the evening advances on its own — about a minute of light per second
+  // the evening advances on its own, and fades back to golden hour at the end
   useEffect(() => {
     if (!playing || !visible || reduced) return;
     let raf = 0;
     let last = performance.now();
+    let fading = false;
+    let fade = 0;
     const step = (now: number) => {
-      const dt = (now - last) / 1000;
+      const dt = Math.min(0.1, (now - last) / 1000);
       last = now;
-      setHour((h) => (h + dt * 0.016 > 19.9 ? 15.2 : h + dt * 0.016));
+      if (fading) {
+        fade += dt * 1.6;
+        if (fade >= 1) {
+          setHour(START);
+          fading = false;
+          fade = 0;
+          setDim(0);
+        } else {
+          setDim(fade < 0.5 ? fade * 2 : 0);
+          if (fade >= 0.5) setHour(START);
+        }
+      } else {
+        setHour((h) => {
+          const n = h + dt * 0.014;
+          if (n >= END) {
+            fading = true;
+            return END;
+          }
+          return n;
+        });
+      }
       raf = requestAnimationFrame(step);
     };
     raf = requestAnimationFrame(step);
@@ -96,7 +114,14 @@ export function GoldenHour({
   const onPointer = (e: React.PointerEvent) => {
     if (e.pointerType !== "mouse" || !ref.current) return;
     const r = ref.current.getBoundingClientRect();
-    pointer.current = { x: ((e.clientX - r.left) / r.width) * 2 - 1, y: ((e.clientY - r.top) / r.height) * 2 - 1 };
+    controls.current.pointer = { x: ((e.clientX - r.left) / r.width) * 2 - 1, y: ((e.clientY - r.top) / r.height) * 2 - 1 };
+  };
+
+  const onTouch = (e: React.PointerEvent) => {
+    const el = stage.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    controls.current.taps.push({ x: (e.clientX - r.left) / r.width, y: 1 - (e.clientY - r.top) / r.height });
   };
 
   return (
@@ -105,24 +130,20 @@ export function GoldenHour({
       className={`relative overflow-hidden bg-night text-white ${className}`}
       aria-labelledby="golden-hour"
       onPointerMove={onPointer}
-      onPointerLeave={() => (pointer.current = { x: 0, y: 0 })}
+      onPointerLeave={() => (controls.current.pointer = { x: 0, y: 0 })}
     >
-      <div className="relative h-[78svh] min-h-[480px] w-full">
-        <Image
-          key={current.url}
-          src={current.url}
-          alt={current.alt}
-          fill
-          sizes="100vw"
-          className="object-cover"
-          priority={false}
-        />
+      <div ref={stage} className="relative h-[84svh] min-h-[520px] w-full cursor-crosshair" onPointerDown={onTouch}>
+        {/* the still under the scene, cropped the same way (anchor 42% from the left and the bottom) */}
+        <Image src={src} alt={photo?.alt ?? ""} fill sizes="100vw" className="object-cover object-[42%_58%]" priority={false} />
         {near && (
           <Suspense fallback={null}>
-            <Scene frames={frames} hour={hour} active={visible && !reduced} pointer={pointer} />
+            <Scene photo={src} mask={MASK} hour={hour} dim={dim} active={visible && !reduced} controls={controls} />
           </Suspense>
         )}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-night to-transparent" />
+        <p className="pointer-events-none absolute right-5 top-24 text-[0.62rem] uppercase tracking-[0.2em] text-white/60 lg:right-8">
+          {labels.hint}
+        </p>
       </div>
 
       <div className="relative mx-auto -mt-28 max-w-7xl px-5 pb-16 lg:px-8">
@@ -146,12 +167,13 @@ export function GoldenHour({
             <input
               id="golden-hour-time"
               type="range"
-              min={15.2}
-              max={19.9}
-              step={0.05}
+              min={START}
+              max={END}
+              step={0.01}
               value={hour}
               onChange={(e) => {
                 setPlaying(false);
+                setDim(0);
                 setHour(parseFloat(e.target.value));
               }}
               className="golden-range mt-2 w-full"
@@ -164,9 +186,10 @@ export function GoldenHour({
                   type="button"
                   onClick={() => {
                     setPlaying(false);
+                    setDim(0);
                     setHour(h);
                   }}
-                  className={`tap whitespace-nowrap transition hover:text-gold ${Math.abs(hour - h) < 0.25 ? "text-gold" : ""}`}
+                  className={`tap whitespace-nowrap transition hover:text-gold ${Math.abs(hour - h) < 0.18 ? "text-gold" : ""}`}
                 >
                   {label}
                 </button>

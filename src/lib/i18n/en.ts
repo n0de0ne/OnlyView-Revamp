@@ -561,16 +561,17 @@ export const en = {
   goldenHour: {
     eyebrow: "Golden hour",
     title: "The sun sets in front of the terrace, every evening",
-    text: "Our own photographs, from the pool, five hours apart. Drag the hour and watch the bay go from afternoon blue to golden hour, the sun behind the hills, the violet dusk and the first lights — at its best from November to March.",
+    text: "One photograph, taken from the pool at golden hour, and everything in it alive: the swell on the bay, the sun's path on the water, the clouds, the breeze in the trees. Drag the hour to watch the sun sink behind the hills, the sky turn violet, the first stars come out and the pool light up — at its best from November to March.",
+    hint: "Touch the water",
     hour: "Hour",
     play: "Play",
     pause: "Pause",
     moments: [
-      [15.3, "Afternoon"],
-      [17.7, "Golden hour"],
-      [18.2, "Sunset"],
-      [18.7, "Dusk"],
-      [19.3, "Nightfall"],
+      [17.6, "Golden hour"],
+      [17.95, "Sunset"],
+      [18.3, "Dusk"],
+      [18.75, "Blue hour"],
+      [19.3, "Night"],
     ] as Array<[number, string]>,
   },
   guideIntro:
