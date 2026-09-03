@@ -44,10 +44,10 @@ function Icon({ name, active }: { name: keyof typeof icons; active?: boolean }) 
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={active ? 2 : 1.6}
+      strokeWidth={active ? 2.1 : 1.7}
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="h-[22px] w-[22px] shrink-0"
+      className="h-[20px] w-[20px] shrink-0"
       aria-hidden="true"
     >
       {icons[name]}
@@ -140,8 +140,8 @@ export function MobileTabBar({ locale }: { locale: Locale }) {
         <div
           ref={barRef}
           onClick={interceptWhenCollapsed}
-          className={`glass-bar flex min-w-0 items-center rounded-[1.65rem] ${
-            collapsed ? "flex-none p-1" : "flex-1 p-1.5"
+          className={`glass-bar flex min-w-0 items-center rounded-full ${
+            collapsed ? "flex-none p-1" : "flex-1 p-1"
           }`}
           style={{ transition: `padding 520ms ${SPRING}, flex-grow 520ms ${SPRING}` }}
         >
@@ -157,22 +157,22 @@ export function MobileTabBar({ locale }: { locale: Locale }) {
                 aria-hidden={hidden || undefined}
                 tabIndex={hidden ? -1 : undefined}
                 onClick={interceptWhenCollapsed}
-                className={`tap relative flex min-w-0 flex-col items-center justify-center gap-1 overflow-hidden rounded-[1.3rem] ${
+                className={`tap relative flex min-w-0 flex-col items-center justify-center gap-[3px] overflow-hidden rounded-full ${
                   active ? "text-navy" : "text-ink/55"
                 }`}
                 style={{
                   flex: hidden ? "0 0 0px" : "1 1 0px",
                   maxWidth: hidden ? 0 : "8rem",
                   opacity: hidden ? 0 : 1,
-                  paddingBlock: collapsed ? "0.4rem" : "0.5rem",
+                  paddingBlock: collapsed ? "0.4rem" : "0.35rem",
                   paddingInline: hidden ? 0 : collapsed ? "0.7rem" : "0.125rem",
                   transition: `flex 520ms ${SPRING}, max-width 520ms ${SPRING}, opacity 320ms ease, padding 520ms ${SPRING}`,
                 }}
               >
                 {active && !collapsed && (
                   <span
-                    className="absolute inset-0 rounded-[1.3rem] bg-white/70"
-                    style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,.9)" }}
+                    className="absolute inset-0 rounded-full bg-white/45"
+                    style={{ boxShadow: "inset 0 1px 0.5px rgba(255,255,255,.85)" }}
                     aria-hidden="true"
                   />
                 )}
@@ -180,11 +180,11 @@ export function MobileTabBar({ locale }: { locale: Locale }) {
                   <Icon name={tab.icon} active={active} />
                 </span>
                 <span
-                  className={`relative block max-w-full truncate text-[0.58rem] font-semibold uppercase tracking-[0.06em] ${
+                  className={`relative block max-w-full truncate text-[0.6rem] font-semibold tracking-[0.01em] ${
                     active ? "text-navy" : "text-ink/65"
                   }`}
                   style={{
-                    maxHeight: collapsed ? 0 : "1rem",
+                    maxHeight: collapsed ? 0 : "0.85rem",
                     opacity: collapsed ? 0 : 1,
                     transition: `max-height 520ms ${SPRING}, opacity 260ms ease`,
                   }}
@@ -199,22 +199,22 @@ export function MobileTabBar({ locale }: { locale: Locale }) {
         <Link
           href={bookHref}
           aria-current={onBooking ? "page" : undefined}
-          className="tap flex shrink-0 flex-col items-center justify-center gap-1 overflow-hidden rounded-[1.65rem] text-white"
+          className="tap flex shrink-0 flex-col items-center justify-center gap-[3px] overflow-hidden rounded-full text-white"
           style={{
-            height: collapsed ? "3.1rem" : "4.25rem",
-            paddingInline: collapsed ? "0.95rem" : "1rem",
+            height: collapsed ? "2.7rem" : "3.4rem",
+            paddingInline: collapsed ? "0.9rem" : "1rem",
             background:
               "linear-gradient(160deg, var(--color-gold-light), var(--color-gold) 55%, var(--color-gold-dark))",
             boxShadow:
-              "inset 0 1px 0 rgba(255,255,255,.55), 0 10px 26px -8px rgba(201,169,98,.75), 0 2px 10px -4px rgba(12,20,27,.35)",
+              "inset 0 1px 0.5px rgba(255,255,255,.6), 0 6px 18px -6px rgba(201,169,98,.6), 0 1px 3px -1px rgba(12,20,27,.25)",
             transition: `height 520ms ${SPRING}, padding 520ms ${SPRING}`,
           }}
         >
           <Icon name="book" active />
           <span
-            className="block overflow-hidden text-[0.6rem] font-bold uppercase tracking-[0.08em]"
+            className="block overflow-hidden text-[0.6rem] font-bold tracking-[0.02em]"
             style={{
-              maxHeight: collapsed ? 0 : "1rem",
+              maxHeight: collapsed ? 0 : "0.85rem",
               opacity: collapsed ? 0 : 1,
               transition: `max-height 520ms ${SPRING}, opacity 260ms ease`,
             }}

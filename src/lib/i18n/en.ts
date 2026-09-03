@@ -433,6 +433,10 @@ export const en = {
     headingSuffix: " — luxury villa rental in Pointe Milou, Saint-Barthélemy, direct from the owner",
     factsTitle: "Villa ONLY VIEW at a glance",
     factsLabel: "Key facts",
+    /** the headline, for phones — the full table sits behind the toggle */
+    factsSummary:
+      "4 en-suite bedrooms · up to 8 guests · 200 m² · heated pool · 180° sea view · 10 min from the airport · direct from the owner",
+    factsToggle: "All the details",
     facts: {
       type: ["Property", "Private luxury villa, rented directly by its owner (no agency)"],
       location: ["Location", "Pointe Milou, Saint-Barthélemy (St Barth), French West Indies"],

@@ -103,7 +103,11 @@ export default async function VillaPage({
         </div>
       </section>
 
-      <KeyFacts title={t.seo.factsTitle} label={t.seo.factsLabel} facts={t.seo.facts} className="border-b border-ink/10" />
+      <KeyFacts title={t.seo.factsTitle}
+        label={t.seo.factsLabel}
+        summary={t.seo.factsSummary}
+        toggle={t.seo.factsToggle}
+        facts={t.seo.facts} className="border-b border-ink/10" />
 
       {/* Rooms — alternating layout */}
       <section className="mx-auto max-w-7xl space-y-24 px-5 py-24 lg:px-8">

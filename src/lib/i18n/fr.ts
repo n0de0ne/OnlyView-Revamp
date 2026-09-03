@@ -432,6 +432,9 @@ export const fr: Dict = {
     headingSuffix: " — villa de luxe à louer à Pointe Milou, Saint-Barthélemy, en direct propriétaire",
     factsTitle: "La Villa ONLY VIEW en bref",
     factsLabel: "L'essentiel",
+    factsSummary:
+      "4 chambres en suite · jusqu'à 8 personnes · 200 m² · piscine chauffée · vue mer à 180° · 10 min de l'aéroport · en direct propriétaire",
+    factsToggle: "Tous les détails",
     facts: {
       type: ["Bien", "Villa privée de luxe, louée en direct par sa propriétaire (sans agence)"],
       location: ["Localisation", "Pointe Milou, Saint-Barthélemy (St Barth), Antilles françaises"],

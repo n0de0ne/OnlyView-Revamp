@@ -172,7 +172,11 @@ export default async function HomePage({
       </section>
 
       {/* The facts, in plain text — what answer engines quote */}
-      <KeyFacts title={t.seo.factsTitle} label={t.seo.factsLabel} facts={t.seo.facts} />
+      <KeyFacts title={t.seo.factsTitle}
+        label={t.seo.factsLabel}
+        summary={t.seo.factsSummary}
+        toggle={t.seo.factsToggle}
+        facts={t.seo.facts} />
 
       {/* Spaces */}
       <section className="bg-sand-dark py-24 lg:py-32">
