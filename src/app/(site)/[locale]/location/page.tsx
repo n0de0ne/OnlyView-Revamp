@@ -150,7 +150,7 @@ export default async function LocationPage({
           </ul>
         </div>
       </section>
-      <GoldenHour labels={t.goldenHour} />
+      <GoldenHour labels={t.goldenHour} photos={photos} />
     </>
   );
 }

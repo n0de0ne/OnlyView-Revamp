@@ -1,179 +1,162 @@
 "use client";
 
 /**
- * The view from the terrace, in WebGL: sky, sun and sea (three.js through
- * react-three-fiber and drei). `hour` runs the sun from mid-afternoon to
- * night — the sky reddens, the glitter path stretches across the water,
- * the stars come out. Rendered only while on screen, at a capped pixel
- * ratio; the page never depends on it.
+ * The view from the terrace, in the villa's own photographs: five shots of
+ * the bay from afternoon to nightfall, dissolved into one another by the
+ * hour (three.js through react-three-fiber). The highlights of the earlier
+ * frame linger a beat longer than its shadows, so the sun seems to sink
+ * rather than switch; the pointer shifts the picture a little, as if
+ * leaning over the rail. Rendered only while on screen.
  */
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Sky, Stars } from "@react-three/drei";
-import { useMemo, useRef } from "react";
+import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 
-/** 15:00 → 20:00 mapped to sun elevation (deg) and colour temperature */
-export function sunFor(hour: number) {
-  const t = THREE.MathUtils.clamp((hour - 15) / 5, 0, 1);
-  const elevation = THREE.MathUtils.lerp(38, -8, t); // sets around 18:45
-  // theta from +z: 180° is straight ahead of the camera — the sun drifts in
-  // from the left and sets in front of the terrace, its path on the water
-  const azimuth = THREE.MathUtils.lerp(212, 174, t);
-  return { elevation, azimuth, t };
+export interface Frame {
+  url: string;
+  hour: number;
 }
 
-const WATER_VERT = /* glsl */ `
-  uniform float uTime;
+/** which two frames the hour sits between, and how far across the dissolve */
+export function blendFor(frames: Frame[], hour: number) {
+  let i = 0;
+  while (i < frames.length - 1 && hour >= frames[i + 1].hour) i++;
+  const a = frames[i];
+  const b = frames[Math.min(i + 1, frames.length - 1)];
+  if (a === b) return { a: i, b: i, mix: 0 };
+  // hold each frame, dissolve across the middle third of the gap
+  const span = b.hour - a.hour;
+  const mix = THREE.MathUtils.smoothstep((hour - a.hour) / span, 0.33, 0.67);
+  return { a: i, b: i + 1, mix };
+}
+
+const VERT = /* glsl */ `
   varying vec2 vUv;
-  varying vec3 vNormal;
-  varying vec3 vWorld;
-  // three gentle swells crossing each other
-  float wave(vec2 p, vec2 dir, float freq, float speed, float amp) {
-    return sin(dot(p, dir) * freq + uTime * speed) * amp;
-  }
   void main() {
     vUv = uv;
-    vec3 pos = position;
-    float h = wave(pos.xy, vec2(1.0, 0.3), 0.55, 0.9, 0.09)
-            + wave(pos.xy, vec2(-0.6, 1.0), 0.9, 1.3, 0.05)
-            + wave(pos.xy, vec2(0.2, -1.0), 1.7, 1.9, 0.02);
-    pos.z += h;
-    // finite-difference normal
-    float e = 0.15;
-    float hx = wave(pos.xy + vec2(e, 0.0), vec2(1.0, 0.3), 0.55, 0.9, 0.09)
-             + wave(pos.xy + vec2(e, 0.0), vec2(-0.6, 1.0), 0.9, 1.3, 0.05)
-             + wave(pos.xy + vec2(e, 0.0), vec2(0.2, -1.0), 1.7, 1.9, 0.02);
-    float hy = wave(pos.xy + vec2(0.0, e), vec2(1.0, 0.3), 0.55, 0.9, 0.09)
-             + wave(pos.xy + vec2(0.0, e), vec2(-0.6, 1.0), 0.9, 1.3, 0.05)
-             + wave(pos.xy + vec2(0.0, e), vec2(0.2, -1.0), 1.7, 1.9, 0.02);
-    vec3 n = normalize(vec3(-(hx - h) / e, -(hy - h) / e, 1.0));
-    vNormal = normalize(normalMatrix * n);
-    vec4 world = modelMatrix * vec4(pos, 1.0);
-    vWorld = world.xyz;
-    gl_Position = projectionMatrix * viewMatrix * world;
+    gl_Position = vec4(position.xy, 0.0, 1.0);
   }
 `;
 
-const WATER_FRAG = /* glsl */ `
-  uniform vec3 uSunDir;
-  uniform vec3 uDeep;
-  uniform vec3 uShallow;
-  uniform vec3 uSunColor;
-  uniform vec3 uHorizon;
-  uniform float uNight;
+const FRAG = /* glsl */ `
+  precision highp float;
+  uniform sampler2D uA;
+  uniform sampler2D uB;
+  uniform float uMix;
+  uniform vec2 uCoverA;
+  uniform vec2 uCoverB;
+  uniform vec2 uParallax;
+  uniform float uZoom;
   varying vec2 vUv;
-  varying vec3 vNormal;
-  varying vec3 vWorld;
+
+  vec2 cover(vec2 uv, vec2 scale) {
+    // scale < 1 on the axis that overflows: crop toward the centre
+    vec2 c = (uv - 0.5) * scale + 0.5;
+    // Ken Burns zoom and the pointer's small shift
+    c = (c - 0.5) / uZoom + 0.5 + uParallax;
+    return c;
+  }
+
   void main() {
-    vec3 viewDir = normalize(cameraPosition - vWorld);
-    vec3 n = normalize(vNormal);
-    // Fresnel: the sea mirrors the sky at grazing angles
-    float fresnel = pow(1.0 - max(dot(n, viewDir), 0.0), 3.0);
-    vec3 base = mix(uDeep, uShallow, fresnel * 0.5);
-    // the sun's glitter path: a broad specular lobe toward the sun
-    vec3 h = normalize(uSunDir + viewDir);
-    float spec = pow(max(dot(n, h), 0.0), 140.0);
-    float glitter = pow(max(dot(n, h), 0.0), 900.0) * 2.5;
-    float sunUp = smoothstep(-0.02, 0.06, uSunDir.y);
-    vec3 col = base * (0.55 + 0.45 * sunUp) + uSunColor * (spec * 0.9 + glitter) * sunUp;
-    // dusk: a cooler, darker sea, faint moon-glow on the crests
-    col = mix(col, uDeep * 0.35 + vec3(0.02, 0.03, 0.06) + spec * 0.15, uNight);
-    // haze toward the horizon
-    float dist = smoothstep(40.0, 300.0, length(vWorld.xz - cameraPosition.xz));
-    vec3 haze = mix(uHorizon, vec3(0.04, 0.06, 0.1), uNight);
-    col = mix(col, haze, dist * 0.65);
-    gl_FragColor = vec4(col, 1.0);
+    vec4 a = texture2D(uA, cover(vUv, uCoverA));
+    vec4 b = texture2D(uB, cover(vUv, uCoverB));
+    float lumA = dot(a.rgb, vec3(0.299, 0.587, 0.114));
+    // brighter parts of the earlier frame (the sun, its path) dissolve last
+    float k = smoothstep(0.0, 1.0, (uMix - 0.5) * 1.6 + 0.5 - (lumA - 0.45) * 0.6);
+    gl_FragColor = vec4(mix(a.rgb, b.rgb, k), 1.0);
   }
 `;
 
-function Sea({ hour }: { hour: number }) {
+function Picture({
+  frames,
+  hour,
+  pointer,
+}: {
+  frames: Frame[];
+  hour: number;
+  pointer: React.MutableRefObject<{ x: number; y: number }>;
+}) {
+  const textures = useLoader(THREE.TextureLoader, frames.map((f) => f.url));
+  const { size } = useThree();
   const mat = useRef<THREE.ShaderMaterial>(null);
+  const shift = useRef(new THREE.Vector2());
+
+  useEffect(() => {
+    for (const t of textures) {
+      t.colorSpace = THREE.SRGBColorSpace;
+      t.minFilter = THREE.LinearFilter;
+      t.generateMipmaps = false;
+    }
+  }, [textures]);
+
   const uniforms = useMemo(
     () => ({
-      uTime: { value: 0 },
-      uSunDir: { value: new THREE.Vector3(0, 1, 0) },
-      uDeep: { value: new THREE.Color("#0b2f4c") },
-      uShallow: { value: new THREE.Color("#3d7a94") },
-      uSunColor: { value: new THREE.Color("#ffd9a0") },
-      uHorizon: { value: new THREE.Color("#8fb6c9") },
-      uNight: { value: 0 },
+      uA: { value: textures[0] },
+      uB: { value: textures[1] ?? textures[0] },
+      uMix: { value: 0 },
+      uCoverA: { value: new THREE.Vector2(1, 1) },
+      uCoverB: { value: new THREE.Vector2(1, 1) },
+      uParallax: { value: new THREE.Vector2() },
+      uZoom: { value: 1 },
     }),
+    // the textures are loaded once per frame set
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
-  useFrame((_, dt) => {
+
+  const coverScale = (t: THREE.Texture) => {
+    const img = t.image as { width: number; height: number } | undefined;
+    const ia = img && img.width && img.height ? img.width / img.height : 4 / 3;
+    const ca = size.width / size.height;
+    // the picture fills the canvas; the overflowing axis is cropped
+    return ia > ca ? new THREE.Vector2(ca / ia, 1) : new THREE.Vector2(1, ia / ca);
+  };
+
+  useFrame(({ clock }, dt) => {
     const m = mat.current;
     if (!m) return;
-    m.uniforms.uTime.value += dt;
-    const { elevation, azimuth, t } = sunFor(hour);
-    const phi = THREE.MathUtils.degToRad(90 - elevation);
-    const theta = THREE.MathUtils.degToRad(azimuth);
-    m.uniforms.uSunDir.value.setFromSphericalCoords(1, phi, theta);
-    m.uniforms.uNight.value = THREE.MathUtils.smoothstep(t, 0.72, 0.98);
-    // warmer light and a warmer sea as the sun drops
-    m.uniforms.uSunColor.value.setHSL(THREE.MathUtils.lerp(0.12, 0.04, t), 0.95, THREE.MathUtils.lerp(0.8, 0.55, t));
-    // the sea stays navy and only darkens; the far haze takes the sky's
-    // colour — pale blue by day, rose-amber at dusk
-    const dusk = THREE.MathUtils.smoothstep(t, 0.5, 0.85);
-    m.uniforms.uShallow.value.setHSL(0.55, 0.42, THREE.MathUtils.lerp(0.42, 0.28, dusk));
-    m.uniforms.uHorizon.value.setHSL(THREE.MathUtils.lerp(0.56, 0.05, dusk), THREE.MathUtils.lerp(0.35, 0.55, dusk), THREE.MathUtils.lerp(0.68, 0.5, dusk));
+    const { a, b, mix } = blendFor(frames, hour);
+    m.uniforms.uA.value = textures[a];
+    m.uniforms.uB.value = textures[b];
+    m.uniforms.uMix.value = mix;
+    m.uniforms.uCoverA.value.copy(coverScale(textures[a]));
+    m.uniforms.uCoverB.value.copy(coverScale(textures[b]));
+    // a slow breath of zoom, and the pointer eased in
+    m.uniforms.uZoom.value = 1.04 + Math.sin(clock.getElapsedTime() * 0.12) * 0.02;
+    const p = pointer.current;
+    shift.current.lerp(new THREE.Vector2(p.x * 0.012, -p.y * 0.008), Math.min(1, dt * 3));
+    m.uniforms.uParallax.value.copy(shift.current);
   });
+
   return (
-    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
-      <planeGeometry args={[640, 640, 240, 240]} />
-      <shaderMaterial ref={mat} vertexShader={WATER_VERT} fragmentShader={WATER_FRAG} uniforms={uniforms} />
+    <mesh>
+      <planeGeometry args={[2, 2]} />
+      <shaderMaterial ref={mat} vertexShader={VERT} fragmentShader={FRAG} uniforms={uniforms} depthTest={false} />
     </mesh>
   );
 }
 
-function SkyDome({ hour }: { hour: number }) {
-  const { elevation, azimuth, t } = sunFor(hour);
-  const pos = useMemo(() => {
-    const v = new THREE.Vector3();
-    v.setFromSphericalCoords(1, THREE.MathUtils.degToRad(90 - elevation), THREE.MathUtils.degToRad(azimuth));
-    return [v.x, v.y, v.z] as [number, number, number];
-  }, [elevation, azimuth]);
-  return (
-    <>
-      <Sky
-        distance={450000}
-        sunPosition={pos}
-        turbidity={THREE.MathUtils.lerp(1.2, 10, t)}
-        rayleigh={THREE.MathUtils.lerp(3.4, 3.2, t)}
-        mieCoefficient={THREE.MathUtils.lerp(0.0012, 0.012, t)}
-        mieDirectionalG={0.8}
-      />
-      {t > 0.7 && <Stars radius={200} depth={40} count={t > 0.9 ? 3000 : 1200} factor={5} saturation={0} fade speed={0.6} />}
-    </>
-  );
-}
-
-function Rig() {
-  // a slow drift, as if leaning on the terrace rail
-  const { camera } = useThree();
-  useFrame(({ clock }) => {
-    const s = clock.getElapsedTime();
-    camera.position.x = Math.sin(s * 0.08) * 0.6;
-    camera.position.y = 1.7 + Math.sin(s * 0.11) * 0.06;
-    camera.lookAt(-6, 4.5, -80);
-  });
-  return null;
-}
-
-export default function GoldenHourScene({ hour, active }: { hour: number; active: boolean }) {
+export default function GoldenHourScene({
+  frames,
+  hour,
+  active,
+  pointer,
+}: {
+  frames: Frame[];
+  hour: number;
+  active: boolean;
+  pointer: React.MutableRefObject<{ x: number; y: number }>;
+}) {
   return (
     <Canvas
       dpr={[1, 1.5]}
       frameloop={active ? "always" : "never"}
-      camera={{ position: [0, 1.7, 8], fov: 50, near: 0.1, far: 2000 }}
-      gl={{ antialias: true, powerPreference: "low-power", toneMapping: THREE.ACESFilmicToneMapping }}
-      onCreated={({ gl }) => {
-        gl.toneMappingExposure = 0.42;
-      }}
+      orthographic
+      camera={{ position: [0, 0, 1], zoom: 1 }}
+      gl={{ antialias: false, powerPreference: "low-power", alpha: false }}
       className="!absolute inset-0"
     >
-      <SkyDome hour={hour} />
-      <Sea hour={hour} />
-      <Rig />
+      <Picture frames={frames} hour={hour} pointer={pointer} />
     </Canvas>
   );
 }

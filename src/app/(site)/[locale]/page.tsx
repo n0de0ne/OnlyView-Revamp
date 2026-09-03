@@ -351,7 +351,7 @@ export default async function HomePage({
       </section>
 
       {/* The view, live */}
-      <GoldenHour labels={t.goldenHour} />
+      <GoldenHour labels={t.goldenHour} photos={photos} />
 
       {/* Final CTA */}
       <section className="relative overflow-hidden py-28 text-center text-white">

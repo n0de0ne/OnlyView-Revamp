@@ -15,9 +15,11 @@ gsap.registerPlugin(ScrollTrigger);
 export function SmoothScroll() {
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    // light inertia: the page still lands where the wheel sends it, it just
+    // settles instead of stopping dead
     const lenis = new Lenis({
-      lerp: 0.09,
-      wheelMultiplier: 0.95,
+      lerp: 0.18,
+      wheelMultiplier: 1.15,
       anchors: { offset: -80 },
       // nested scrollers (the map's ledger, modals) opt out with data-lenis-prevent
     });
