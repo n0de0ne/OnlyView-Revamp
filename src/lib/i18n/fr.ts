@@ -556,6 +556,20 @@ export const fr: Dict = {
   },
   galleryIntro:
     "Chaque photo montre la vraie maison, prise depuis ses terrasses et ses pièces — la piscine au coucher du soleil, le grand salon ouvert, les quatre chambres en suite et la vue sur la baie de Pointe Milou qui donne son nom à la villa. Filtrez par espace, ou ouvrez n'importe quelle image en plein écran.",
+  goldenHour: {
+    eyebrow: "Golden hour",
+    title: "Le soleil se couche face à la terrasse, chaque soir",
+    text: "Pointe Milou regarde la mer ouverte, à l'ouest. Faites glisser l'heure : voici le ciel depuis la piscine, du milieu de l'après-midi aux premières étoiles — au plus beau de novembre à mars, quand le soleil plonge droit dans l'eau.",
+    hour: "Heure",
+    play: "Lecture",
+    pause: "Pause",
+    moments: [
+      [15.5, "Après-midi"],
+      [18.2, "Golden hour"],
+      [18.75, "Coucher"],
+      [19.6, "Étoiles"],
+    ] as Array<[number, string]>,
+  },
   guideIntro:
     "Écrit depuis la terrasse, pas depuis une brochure : comment rejoindre St Barth et la villa, quelles plages choisir et quand, où nous mangeons, et à quoi ressemble vraiment chaque saison. Court, factuel et tenu à jour.",
   whyDirect: {

@@ -8,6 +8,8 @@ import { getSettings } from "@/lib/settings";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { MobileTabBar } from "@/components/site/MobileTabBar";
+import { SmoothScroll } from "@/components/motion/SmoothScroll";
+import { RevealObserver } from "@/components/motion/RevealObserver";
 
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));
@@ -61,6 +63,8 @@ export default async function SiteLayout({
   return (
     <html lang={locale} className={fontClasses}>
       <body className="has-tabbar">
+        <SmoothScroll />
+        <RevealObserver />
         <SiteHeader locale={locale as Locale} />
         <main>{children}</main>
         <SiteFooter locale={locale as Locale} />

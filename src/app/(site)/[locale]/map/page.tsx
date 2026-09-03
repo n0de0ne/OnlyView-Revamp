@@ -7,6 +7,7 @@ import { VILLA } from "@/lib/site-facts";
 import { getMapPlaces, getVillaPoint } from "@/lib/map-places";
 import { getPhotos, firstOf } from "@/lib/photos";
 import { PageHero } from "@/components/site/PageHero";
+import { CountUp } from "@/components/motion/CountUp";
 import { IslandMap } from "@/components/site/map/IslandMap";
 import type { MapPlaceDTO } from "@/components/site/map/map-meta";
 
@@ -127,7 +128,9 @@ export default async function MapPage({
         <div className="mx-auto grid max-w-7xl grid-cols-2 divide-x divide-ink/10 px-5 text-center md:grid-cols-4 lg:px-8">
           {figures.map(([n, label]) => (
             <div key={label} className="px-4 py-8">
-              <div className="font-display text-4xl text-gold">{n}</div>
+              <div className="font-display text-4xl text-gold">
+                <CountUp value={n} />
+              </div>
               <div className="mt-1 text-[0.72rem] uppercase tracking-[0.2em] text-ink/50">{label}</div>
             </div>
           ))}

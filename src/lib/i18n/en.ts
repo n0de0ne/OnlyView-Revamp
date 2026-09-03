@@ -558,6 +558,20 @@ export const en = {
   },
   galleryIntro:
     "Every photo is the actual house, taken from its terraces and rooms — the pool at sunset, the open living room, the four en-suite bedrooms and the view over Pointe Milou bay that gives the villa its name. Filter by space, or open any picture full screen.",
+  goldenHour: {
+    eyebrow: "Golden hour",
+    title: "The sun sets in front of the terrace, every evening",
+    text: "Pointe Milou faces the open sea to the west. Drag the hour: this is the sky from the pool, from mid-afternoon to the first stars — at its best from November to March, when the sun drops straight into the water.",
+    hour: "Hour",
+    play: "Play",
+    pause: "Pause",
+    moments: [
+      [15.5, "Afternoon"],
+      [18.2, "Golden hour"],
+      [18.75, "Sunset"],
+      [19.6, "Stars"],
+    ] as Array<[number, string]>,
+  },
   guideIntro:
     "Written from the terrace, not from a brochure: how to reach St Barth and the villa, which beaches to choose and when, where we eat, and what each season of the year is really like. Short, factual and kept up to date.",
   whyDirect: {

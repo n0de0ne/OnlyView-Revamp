@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { GoldenHour } from "@/components/site/golden-hour/GoldenHour";
+import { Tilt } from "@/components/motion/Tilt";
 import { getDict, isLocale, localePath, type Locale } from "@/lib/i18n";
 import {
   DEFAULT_OG_IMAGE,
@@ -196,12 +198,10 @@ export default async function HomePage({
               const photo = firstOf(photos, s.cat);
               if (!photo) return null;
               return (
+                <Tilt key={s.cat} className={`reveal ${i === 0 ? "sm:col-span-2 sm:row-span-2" : ""}`}>
                 <Link
-                  key={s.cat}
                   href={localePath(locale, `/gallery?c=${s.cat}`)}
-                  className={`group relative block overflow-hidden reveal ${
-                    i === 0 ? "sm:col-span-2 sm:row-span-2" : ""
-                  }`}
+                  className="group relative block h-full overflow-hidden"
                 >
                   <Image
                     src={photo.url}
@@ -221,6 +221,7 @@ export default async function HomePage({
                     </p>
                   </div>
                 </Link>
+                </Tilt>
               );
             })}
           </div>
@@ -297,7 +298,7 @@ export default async function HomePage({
               { label: t.rates.seasonNames.summer, price: rates.summer[2] },
               { label: t.rates.seasonNames.winter, price: rates.winter[2] },
             ].map((s) => (
-              <div key={s.label} className="border border-ink/10 bg-white p-6 text-center">
+              <div key={s.label} className="reveal border border-ink/10 bg-white p-6 text-center">
                 <div className="text-[0.65rem] uppercase tracking-[0.25em] text-ink/50">
                   {s.label}
                 </div>
@@ -328,7 +329,7 @@ export default async function HomePage({
               />
             )}
           </div>
-          <div className="order-1 lg:order-2">
+          <div className="order-1 reveal lg:order-2">
             <p className="eyebrow mb-4">{t.location.label}</p>
             <h2 className="section-title mb-6">{t.location.title}</h2>
             <p className="max-w-lg leading-relaxed text-ink/70">{t.location.text}</p>
@@ -348,6 +349,9 @@ export default async function HomePage({
           </div>
         </div>
       </section>
+
+      {/* The view, live */}
+      <GoldenHour labels={t.goldenHour} />
 
       {/* Final CTA */}
       <section className="relative overflow-hidden py-28 text-center text-white">

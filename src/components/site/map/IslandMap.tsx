@@ -147,6 +147,7 @@ export function IslandMap({
         {/* ── the ledger: scrolls inside its panel beside the sticky map ── */}
         <div
           ref={ledgerRef}
+          data-lenis-prevent
           className="scroll-thin order-2 lg:order-1 lg:sticky lg:top-24 lg:h-[calc(100svh-8rem)] lg:overflow-y-auto lg:pr-5"
         >
           <div className="relative border-b border-ink/15 bg-sand lg:sticky lg:top-0 lg:z-10">
@@ -218,6 +219,7 @@ export function IslandMap({
         <div className="order-1 lg:order-2">
           <div
             ref={mapBoxRef}
+            data-lenis-prevent
             className="relative z-0 h-[62svh] min-h-[420px] scroll-mt-24 overflow-hidden border border-ink/10 bg-sand-dark shadow-2xl shadow-ink/10 lg:sticky lg:top-24 lg:h-[calc(100svh-8rem)]"
           >
             <LeafletMap

@@ -6,6 +6,7 @@ import { breadcrumbJsonLd, jsonLd, lodgingBusinessJsonLd, pageMetadata, vacation
 import { getPhotos, firstOf } from "@/lib/photos";
 import { getContact } from "@/lib/contact";
 import { PageHero } from "@/components/site/PageHero";
+import { GoldenHour } from "@/components/site/golden-hour/GoldenHour";
 
 export const revalidate = 3600;
 
@@ -149,6 +150,7 @@ export default async function LocationPage({
           </ul>
         </div>
       </section>
+      <GoldenHour labels={t.goldenHour} />
     </>
   );
 }
