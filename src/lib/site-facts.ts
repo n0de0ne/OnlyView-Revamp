@@ -8,7 +8,14 @@
  */
 export const VILLA = {
   name: "Villa ONLY VIEW",
-  alternateNames: ["Only View St Barth", "Villa Only View St Barth", "Only View Pointe Milou"],
+  alternateNames: [
+    "Villa Only View",
+    "Only View St Barth",
+    "Only View St Barths",
+    "Villa Only View St Barth",
+    "Only View Pointe Milou",
+    "Villa Only View Pointe Milou",
+  ],
   legalOwner: "SCI Efis",
   ownerFirstName: "Annie",
   ownerName: "Annie Chriqui",

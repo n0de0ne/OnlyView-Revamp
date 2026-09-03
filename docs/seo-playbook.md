@@ -79,21 +79,27 @@ BASE_URL=https://onlyviewstbarth.com node scripts/seo-audit.mjs
 3. **Reviews, continuously** — ask every guest for a Google review *and* a
    review on the site (moderated in the admin). Ratings show in the
    `VacationRental` markup and are what AI answers cite for trust.
-4. **Consistent name everywhere** — exactly "Villa ONLY VIEW" (or "Only View
+4. **Paste the agencies' listings of the villa** (WIMCO, Eden Rock Villa
+   Rental, Airbnb, Corcoran, My Villa in St Barth…) into Réglages → Contact →
+   *Annonces de la villa chez les agences*. They become `sameAs` links in
+   the structured data: Google then reads those pages as *about* this
+   villa and this site as its official home — the lever for ranking above
+   the agencies on "Villa Only View" / "Only View St Barth".
+5. **Consistent name everywhere** — exactly "Villa ONLY VIEW" (or "Only View
    St Barth"), Pointe Milou, the same phone and email, on Instagram, Facebook,
    TripAdvisor, any listing (WIMCO, Airbnb, Vrbo…). Put each profile URL in
    Réglages → Contact; every one becomes a `sameAs` link that merges the
    entity for Google and the AI engines.
-5. **Links from the listings you already have** — where an agency or a
+6. **Links from the listings you already have** — where an agency or a
    listing site lets you add "owner website", add it. A handful of real
    links from St Barth pages outweighs everything else off-site.
-6. **Instagram / photos with the location tag** "Pointe Milou" and the villa
+7. **Instagram / photos with the location tag** "Pointe Milou" and the villa
    name in the caption — a slow but steady branded signal.
-7. **Keep the guide alive** — one honest article a season (a restaurant that
+8. **Keep the guide alive** — one honest article a season (a restaurant that
    opened, the ferry timetable, hurricane-season truth). Bump
    `CONTENT_UPDATED` in `src/lib/site-facts.ts` when the copy changes; it
    feeds `lastmod` and `dateModified`.
-8. **Never let the reviews page or the calendar go stale** — engines
+9. **Never let the reviews page or the calendar go stale** — engines
    re-crawl what changes.
 
 ## 4. How to know it works

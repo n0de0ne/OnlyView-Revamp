@@ -57,6 +57,7 @@ const SETTINGS = {
   social_tripadvisor: "",
   social_google: "",
   social_youtube: "",
+  listing_urls: "",
   google_site_verification: "",
   bing_site_verification: "",
   villa_lat: "17.914904",

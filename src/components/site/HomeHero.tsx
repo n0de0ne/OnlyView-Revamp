@@ -61,7 +61,7 @@ export function HomeHero(props: {
           {props.location}
         </p>
         <h1 className="font-display text-5xl leading-[1.05] tracking-wide sm:text-6xl md:text-7xl">
-          ONLY&nbsp;VIEW
+          <span className="sr-only">Villa </span>ONLY&nbsp;VIEW
           {/* the rest of the heading is for engines and screen readers — the
               wordmark alone says nothing about what or where this is */}
           <span className="sr-only">{props.headingSuffix}</span>

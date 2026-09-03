@@ -1,7 +1,7 @@
 export const en = {
   meta: {
     siteName: "Villa ONLY VIEW",
-    titleHome: "Only View St Barth — Luxury Villa Rental Direct from Owner",
+    titleHome: "Villa ONLY VIEW — Only View St Barth, Luxury Villa Direct from Owner",
     descHome:
       "Villa ONLY VIEW, Pointe Milou, St Barth: 4-bedroom luxury villa with heated pool, 180° ocean view and concierge. Book direct with the owner — no agency fees.",
     titleVilla: "The Villa — 4 Bedrooms, Heated Pool, Sea View",

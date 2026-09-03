@@ -3,7 +3,7 @@ import type { Dict } from "./en";
 export const fr: Dict = {
   meta: {
     siteName: "Villa ONLY VIEW",
-    titleHome: "Only View St Barth — Villa de luxe en direct propriétaire",
+    titleHome: "Villa ONLY VIEW — Only View St Barth, villa de luxe en direct",
     descHome:
       "Villa ONLY VIEW, Pointe Milou, St Barth : villa de luxe 4 chambres, piscine chauffée, vue mer à 180°, conciergerie. En direct propriétaire, sans frais d'agence.",
     titleVilla: "La Villa — 4 chambres en suite, piscine, vue mer",

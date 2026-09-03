@@ -30,28 +30,52 @@ const nextConfig: NextConfig = {
     ];
   },
   async redirects() {
-    // Legacy PHP URLs → new routes (SEO: preserve link equity from the old site)
-    const map: Array<[string, string]> = [
-      ["/index.php", "/"],
-      ["/gallery.php", "/gallery"],
-      ["/pricing.php", "/rates"],
-      ["/contact.php", "/contact"],
-      ["/faq.php", "/faq"],
-      ["/about.php", "/villa"],
-      ["/book-direct.php", "/booking"],
-      ["/why-book-direct.php", "/why-book-direct"],
-      ["/guestbook.php", "/reviews"],
-      ["/map.php", "/map"],
-      ["/getting-here.php", "/guide/getting-here"],
-      ["/getting-around.php", "/map"],
-      ["/best-beaches.php", "/guide/best-beaches"],
-      ["/best-restaurants.php", "/guide/best-restaurants"],
-      ["/st-barth-guide.php", "/guide"],
-      ["/st-barth-seasons.php", "/guide/seasons"],
-      ["/pointe-milou.php", "/location"],
-      ["/journal.php", "/guide"],
-      ["/legal.php", "/legal"],
+    // Legacy PHP URLs → new routes (SEO: preserve link equity from the old
+    // site). The old site served every page at a clean path (/pricing) *and*
+    // at its file name (/pricing.php); both were indexed, both must land.
+    const legacy: Array<[string, string]> = [
+      ["/index", "/"],
+      ["/gallery", "/gallery"],
+      ["/pricing", "/rates"],
+      ["/contact", "/contact"],
+      ["/faq", "/faq"],
+      ["/about", "/villa"],
+      ["/book-direct", "/booking"],
+      ["/why-book-direct", "/why-book-direct"],
+      ["/guestbook", "/reviews"],
+      ["/map", "/map"],
+      ["/getting-here", "/guide/getting-here"],
+      ["/getting-around", "/map"],
+      ["/best-beaches", "/guide/best-beaches"],
+      ["/best-restaurants", "/guide/best-restaurants"],
+      ["/activities", "/guide"],
+      ["/st-barth-guide", "/guide"],
+      ["/st-barth-seasons", "/guide/seasons"],
+      ["/st-barth-events", "/guide/seasons"],
+      ["/pointe-milou", "/location"],
+      ["/villa-use-cases", "/villa"],
+      ["/villa-vs-hotel", "/why-book-direct"],
+      ["/honeymoon-st-barth", "/villa"],
+      ["/family-villa-st-barth", "/villa"],
+      ["/wedding-destination", "/villa"],
+      ["/groups", "/villa"],
+      ["/christmas-new-year", "/rates"],
+      ["/concierge-experiences", "/why-book-direct"],
+      ["/private-chef", "/guide/best-restaurants"],
+      ["/yacht-charters", "/guide/best-beaches"],
+      ["/favorites", "/guide"],
+      ["/journal", "/guide"],
+      ["/legal", "/legal"],
     ];
+    const legacyRedirects = legacy.flatMap(([from, to]) => [
+      ...(from !== to ? [{ source: from, destination: to, permanent: true }] : []),
+      { source: `${from}.php`, destination: to, permanent: true },
+    ]);
+    // the old site switched language with ?lang=fr on the same URL — those
+    // French URLs are what Google indexed; they now live under /fr. The
+    // query string rides along on the legacy redirects above, so
+    // /pricing.php?lang=fr → /rates?lang=fr → /fr/rates.
+    const frQuery = [{ type: "query" as const, key: "lang", value: "fr" }];
     return [
       // one host: www → apex, so links and signals never split across two
       {
@@ -60,11 +84,14 @@ const nextConfig: NextConfig = {
         destination: "https://onlyviewstbarth.com/:path*",
         permanent: true,
       },
-      ...map.map(([source, destination]) => ({
-        source,
-        destination,
+      ...legacyRedirects,
+      { source: "/", has: frQuery, destination: "/fr", permanent: true },
+      {
+        source: "/:path((?!fr(?:/|$)|admin|api|_next|media).*)",
+        has: frQuery,
+        destination: "/fr/:path",
         permanent: true,
-      })),
+      },
     ];
   },
 };
