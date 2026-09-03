@@ -57,7 +57,14 @@ const SETTINGS = {
   social_tripadvisor: "",
   social_google: "",
   social_youtube: "",
-  listing_urls: "",
+  // the villa's pages at the agencies it works with — the same house, so
+  // the same entity (sameAs); this site is its official home
+  listing_urls: [
+    "https://www.wimco.com/villa-rentals/caribbean/st-barthelemy/only-view",
+    "https://www.edenrockvillarental.com/en/st-barths/villa-search/only-view/",
+    "https://www.myvillainstbarth.com/en/villas-rentals-st-barths/only-view-1-4",
+    "https://www.corcoranstbarth.com/en/stbarts-villa-rentals/villa-only-view",
+  ].join(" "),
   google_site_verification: "",
   bing_site_verification: "",
   villa_lat: "17.914904",
@@ -88,6 +95,8 @@ async function seedBase() {
     // routes every itinerary from this point, so it has to be the real one
     villa_lat: "17.9124",
     villa_lng: "-62.8272",
+    // the listings shipped empty before the agencies' URLs were known
+    listing_urls: "",
   };
   for (const [key, placeholder] of Object.entries(PLACEHOLDERS)) {
     const current = await prisma.setting.findUnique({ where: { key } });

@@ -79,9 +79,10 @@ BASE_URL=https://onlyviewstbarth.com node scripts/seo-audit.mjs
 3. **Reviews, continuously** — ask every guest for a Google review *and* a
    review on the site (moderated in the admin). Ratings show in the
    `VacationRental` markup and are what AI answers cite for trust.
-4. **Paste the agencies' listings of the villa** (WIMCO, Eden Rock Villa
-   Rental, Airbnb, Corcoran, My Villa in St Barth…) into Réglages → Contact →
-   *Annonces de la villa chez les agences*. They become `sameAs` links in
+4. **Keep the agencies' listings of the villa up to date** in Réglages →
+   Contact → *Annonces de la villa chez les agences* (WIMCO, Eden Rock Villa
+   Rental, My Villa in St Barth and Corcoran are pre-filled; add Airbnb or a
+   new agency when a listing goes live). They become `sameAs` links in
    the structured data: Google then reads those pages as *about* this
    villa and this site as its official home — the lever for ranking above
    the agencies on "Villa Only View" / "Only View St Barth".
