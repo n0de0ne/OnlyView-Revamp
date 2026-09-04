@@ -23,7 +23,7 @@
  *   node scripts/golden-mask.mjs --preview  → also writes tinted overlays to check the contours
  */
 import sharp from "sharp";
-import { mkdirSync, statSync } from "node:fs";
+import { existsSync, mkdirSync, statSync } from "node:fs";
 
 const PHOTO = "public/media/golden/view-night-01.webp";
 // two lossless RGB files, no alpha: browsers premultiply an image's colour by its
@@ -326,6 +326,11 @@ const sky = new Float32Array(N);
 const sea = new Float32Array(N);
 const pool = new Float32Array(N);
 const veg = new Float32Array(N);
+const rigid = (x, y) => {
+  if (x < 820 * S || y < 440 * S || y >= 600 * S) return false;
+  const rail = RAIL(x);
+  return (y >= rail - 3 * S && y <= rail + 7 * S) || (y >= rail && POSTS.some(([a, b]) => x >= a && x <= b));
+};
 for (let y = 0; y < H; y++) {
   for (let x = 0; x < W; x++) {
     const i = y * W + x;
@@ -335,6 +340,33 @@ for (let y = 0; y < H; y++) {
     if (y >= poolTopY && y < poolBottomY && x < poolRight[y]) pool[i] = 1;
     if (vegClosed[i] > 0) veg[i] = 1;
   }
+}
+
+// ---- the semantic segmentation, when it has been run: it replaces the colour
+// heuristics for the sky, the sea and the vegetation (scripts/golden-segment.mjs,
+// SegFormer-B5 on ADE20K, decided pixel by pixel from its class scores). The pool
+// keeps its fitted lines, the umbrella and rail their measured shapes.
+const SEG = "public/media/golden/segments-night-01.png";
+if (existsSync(SEG)) {
+  const { data: lab, info } = await sharp(SEG).raw().toBuffer({ resolveWithObject: true });
+  if (info.width !== W || info.height !== H) throw new Error(`${SEG} is ${info.width}×${info.height}, the frame is ${W}×${H}`);
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const i = y * W + x;
+      const l = lab[i * info.channels];
+      const pole = inPoly(POLE_S, x, y);
+      // the edge-detected ridge and hill base stand guard, loosely: a gross mislabel
+      // (sea in the sky, sky under the hills) cannot pass, a few pixels can
+      const underRidge = y > ridgeS[x] + 12 * S;
+      const aboveBase = y < baseS[x] - 12 * S;
+      sky[i] = inPoly(CANOPY_S, x, y) ? 0.5 : l === 1 && !pole && !underRidge ? 1 : 0;
+      sea[i] = l === 3 && !pole && !aboveBase ? 1 : 0;
+      veg[i] = l === 4 && !pole && !rigid(x, y) ? 1 : 0;
+    }
+  }
+  console.log("regions from the semantic segmentation");
+} else {
+  console.log("no segmentation map: regions from the colour heuristics");
 }
 
 // ---- pass two: the guided filter, the photograph as guide -------------------------
