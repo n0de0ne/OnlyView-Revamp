@@ -101,6 +101,8 @@ const FRAG = /* glsl */ `
     float sky = smoothstep(0.6, 0.95, m.r);
     float sea = m.g, pool = m.b, veg = m.a;
     float land = clamp(1.0 - (skyG + sea + pool + veg), 0.0, 1.0);
+    // the hills across the bay: the land above the terrace
+    float hills = land * smoothstep(0.42, 0.47, uv.y);
 
     // ---- motion: the clouds, the swell, the pool, the breeze
     vec2 d = vec2(0.0);
@@ -126,7 +128,7 @@ const FRAG = /* glsl */ `
       rings += abs(ring);
     }
     // the water moves, the coping around it does not: fade at the pool's edges
-    float water = pool * pool * smoothstep(0.338, 0.318, uv.y);
+    float water = pool * pool * smoothstep(0.352, 0.335, uv.y);
     d += water * pr;
 
     d += veg * vec2(sin(t * 1.1 + uv.y * 40.0 + uv.x * 12.0) * 0.0014, sin(t * 0.8 + uv.x * 50.0) * 0.0006) * (0.6 + 0.4 * sin(t * 0.3));
@@ -155,30 +157,41 @@ const FRAG = /* glsl */ `
     // the pool: highlights on the ripples
     c += water * rings * 0.5 * vec3(1.0, 0.95, 0.85) * (1.0 - uNight * 0.6);
 
-    // ---- the evening: dusk
+    // ---- the evening. Each region has its own dusk and night colour; they are
+    // blended by the masks first and applied once, so a soft edge between two
+    // regions becomes the average of two dark colours and never a pale rim.
     float ridgeBand = exp(-max(uv.y - 0.50, 0.0) * 7.0);
+    float wsum = max(skyG + sea + pool + veg + land, 1e-3);
+    float deck = max(land - hills, 0.0);
+
+    // dusk: violet sky, an orange band on the ridge, the hills in silhouette
     vec3 duskSky = mix(vec3(0.42, 0.30, 0.56), vec3(0.98, 0.56, 0.34), ridgeBand);
     vec3 duskSea = mix(vec3(0.30, 0.28, 0.42), vec3(0.78, 0.48, 0.38), ridgeBand * 0.7);
-    vec3 g = c;
-    g = mix(g, (lum * 0.7 + 0.28) * duskSky, skyG * uDusk * 0.85);
-    g = mix(g, (lum * 0.9 + 0.16) * duskSea, sea * uDusk * 0.8);
-    g = mix(g, c * vec3(0.55, 0.50, 0.62), (land + veg) * uDusk * 0.75);
-    g = mix(g, (lum * 0.8 + 0.2) * duskSky * 0.9, pool * uDusk * 0.6);
+    vec3 dSky = mix(c, (lum * 0.7 + 0.28) * duskSky, 0.85);
+    vec3 dSea = mix(c, (lum * 0.9 + 0.16) * duskSea, 0.8);
+    vec3 dLand = mix(c, c * vec3(0.55, 0.50, 0.62), 0.75);
+    vec3 dHills = mix(dLand, dLand * vec3(0.40, 0.36, 0.48), 0.7);
+    vec3 dPool = mix(c, (lum * 0.8 + 0.2) * duskSky * 0.9, 0.6);
+    vec3 duskTarget = (skyG * dSky + sea * dSea + pool * dPool + veg * dLand + deck * dLand + hills * dHills) / wsum;
+    vec3 g = mix(c, duskTarget, uDusk);
 
-    // ---- night
+    // night: navy sky, the sea flat and dark (the sun's path is gone), foliage and
+    // hills near black, the terrace lights on the deck, the pool lit from below
     vec3 nightSky = mix(vec3(0.05, 0.08, 0.20), vec3(0.15, 0.10, 0.24), ridgeBand);
-    g = mix(g, (lum * 0.45 + 0.12) * nightSky * 1.6, skyG * uNight);
-    g = mix(g, (lum * 0.5 + 0.05) * vec3(0.06, 0.09, 0.18), sea * uNight);
-    g = mix(g, g * vec3(0.22, 0.24, 0.32), (land + veg) * uNight * 0.9);
+    vec3 nSky = (lum * 0.45 + 0.12) * nightSky * 1.6;
+    vec3 nSea = (lum * 0.22 + 0.07) * vec3(0.07, 0.10, 0.20);
+    vec3 nLand = mix(g, g * vec3(0.22, 0.24, 0.32), 0.9) + vec3(0.22, 0.15, 0.08) * smoothstep(0.5, 0.0, uv.y);
+    vec3 nHills = nLand * 0.3;
+    vec3 nVeg = nLand * 0.4;
     float caus = pow(noise(uv * vec2(110.0, 160.0) + t * 0.3) * noise(uv * vec2(85.0, 130.0) - t * 0.25) * 4.0, 1.4);
     caus = caus * 0.6 + noise(uv * vec2(30.0, 45.0) + t * 0.1) * 0.4;
     // lit from the far wall: bright teal there, deep water nearer, the reflections kept
     float wall = smoothstep(0.04, 0.335, uv.y);
     float poolLight = 0.18 + 0.82 * wall * wall;
     vec3 poolNight = (vec3(0.05, 0.50, 0.58) * (0.55 + caus * 0.45) + vec3(0.01, 0.10, 0.16)) * poolLight * (0.55 + lum * 0.9);
-    g = mix(g, poolNight + rings * 0.35, pool * uNight * 0.9);
-    // the terrace lights come on: a warm wash on the deck
-    g += land * uNight * vec3(0.22, 0.15, 0.08) * smoothstep(0.5, 0.0, uv.y);
+    vec3 nPool = mix(g, poolNight, 0.9) + rings * 0.35;
+    vec3 nightTarget = (skyG * nSky + sea * nSea + pool * nPool + veg * nVeg + deck * nLand + hills * nHills) / wsum;
+    g = mix(g, nightTarget, uNight);
 
     // ---- stars, above the hills only
     vec2 sg = uv * vec2(260.0, 200.0);
@@ -271,7 +284,8 @@ function Picture({
     u.uZoom.value = zoom;
 
     const c = controls.current;
-    shift.current.lerp(new THREE.Vector2(c.pointer.x * 0.014, -c.pointer.y * 0.01), Math.min(1, dt * 3));
+    // a small lean: enough to feel the depth, not enough to tear the contours
+    shift.current.lerp(new THREE.Vector2(c.pointer.x * 0.009, -c.pointer.y * 0.006), Math.min(1, dt * 3));
     u.uParallax.value.copy(shift.current);
 
     // touches on the water, placed in photo space
