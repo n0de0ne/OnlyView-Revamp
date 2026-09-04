@@ -44,7 +44,9 @@ COPY --from=builder /app/public ./public
 
 # Prisma schema + seed + CLI (first-boot `db push` + idempotent seeding)
 COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/scripts/migrate-legacy.mjs ./scripts/migrate-legacy.mjs
+# maintenance scripts run with plain node inside the container (same deps as the
+# seed): the legacy importer and the one-off repairs it may call for
+COPY --from=builder /app/scripts/migrate-legacy.mjs /app/scripts/fix-direct-agency.mjs ./scripts/
 COPY --from=builder /app/src/data/photos.json ./src/data/photos.json
 COPY --from=prismacli /cli/node_modules ./prisma-cli/node_modules
 # seed.mjs runs with plain node; bcryptjs isn't in the traced standalone tree

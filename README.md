@@ -205,6 +205,14 @@ docker exec -it onlyview node scripts/fix-direct-agency.mjs           # report
 docker exec -it onlyview node scripts/fix-direct-agency.mjs --apply   # fix
 ```
 
+The image ships the maintenance scripts, so rebuild it first if the container
+predates this version (`Cannot find module …/fix-direct-agency.mjs`). To repair
+without rebuilding, copy the script into the running container:
+
+```bash
+docker cp scripts/fix-direct-agency.mjs onlyview:/app/scripts/
+```
+
 The report also names the legacy schema it read and, when several look like
 one, every candidate with its reservation count. Contracts pointing at a
 reservation that no longer exists in the legacy database are counted as
