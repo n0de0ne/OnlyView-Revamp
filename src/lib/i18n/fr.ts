@@ -564,6 +564,7 @@ export const fr: Dict = {
     hour: "Heure",
     play: "Lecture",
     pause: "Pause",
+    speed: "Vitesse",
     moments: [
       [17.6, "Golden hour"],
       [17.95, "Coucher"],

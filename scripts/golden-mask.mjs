@@ -216,15 +216,23 @@ const baseS = settle(base, 4 * S, 5 * S);
 // the pool: straight edges, fitted
 const poolTop = new Float32Array(W);
 const poolBottom = new Float32Array(W);
+// the far edge, top to bottom: the pale coping, then the tiled wall of the pool
+// (dark, saturated blue), then the water line, which is where the water mask starts
+const isTile = (x, y) => lum(x, y) < 0.5 && sat(x, y) > 0.35;
 for (let x = 0; x < W; x++) {
-  let pt = POOL_TOP0 * S;
-  let seen = false;
-  for (let y = Math.round(578 * S); y <= 632 * S; y++) {
-    if (!seen) {
-      if (isCoping(x, y) && isCoping(x, y + 1)) seen = true;
+  let pt = 612 * S;
+  let seenCoping = false;
+  let seenTile = false;
+  for (let y = Math.round(578 * S); y <= 650 * S; y++) {
+    if (!seenCoping) {
+      if (isCoping(x, y) && isCoping(x, y + 1)) seenCoping = true;
       continue;
     }
-    if (lum(x, y) < 0.6 && lum(x, y + 1) < 0.6) {
+    if (!seenTile) {
+      if (isTile(x, y) && isTile(x, y + 1)) seenTile = true;
+      continue;
+    }
+    if (!isTile(x, y) && !isTile(x, y + 1) && !isTile(x, y + 2)) {
       pt = y;
       break;
     }
@@ -280,6 +288,7 @@ const edgeUv = (y) => [poolRight[Math.round(y)] / W, 1 - y / H];
 const [ex0, ey0] = edgeUv(600 * S);
 const [ex1, ey1] = edgeUv(840 * S);
 console.log(`pool water line (uv): x = ${ex0.toFixed(4)} + (${ey0.toFixed(4)} - y) * ${((ex1 - ex0) / (ey0 - ey1)).toFixed(4)}`);
+console.log(`pool far water line (uv y): ${(1 - poolTopY / H).toFixed(4)}   coping underside (uv y): ${(1 - (583 * S) / H).toFixed(4)}`);
 
 // the vegetation, by colour, closed into solid bushes
 const vegBottom = (x) => (x < 780 * S ? poolTopY - 14 * S : 586 * S);

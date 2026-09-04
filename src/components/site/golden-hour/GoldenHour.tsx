@@ -36,8 +36,13 @@ export interface GoldenHourLabels {
   hour: string;
   play: string;
   pause: string;
+  speed: string;
   moments: Array<[number, string]>;
 }
+
+/** timelapse: hours of evening per second at 1×, and the speeds on offer */
+const RATE = 0.045;
+const SPEEDS = [1, 2, 4, 8];
 
 const fmt = (h: number) => {
   const hh = Math.floor(h);
@@ -63,6 +68,7 @@ export function GoldenHour({
   const [hour, setHour] = useState(17.6);
   const [dim, setDim] = useState(0);
   const [playing, setPlaying] = useState(true);
+  const [speed, setSpeed] = useState(1);
   // once the scene has drawn, the still under it is hidden: nothing can show through
   const [live, setLive] = useState(false);
 
@@ -107,7 +113,7 @@ export function GoldenHour({
         }
       } else {
         setHour((h) => {
-          const n = h + dt * 0.014;
+          const n = h + dt * RATE * speed;
           if (n >= END) {
             fading = true;
             return END;
@@ -119,7 +125,7 @@ export function GoldenHour({
     };
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
-  }, [playing, visible, reduced]);
+  }, [playing, visible, reduced, speed]);
 
   const onPointer = (e: React.PointerEvent) => {
     if (e.pointerType !== "mouse" || !ref.current) return;
@@ -228,6 +234,18 @@ export function GoldenHour({
                 aria-pressed={playing}
               >
                 {playing ? labels.pause : labels.play}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSpeed((s) => SPEEDS[(SPEEDS.indexOf(s) + 1) % SPEEDS.length]);
+                  setPlaying(true);
+                }}
+                className="tap border border-white/25 px-2 py-1 font-semibold text-gold transition hover:border-gold"
+                aria-label={`${labels.speed} ${speed}×`}
+                title={labels.speed}
+              >
+                {speed}×
               </button>
             </div>
           </div>

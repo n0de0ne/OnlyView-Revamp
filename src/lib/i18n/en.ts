@@ -566,6 +566,7 @@ export const en = {
     hour: "Hour",
     play: "Play",
     pause: "Pause",
+    speed: "Speed",
     moments: [
       [17.6, "Golden hour"],
       [17.95, "Sunset"],

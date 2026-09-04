@@ -77,6 +77,11 @@ const FRAG = /* glsl */ `
   uniform vec4 uRipples[4];
   varying vec2 vUv;
 
+  // the pool's far edge, printed by scripts/golden-mask.mjs (texture space, y up):
+  // the water line under the tiled wall, and the underside of the coping above it
+  const float POOL_TOP = 0.3206;
+  const float COPING = 0.3522;
+
   // no sin() in the hash: on Apple GPUs it collapses into blocks at large arguments
   float hash(vec2 p) {
     vec3 p3 = fract(vec3(p.xyx) * 0.1031);
@@ -126,7 +131,11 @@ const FRAG = /* glsl */ `
     dW *= texture2D(uMask, uv + dW).g;
 
     vec2 pr = vec2(sin(uv.y * 70.0 + t * 1.6) + sin(uv.x * 48.0 - t * 1.1 + uv.y * 30.0), cos(uv.x * 55.0 + t * 1.35) + sin(uv.y * 90.0 - t * 0.9)) * 0.0017;
+    // a touch on the water: a drop. Three dispersive rings (the short waves run
+    // ahead), fading as they spread; signed, so the crests catch the light and
+    // the troughs go dark; and a small splash at the first instant.
     float rings = 0.0;
+    float splash = 0.0;
     for (int i = 0; i < 4; i++) {
       vec4 r = uRipples[i];
       if (r.w < 0.5) continue;
@@ -134,17 +143,26 @@ const FRAG = /* glsl */ `
       if (age < 0.0) continue;
       vec2 q = (uv - r.xy) * vec2(1.333, 1.0);
       float dist = length(q);
-      float rad = age * 0.11;
-      float ring = sin((dist - rad) * 110.0) * exp(-abs(dist - rad) * 40.0) * exp(-age * 0.8);
-      pr += normalize(q + 1e-5) * ring * 0.012;
-      rings += abs(ring);
+      // at this scale a hand's splash makes rings a centimetre or two apart that
+      // travel a few decimetres a second: fine, slow, and gone in a few seconds
+      float wave = 0.0;
+      for (int k = 0; k < 3; k++) {
+        float fk = float(k);
+        float rad = 0.004 + age * (0.036 - fk * 0.007);
+        float env = exp(-pow((dist - rad) * 120.0, 2.0));
+        wave += sin((dist - rad) * (520.0 + fk * 190.0)) * env * (1.0 - fk * 0.3);
+      }
+      wave *= exp(-age * 0.35) / (1.0 + dist * 25.0);
+      pr += normalize(q + 1e-5) * wave * 0.006;
+      rings += wave;
+      splash += exp(-dist * dist * 20000.0) * exp(-age * 5.0);
     }
     // the water moves, the coping around it does not; the surface settles toward
     // the right-hand edge (a straight line in the photograph) so the coping's
     // reflection never scallops
     float edgeX = 0.5565 + (0.3333 - uv.y) * 0.3844; // printed by scripts/golden-mask.mjs
     float edgeIn = smoothstep(0.0, 0.035, edgeX - uv.x);
-    float water = pool * smoothstep(0.352, 0.335, uv.y) * edgeIn;
+    float water = pool * smoothstep(POOL_TOP + 0.003, POOL_TOP - 0.012, uv.y) * edgeIn;
     vec2 dP = water * pr;
     dP *= texture2D(uMask, uv + dP).b;
 
@@ -174,7 +192,7 @@ const FRAG = /* glsl */ `
     float column = exp(-pow((uv.x - sunNow.x) / (0.035 + near * 0.13), 2.0) * 2.0);
     c += sea * sp * (column * 0.9 * (1.0 - uSunk * 0.6) + 0.12) * vec3(1.0, 0.88, 0.65) * (1.0 - uNight * 0.92) * (0.5 + near);
     // the pool: highlights on the ripples
-    c += water * rings * 0.5 * vec3(1.0, 0.95, 0.85) * (1.0 - uNight * 0.6);
+    c += water * (rings * 0.4 + splash * 0.5) * vec3(1.0, 0.95, 0.85) * (1.0 - uNight * 0.6);
 
     // ---- the evening. Each region has its own dusk and night colour; they are
     // blended by the masks first and applied once, so a soft edge between two
@@ -199,27 +217,60 @@ const FRAG = /* glsl */ `
     vec3 nightSky = mix(vec3(0.05, 0.08, 0.20), vec3(0.15, 0.10, 0.24), ridgeBand);
     // a flat night sky: the haze rim the camera saw above the ridge must not glow
     vec3 nSky = (lum * 0.22 + 0.24) * nightSky * 1.6;
+    // the night sea: flat and dark, with the lights of the far shore drawn out into
+    // streaks by the swell, and the faintest shimmer
     vec3 nSea = (lum * 0.22 + 0.07) * vec3(0.07, 0.10, 0.20);
+    // the village across the bay: scattered dim lights up the slope, a few of them
+    // brighter, each with a short broken reflection on the water below
+    float shoreY = mix(0.479, 0.489, smoothstep(0.15, 0.4, uv.x));
+    float townDot = 0.0;
+    float streak = 0.0;
+    for (int k = 0; k < 2; k++) {
+      float cells = 210.0 + float(k) * 130.0;
+      float cellX = floor(uv.x * cells);
+      float h1 = hash(vec2(cellX, 3.7 + float(k)));
+      float on = step(0.93 - float(k) * 0.03, h1) * smoothstep(0.78, 0.7, uv.x) * smoothstep(0.86, 0.9, h1 + hash(vec2(cellX, 5.5)) * 0.4);
+      float bright = 0.25 + 0.75 * pow(hash(vec2(cellX, 9.1 + float(k))), 3.0);
+      float lift = hash(vec2(cellX, 12.3 + float(k))) * 0.032; // how far up the slope the house sits
+      float cx = fract(uv.x * cells) - 0.5;
+      // a round point: the same width in x (cell units) as in y (texture units)
+      townDot += on * bright * exp(-cx * cx * 5.0) * exp(-pow((uv.y - shoreY - lift) * 420.0, 2.0));
+      streak += on * bright * exp(-cx * cx * 14.0) * smoothstep(shoreY + 0.004, shoreY - 0.01, uv.y) * exp(-(shoreY - uv.y) * 40.0)
+        * (0.3 + 0.7 * noise(vec2(uv.x * 500.0, uv.y * 90.0 - t * 0.5)));
+    }
+    nSea += vec3(0.95, 0.72, 0.45) * streak * 0.18;
+    nSea += sp * 0.02 * vec3(0.7, 0.8, 1.0);
     vec3 nLand = mix(g, g * vec3(0.22, 0.24, 0.32), 0.9) + vec3(0.22, 0.15, 0.08) * smoothstep(0.5, 0.0, uv.y);
     vec3 nHills = nLand * 0.3;
     vec3 nVeg = nLand * 0.4;
     // the pool at night is the photograph's own water surface, re-lit: what reflected
     // the sky turns light turquoise, the ripples stay deep teal, the far wall is
     // brighter where the lights are, and a faint caustic shimmer moves underneath
-    float wall = smoothstep(0.04, 0.335, uv.y);
-    float structure = smoothstep(0.12, 0.9, lum) * mix(0.35, 1.0, edgeIn); // the water line by the coping stays dark
-    vec3 surface = mix(vec3(0.01, 0.15, 0.22), vec3(0.18, 0.66, 0.72), structure * (0.45 + 0.55 * wall));
-    float caus = noise(uv * vec2(110.0, 160.0) + t * 0.3) * noise(uv * vec2(85.0, 130.0) - t * 0.25);
-    surface += vec3(0.08, 0.28, 0.28) * (caus - 0.25) * 0.5;
+    float wall = smoothstep(0.04, POOL_TOP, uv.y);
+    // the surface keeps the photograph's own soft gradients (linear, never posterised);
+    // the water line by the coping stays dark
+    float structure = clamp((lum - 0.08) * 1.05, 0.0, 1.0) * mix(0.35, 1.0, edgeIn);
+    // the water lit from below: turquoise where the light scatters up through the
+    // ripples, deeper teal in the troughs, deeper still away from the lights
+    vec3 surface = mix(vec3(0.01, 0.12, 0.19), vec3(0.14, 0.58, 0.64), structure * (0.4 + 0.6 * wall));
+    // fine ripple texture moving over it, faint
+    float caus = noise(uv * vec2(170.0, 260.0) + t * 0.3) * noise(uv * vec2(140.0, 220.0) - t * 0.25);
+    surface += vec3(0.05, 0.2, 0.22) * (caus - 0.25) * 0.35;
+    // the underwater lights along the far wall and their halo in the water
     float lights = 0.0;
     for (int i = 0; i < 3; i++) {
-      vec2 q = (uv - vec2(0.10 + float(i) * 0.2, 0.345)) * vec2(1.333, 2.2);
+      vec2 q = (uv - vec2(0.10 + float(i) * 0.2, POOL_TOP - 0.004)) * vec2(1.333, 2.2);
       lights += exp(-dot(q, q) * 90.0);
     }
     surface += vec3(0.25, 0.65, 0.62) * lights * 0.5;
-    vec3 nPool = surface + rings * 0.3;
+    vec3 nPool = surface + rings * 0.25 + splash * 0.4;
     vec3 nightTarget = (skyG * nSky + sea * nSea + pool * nPool + veg * nVeg + deck * nLand + hills * nHills) / wsum;
     g = mix(g, nightTarget, uNight);
+    // the tiled wall above the water line is lit from the pool below
+    float wallBand = smoothstep(POOL_TOP - 0.004, POOL_TOP + 0.004, uv.y) * smoothstep(COPING + 0.002, COPING - 0.006, uv.y) * step(uv.x, edgeX);
+    g += wallBand * uNight * vec3(0.05, 0.32, 0.36) * (0.45 + lum * 0.8);
+    // the lights of the village come on, on the hillside only
+    g += townDot * hills * uNight * uNight * vec3(1.0, 0.82, 0.55) * 0.8;
 
     // ---- stars, above the hills only
     vec2 sg = uv * vec2(260.0, 200.0);
