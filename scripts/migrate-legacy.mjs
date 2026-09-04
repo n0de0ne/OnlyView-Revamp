@@ -136,6 +136,15 @@ async function main() {
       count("agencies skipped (no name)");
       continue;
     }
+    // The legacy site has no "no agency" state: a direct booking carries the
+    // agency named "Direct" (flagged is_direct). Here direct means no agency at
+    // all — importing that row would attach every direct booking to an agency,
+    // charge it that agency's commission and report a 0% direct share. Leaving
+    // it out of the map resolves those reservations to agencyId null.
+    if (bool(a.is_direct) || a.name.trim().toLowerCase() === "direct") {
+      count("agencies skipped (Direct = no agency here)");
+      continue;
+    }
     const found =
       (await prisma.agency.findFirst({
         where: { name: { equals: a.name, mode: "insensitive" } },

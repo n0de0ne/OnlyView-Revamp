@@ -76,6 +76,28 @@ const nextConfig: NextConfig = {
     // query string rides along on the legacy redirects above, so
     // /pricing.php?lang=fr → /rates?lang=fr → /fr/rates.
     const frQuery = [{ type: "query" as const, key: "lang", value: "fr" }];
+    // Contracts already sent for signature point at /sign-contract.php?t=TOKEN.
+    // The token is carried over by the migration unchanged, so the old link has
+    // to land on the new path — a client with a pending contract must not meet
+    // a 404 the day we switch. Not permanent: these are transient app links.
+    const signToken = { type: "query" as const, key: "t", value: "(?<token>[A-Za-z0-9_-]+)" };
+    const contractRedirects = ["/sign-contract.php", "/sign-contract"].flatMap((source) => [
+      {
+        source,
+        has: [signToken, ...frQuery],
+        destination: "/fr/contracts/sign/:token",
+        permanent: false,
+      },
+      { source, has: [signToken], destination: "/contracts/sign/:token", permanent: false },
+    ]);
+    // The legacy guest portal opened on a URL token (/guest/?t=…); here the
+    // guest area is behind a login (magic link), so the token cannot be
+    // honoured — old portal links land on that login instead of a 404.
+    const guestRedirects = ["/guest", "/guest/:path*", "/guest-app/:path*"].map((source) => ({
+      source,
+      destination: "/account",
+      permanent: false,
+    }));
     return [
       // one host: www → apex, so links and signals never split across two
       {
@@ -84,6 +106,9 @@ const nextConfig: NextConfig = {
         destination: "https://onlyviewstbarth.com/:path*",
         permanent: true,
       },
+      // before the generic ?lang=fr rule, which would otherwise swallow them
+      ...contractRedirects,
+      ...guestRedirects,
       ...legacyRedirects,
       { source: "/", has: frQuery, destination: "/fr", permanent: true },
       {

@@ -95,6 +95,7 @@ src/
   lib/…                    auth, guest-auth, loyalty, stats, mailer, seo, i18n
 prisma/schema.prisma       full data model  ·  prisma/seed.mjs
 scripts/migrate-legacy.mjs legacy PHP data → new schema importer
+scripts/fix-direct-agency.mjs  detach direct bookings from a "Direct" agency row
 scripts/prepare-media.ts   photo pipeline from the legacy repo
 ```
 
@@ -191,6 +192,17 @@ Check first without writing anything:
 ```bash
 docker exec -it onlyview node scripts/migrate-legacy.mjs --report   # what is missing
 docker exec -it onlyview node scripts/migrate-legacy.mjs --force    # import it
+```
+
+The legacy site had no "no agency" state: a direct booking carried the agency
+named *Direct*. Here direct means no agency at all, so that row is not
+imported and those reservations arrive with no agency. A database migrated
+before this was fixed shows a **0 % direct share** and charges that agency's
+commission against direct bookings — repair it once:
+
+```bash
+docker exec -it onlyview node scripts/fix-direct-agency.mjs           # report
+docker exec -it onlyview node scripts/fix-direct-agency.mjs --apply   # fix
 ```
 
 The report also names the legacy schema it read and, when several look like
