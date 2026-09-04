@@ -236,18 +236,21 @@ function Picture({
   hour,
   dim,
   controls,
+  onReady,
 }: {
   photo: string;
   mask: string;
   hour: number;
   dim: number;
   controls: React.MutableRefObject<SceneControls>;
+  onReady?: () => void;
 }) {
   const [tex, maskTex] = useLoader(THREE.TextureLoader, [photo, mask]);
   const { size } = useThree();
   const mat = useRef<THREE.ShaderMaterial>(null);
   const shift = useRef(new THREE.Vector2());
   const nextRipple = useRef(0);
+  const ready = useRef(false);
 
   useEffect(() => {
     for (const t of [tex, maskTex]) {
@@ -304,8 +307,13 @@ function Picture({
       THREE.MathUtils.clamp(ANCHOR.x, cover.x / 2, 1 - cover.x / 2),
       THREE.MathUtils.clamp(ANCHOR.y, cover.y / 2, 1 - cover.y / 2)
     );
-    const zoom = 1.04 + Math.sin(t * 0.11) * 0.018;
+    // no zoom: the scene stays pixel-aligned with the still under it
+    const zoom = 1;
     u.uZoom.value = zoom;
+    if (!ready.current) {
+      ready.current = true;
+      onReady?.();
+    }
 
     const c = controls.current;
     // a small lean: enough to feel the depth, not enough to tear the contours
@@ -340,6 +348,7 @@ export default function GoldenHourScene({
   dim,
   active,
   controls,
+  onReady,
 }: {
   photo: string;
   mask: string;
@@ -347,6 +356,8 @@ export default function GoldenHourScene({
   dim: number;
   active: boolean;
   controls: React.MutableRefObject<SceneControls>;
+  /** called once the first frame has been drawn: the still under the canvas can go */
+  onReady?: () => void;
 }) {
   return (
     <Canvas
@@ -354,10 +365,11 @@ export default function GoldenHourScene({
       frameloop={active ? "always" : "never"}
       orthographic
       camera={{ position: [0, 0, 1], zoom: 1 }}
-      gl={{ antialias: false, powerPreference: "low-power", alpha: false }}
+      gl={{ antialias: false, powerPreference: "low-power", alpha: false, premultipliedAlpha: false }}
       className="!absolute inset-0"
+      style={{ background: "#0b1220" }}
     >
-      <Picture photo={photo} mask={mask} hour={hour} dim={dim} controls={controls} />
+      <Picture photo={photo} mask={mask} hour={hour} dim={dim} controls={controls} onReady={onReady} />
     </Canvas>
   );
 }

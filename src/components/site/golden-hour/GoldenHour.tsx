@@ -56,6 +56,8 @@ export function GoldenHour({
   const [hour, setHour] = useState(17.6);
   const [dim, setDim] = useState(0);
   const [playing, setPlaying] = useState(true);
+  // once the scene has drawn, the still under it is hidden: nothing can show through
+  const [live, setLive] = useState(false);
 
   const photo = photos.find((p) => p.url.endsWith(PHOTO));
   const src = photo?.url ?? `/media/photos/${PHOTO}`;
@@ -134,10 +136,26 @@ export function GoldenHour({
     >
       <div ref={stage} className="relative h-[84svh] min-h-[520px] w-full cursor-crosshair" onPointerDown={onTouch}>
         {/* the still under the scene, cropped the same way (anchor 42% from the left and the bottom) */}
-        <Image src={src} alt={photo?.alt ?? ""} fill sizes="100vw" className="object-cover object-[42%_58%]" priority={false} />
+        <Image
+          src={src}
+          alt={photo?.alt ?? ""}
+          fill
+          sizes="100vw"
+          className="object-cover object-[42%_58%]"
+          style={{ visibility: live ? "hidden" : "visible" }}
+          priority={false}
+        />
         {near && (
           <Suspense fallback={null}>
-            <Scene photo={src} mask={MASK} hour={hour} dim={dim} active={visible && !reduced} controls={controls} />
+            <Scene
+              photo={src}
+              mask={MASK}
+              hour={hour}
+              dim={dim}
+              active={visible && !reduced}
+              controls={controls}
+              onReady={() => setLive(true)}
+            />
           </Suspense>
         )}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-night to-transparent" />
