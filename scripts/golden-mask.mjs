@@ -1,37 +1,45 @@
 /**
  * Region masks for the "living photograph" golden-hour scene.
  *
- * The scene animates the villa's own photo (night/night-01.webp, the sun on
- * the hills seen from the pool). The shader needs to know where the sky,
- * the sea, the pool and the vegetation are, so this script writes one RGBA
- * PNG at the photo's working size (1200×900):
+ * The scene animates the villa's own photo (public/media/golden/view-night-01.webp,
+ * the sun on the hills seen from the pool). The shader needs to know where the
+ * sky, the sea, the pool and the vegetation are, so this script writes two RGB
+ * lossless WebPs at the photo's full size (2400×1800):
  *
- *   R = sky (0.5 on the umbrella canopy) · G = sea · B = pool · A = vegetation
+ *   a: R = sky (0.5 on the umbrella canopy) · G = sea · B = pool      b: R = vegetation
  *
- * The contours come from the photograph itself, not from hand-drawn
- * polygons: the ridge of the hills and the foot of the hills are found
- * column by column as the strongest edge inside a search band, the
- * vegetation is classified by colour and closed into solid bushes, the
- * shoreline is where that vegetation begins, and the pool's edges are fitted
- * as the straight lines they are. Only the rigid, man-made shapes (umbrella,
- * pole, rail) are traced by hand, measured on the pixels. The rough polylines
- * below only say where to look.
+ * Two passes. First, a rough mask from the photograph itself: the ridge and the
+ * foot of the hills as the strongest edge in a search band, the vegetation by
+ * colour closed into solid bushes, the shoreline where the solid bush begins,
+ * the pool's edges fitted as straight lines, the rigid umbrella and rail traced
+ * by hand from pixel measurements. Second, and this is where the precision
+ * comes from, every channel is refined with a colour guided filter (He, Sun &
+ * Tang) using the photograph as the guide: the mask becomes a locally linear
+ * function of the image colours, so its edges snap to the real edges of the
+ * picture at sub-pixel precision, with partial coverage across leaves and haze,
+ * instead of following the detector's own staircase.
  *
- *   node scripts/golden-mask.mjs            → public/media/golden/mask-night-01.png
+ *   node scripts/golden-mask.mjs            → public/media/golden/mask-night-01-{a,b}.webp (lossless)
  *   node scripts/golden-mask.mjs --preview  → also writes tinted overlays to check the contours
  */
 import sharp from "sharp";
-import { mkdirSync } from "node:fs";
+import { mkdirSync, statSync } from "node:fs";
 
-const W = 1200;
-const H = 900;
-// the scene's own copy of the frame (public/media/golden/view-night-01.webp is
-// what the site loads; the masks are traced on it, never on the photo library's file)
 const PHOTO = "public/media/golden/view-night-01.webp";
-const DEST = "public/media/golden/mask-night-01.png";
+// two lossless RGB files, no alpha: browsers premultiply an image's colour by its
+// alpha when they decode it, which would corrupt three channels next to every leaf
+const DEST = "public/media/golden/mask-night-01-a.webp"; // R sky · G sea · B pool
+const DEST_B = "public/media/golden/mask-night-01-b.webp"; // R vegetation
 const PREVIEW_DIR = process.env.PREVIEW_DIR ?? "public/media/golden";
 
-// ---- where to look (rough polylines, x → y) ----------------------------------
+// everything below was measured on a 1200×900 frame; S scales it to the photo
+const meta = await sharp(PHOTO).metadata();
+const W = meta.width;
+const H = meta.height;
+const S = W / 1200;
+if (Math.abs(W / H - 4 / 3) > 0.001) throw new Error(`${PHOTO} is ${W}×${H}; the masks need a 4:3 frame`);
+
+// ---- where to look (rough polylines, x → y, 1200-frame) -----------------------
 const RIDGE0 = [
   [0, 396], [60, 392], [120, 402], [170, 425], [220, 442], [290, 440], [350, 446],
   [420, 447], [500, 440], [560, 441], [620, 444], [660, 440], [720, 448], [790, 454],
@@ -46,12 +54,11 @@ const SHORE0 = [
   [562, 456], [590, 502], [650, 520], [700, 522], [760, 526], [830, 522], [900, 520], [945, 504],
   [980, 472], [1000, 470], [1060, 476], [1110, 500], [1200, 506],
 ];
-// the pool's far coping and its right-hand edge (x0 at y), and the near coping
 const POOL_TOP0 = 599;
 const POOL_RIGHT0 = [[599, 692], [850, 852]];
 const POOL_BOTTOM0 = 850;
 
-// ---- rigid shapes, measured on the pixels ---------------------------------------
+// ---- rigid shapes, measured on the pixels (1200-frame) ---------------------------
 const CANOPY = [
   [762, 400], [800, 393], [820, 387], [860, 380], [900, 376], [960, 373], [1000, 371],
   [1060, 368], [1100, 365], [1150, 361], [1162, 372], [1160, 404], [1120, 406], [1080, 409],
@@ -59,13 +66,15 @@ const CANOPY = [
 ];
 // the pole: its centre runs from x≈824 at row 340 to x≈792 at row 520
 const POLE = [[819, 334], [831, 334], [779, 624], [767, 624]];
-const RAIL = (x) => 507 - (x - 820) * 0.025; // the top rail, x ≥ 820
-const POSTS = [[889, 901], [1007, 1019], [1157, 1169]];
+const RAIL = (x) => (507 - (x / S - 820) * 0.025) * S; // the top rail, x ≥ 820·S
+const POSTS = [[889, 901], [1007, 1019], [1157, 1169]].map(([a, b]) => [a * S, b * S]);
+const scaled = (pts) => pts.map(([x, y]) => [x * S, y * S]);
+const CANOPY_S = scaled(CANOPY);
+const POLE_S = scaled(POLE);
 
 // ---- the photograph ------------------------------------------------------------
-const meta = await sharp(PHOTO).metadata();
-if (Math.abs(meta.width / meta.height - W / H) > 0.001) throw new Error(`${PHOTO} is ${meta.width}×${meta.height}; the masks need a 4:3 frame`);
-const { data } = await sharp(PHOTO).resize(W, H).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+const { data } = await sharp(PHOTO).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+const N = W * H;
 const px = (x, y) => {
   const i = (Math.min(H - 1, Math.max(0, y)) * W + Math.min(W - 1, Math.max(0, x))) * 3;
   return [data[i], data[i + 1], data[i + 2]];
@@ -80,19 +89,27 @@ const sat = (x, y) => {
   return mx === 0 ? 0 : (mx - Math.min(r, g, b)) / mx;
 };
 const lum3 = (x, y) => (lum(x - 1, y) + lum(x, y) + lum(x + 1, y)) / 3;
-// vertical contrast: bright above → dark below is positive
-const grad = (x, y) => (lum3(x, y - 3) + lum3(x, y - 2) + lum3(x, y - 1) - lum3(x, y + 1) - lum3(x, y + 2) - lum3(x, y + 3)) / 3;
+// vertical contrast over ±3 original pixels: bright above → dark below is positive
+const T = [2, 4, 6].map((k) => Math.round((k * S) / 2));
+const grad = (x, y) => (lum3(x, y - T[0]) + lum3(x, y - T[1]) + lum3(x, y - T[2]) - lum3(x, y + T[0]) - lum3(x, y + T[1]) - lum3(x, y + T[2])) / 3;
 
 const lineAt = (pts, x) => {
-  if (x <= pts[0][0]) return pts[0][1];
-  for (let i = 1; i < pts.length; i++) {
-    if (x <= pts[i][0]) {
-      const [x0, y0] = pts[i - 1];
-      const [x1, y1] = pts[i];
-      return y0 + ((y1 - y0) * (x - x0)) / (x1 - x0);
+  // pts in the 1200-frame, x and the result in the photo's frame
+  const xx = x / S;
+  let y;
+  if (xx <= pts[0][0]) y = pts[0][1];
+  else {
+    y = pts[pts.length - 1][1];
+    for (let i = 1; i < pts.length; i++) {
+      if (xx <= pts[i][0]) {
+        const [x0, y0] = pts[i - 1];
+        const [x1, y1] = pts[i];
+        y = y0 + ((y1 - y0) * (xx - x0)) / (x1 - x0);
+        break;
+      }
     }
   }
-  return pts[pts.length - 1][1];
+  return y * S;
 };
 const inPoly = (pts, x, y) => {
   let inside = false;
@@ -109,19 +126,17 @@ const median = (arr) => {
 };
 const window = (arr, i, r) => arr.slice(Math.max(0, i - r), Math.min(arr.length, i + r + 1));
 const medN = (arr, r) => arr.map((_, i) => median(window(arr, i, r)));
-// keep the detail, drop the outliers: a column further than `tol` from its neighbours' median is replaced
 const settle = (arr, r, tol) => {
   const m = medN(arr, r);
   return arr.map((v, i) => (Math.abs(v - m[i]) > tol ? m[i] : v));
 };
 
-// leaves: green (the sunlit tips included), or dark and not blue. The white rail
-// is neutral and the glare on the water is orange, so neither passes.
+// leaves: green (the sunlit tips included), or dark and not blue and not grey
 const isVeg = (x, y) => {
   const [r, g, b] = px(x, y);
   const l = lum(x, y);
   const blueish = b > r + 15 && b > g + 5;
-  const grey = sat(x, y) < 0.12; // shaded water is grey-blue; shaded leaves keep some colour
+  const grey = sat(x, y) < 0.12;
   return (g >= r - 2 && g > b + 4) || (l < 0.42 && !blueish && !grey);
 };
 // the red roofs across the bay: red, not orange (the water under the sun is orange)
@@ -130,43 +145,47 @@ const isRoof = (x, y) => {
   return r > g + 40 && g < b + 25 && lum(x, y) < 0.6;
 };
 const isCoping = (x, y) => lum(x, y) > 0.66 && sat(x, y) < 0.22;
+// the pool's right-hand edge: the coping's lit inner face is a little darker than its
+// top, and the fit must land on the water line, so the face counts as stone here
+const isStone = (x, y) => lum(x, y) > 0.6 && sat(x, y) < 0.22;
 
-const morph = (src, r, dilate) => {
-  const out = new Uint8Array(W * H);
-  for (let y = 0; y < H; y++) {
-    for (let x = 0; x < W; x++) {
+// separable morphology on a 0/255 mask
+const morph1D = (src, r, dilate, horizontal) => {
+  const out = new Uint8Array(N);
+  const len = horizontal ? W : H;
+  const lines = horizontal ? H : W;
+  for (let l = 0; l < lines; l++) {
+    for (let i = 0; i < len; i++) {
       let v = dilate ? 0 : 255;
-      for (let dy = -r; dy <= r && (dilate ? v === 0 : v === 255); dy++) {
-        for (let dx = -r; dx <= r; dx++) {
-          const xx = x + dx;
-          const yy = y + dy;
-          if (xx < 0 || yy < 0 || xx >= W || yy >= H) continue;
-          const s = src[yy * W + xx];
-          if (dilate ? s > 0 : s === 0) {
-            v = dilate ? 255 : 0;
-            break;
-          }
+      for (let k = -r; k <= r; k++) {
+        const j = i + k;
+        if (j < 0 || j >= len) continue;
+        const s = horizontal ? src[l * W + j] : src[j * W + l];
+        if (dilate ? s > 0 : s === 0) {
+          v = dilate ? 255 : 0;
+          break;
         }
       }
-      out[y * W + x] = v;
+      if (horizontal) out[l * W + i] = v;
+      else out[i * W + l] = v;
     }
   }
   return out;
 };
+const morph = (src, r, dilate) => morph1D(morph1D(src, r, dilate, true), r, dilate, false);
 
-// ---- the ridge and the foot of the hills -----------------------------------------
+// ---- pass one: the rough mask ----------------------------------------------------
 const ridge = new Float32Array(W);
 const base = new Float32Array(W);
 for (let x = 0; x < W; x++) {
-  // the ridge: the first strong bright→dark edge coming down from the sky
   const r0 = lineAt(RIDGE0, x);
   let ry = r0;
-  for (let y = Math.round(r0) - 45; y <= r0 + 25; y++) {
+  for (let y = Math.round(r0 - 45 * S); y <= r0 + 25 * S; y++) {
     const g = grad(x, y);
     if (g > 0.17) {
       let best = y;
       let bg = g;
-      for (let k = 1; k <= 4; k++) {
+      for (let k = 1; k <= 4 * S; k++) {
         const gg = grad(x, y + k);
         if (gg > bg) {
           bg = gg;
@@ -178,32 +197,31 @@ for (let x = 0; x < W; x++) {
     }
   }
   ridge[x] = ry;
-  // the foot of the hills: the strongest dark→bright edge around the rough line
   const b0 = lineAt(BASE0, x);
   let by = b0;
   let bg = 0;
-  for (let y = Math.round(b0) - 14; y <= b0 + 14; y++) {
-    if (y <= ry + 2) continue;
+  for (let y = Math.round(b0 - 14 * S); y <= b0 + 14 * S; y++) {
+    if (y <= ry + 2 * S) continue;
     const g = -grad(x, y);
     if (g > bg) {
       bg = g;
       by = y;
     }
   }
-  base[x] = bg > 0.06 ? by : Math.max(b0, ry + 3);
+  base[x] = bg > 0.06 ? by : Math.max(b0, ry + 3 * S);
 }
-const ridgeS = settle(ridge, 2, 6);
-const baseS = settle(base, 4, 5);
+const ridgeS = settle(ridge, 2 * S, 6 * S);
+const baseS = settle(base, 4 * S, 5 * S);
 
-// ---- the pool: straight edges, fitted ----------------------------------------------
+// the pool: straight edges, fitted
 const poolTop = new Float32Array(W);
 const poolBottom = new Float32Array(W);
 for (let x = 0; x < W; x++) {
-  let pt = POOL_TOP0;
-  let seenCoping = false;
-  for (let y = 578; y <= 632; y++) {
-    if (!seenCoping) {
-      if (isCoping(x, y) && isCoping(x, y + 1)) seenCoping = true;
+  let pt = POOL_TOP0 * S;
+  let seen = false;
+  for (let y = Math.round(578 * S); y <= 632 * S; y++) {
+    if (!seen) {
+      if (isCoping(x, y) && isCoping(x, y + 1)) seen = true;
       continue;
     }
     if (lum(x, y) < 0.6 && lum(x, y + 1) < 0.6) {
@@ -212,8 +230,8 @@ for (let x = 0; x < W; x++) {
     }
   }
   poolTop[x] = pt;
-  let pb = POOL_BOTTOM0;
-  for (let y = 834; y <= 874; y++) {
+  let pb = POOL_BOTTOM0 * S;
+  for (let y = Math.round(834 * S); y <= 874 * S; y++) {
     if (isCoping(x, y) && isCoping(x, y + 1)) {
       pb = y;
       break;
@@ -221,14 +239,28 @@ for (let x = 0; x < W; x++) {
   }
   poolBottom[x] = pb;
 }
-const poolTopY = median(poolTop.slice(0, 620));
-const poolBottomY = median(poolBottom.slice(40, 700));
+const poolTopY = median(poolTop.slice(0, Math.round(620 * S)));
+const poolBottomY = median(poolBottom.slice(Math.round(40 * S), Math.round(700 * S)));
 const rightOffsets = [];
-for (let y = POOL_TOP0 + 10; y < POOL_BOTTOM0 - 10; y++) {
-  const x0 = lineAt(POOL_RIGHT0, y);
-  for (let x = Math.round(x0) - 26; x <= x0 + 26; x++) {
-    if (isCoping(x, y) && isCoping(x + 1, y) && isCoping(x + 2, y)) {
-      rightOffsets.push([y, x - x0]);
+// POOL_RIGHT0 maps y → x, so interpolate it by hand
+const rightAt = (y) => {
+  const [[y0, x0], [y1, x1]] = POOL_RIGHT0;
+  return (x0 + ((x1 - x0) * (y / S - y0)) / (y1 - y0)) * S;
+};
+for (let y = Math.round((POOL_TOP0 + 10) * S); y < (POOL_BOTTOM0 - 10) * S; y++) {
+  const x0 = rightAt(y);
+  for (let x = Math.round(x0 - 26 * S); x <= x0 + 26 * S; x++) {
+    if (isStone(x, y) && isStone(x + 1, y) && isStone(x + 2, y)) {
+      // the water line is further in: back from the stone across the tiled inner
+      // face of the wall to the last dark pixel of water
+      let xw = x;
+      for (let k = x - 1; k >= x - 30 * S; k--) {
+        if (lum(k, y) < 0.34 && lum(k - 1, y) < 0.34) {
+          xw = k + 1;
+          break;
+        }
+      }
+      rightOffsets.push([y, xw - x0]);
       break;
     }
   }
@@ -241,103 +273,205 @@ const yBottom = rightOffsets[rightOffsets.length - 1 - Math.floor(third / 2)][0]
 const poolRight = new Float32Array(H);
 for (let y = 0; y < H; y++) {
   const k = (y - yTop) / (yBottom - yTop);
-  poolRight[y] = lineAt(POOL_RIGHT0, y) + offTop + (offBottom - offTop) * k;
+  poolRight[y] = rightAt(y) + offTop + (offBottom - offTop) * k;
 }
+// the same line in texture space (y up), for the shader's water-line fade
+const edgeUv = (y) => [poolRight[Math.round(y)] / W, 1 - y / H];
+const [ex0, ey0] = edgeUv(600 * S);
+const [ex1, ey1] = edgeUv(840 * S);
+console.log(`pool water line (uv): x = ${ex0.toFixed(4)} + (${ey0.toFixed(4)} - y) * ${((ex1 - ex0) / (ey0 - ey1)).toFixed(4)}`);
 
-// ---- the vegetation, by colour, closed into solid bushes ---------------------------
-const vegBottom = (x) => (x < 780 ? poolTopY - 14 : 586);
-const vegRaw = new Uint8Array(W * H);
+// the vegetation, by colour, closed into solid bushes
+const vegBottom = (x) => (x < 780 * S ? poolTopY - 14 * S : 586 * S);
+const vegRaw = new Uint8Array(N);
 for (let x = 0; x < W; x++) {
-  for (let y = Math.round(baseS[x]) + 2; y < vegBottom(x); y++) {
-    if (inPoly(POLE, x, y)) continue;
+  for (let y = Math.round(baseS[x]) + 2 * S; y < vegBottom(x); y++) {
+    if (inPoly(POLE_S, x, y)) continue;
     if (isVeg(x, y)) vegRaw[y * W + x] = 255;
   }
 }
-const vegClosed = morph(morph(morph(vegRaw, 2, true), 3, false), 1, true);
-// the rail and its posts are rigid: no breeze there
-for (let y = 440; y < 600; y++) {
-  for (let x = 820; x < W; x++) {
+const vegClosed = morph(morph(morph(vegRaw, 2 * S, true), 3 * S, false), 1 * S, true);
+for (let y = Math.round(440 * S); y < 600 * S; y++) {
+  for (let x = Math.round(820 * S); x < W; x++) {
     const rail = RAIL(x);
-    const onRail = y >= rail - 3 && y <= rail + 7;
+    const onRail = y >= rail - 3 * S && y <= rail + 7 * S;
     const onPost = y >= rail && POSTS.some(([a, b]) => x >= a && x <= b);
     if (onRail || onPost) vegClosed[y * W + x] = 0;
   }
 }
 
-// ---- the shore: where the solid bush (or a roof) begins ------------------------------
-// Above that line, every pixel that is not foliage is water: the pockets between
-// the leaf tips included, so nothing is left between the two.
+// the shore: where the solid bush (or a roof) begins; above it, what is not foliage is water
+const halfSolid = 2 * S;
 const solid = (x, y) => {
-  for (let dx = -2; dx <= 2; dx++) if (vegClosed[y * W + x + dx] === 0 || vegClosed[(y + 1) * W + x + dx] === 0) return false;
+  for (let dx = -halfSolid; dx <= halfSolid; dx++) if (vegClosed[y * W + x + dx] === 0 || vegClosed[(y + 1) * W + x + dx] === 0) return false;
   return true;
 };
 const shoreS = new Float32Array(W);
-for (let x = 2; x < W - 2; x++) {
+for (let x = halfSolid; x < W - halfSolid; x++) {
   const s0 = lineAt(SHORE0, x);
-  let sy = s0 + 34;
-  for (let y = Math.round(baseS[x]) + 2; y <= s0 + 34; y++) {
-    const roof = isRoof(x, y) && isRoof(x, y + 1);
-    if (solid(x, y) || roof) {
+  let sy = s0 + 34 * S;
+  for (let y = Math.round(baseS[x]) + 2 * S; y <= s0 + 34 * S; y++) {
+    if (solid(x, y) || (isRoof(x, y) && isRoof(x, y + 1))) {
       sy = y;
       break;
     }
   }
-  if (x >= 820) sy = Math.min(sy, RAIL(x) - 1);
+  if (x >= 820 * S) sy = Math.min(sy, RAIL(x) - 1);
   shoreS[x] = sy;
 }
-shoreS[0] = shoreS[1] = shoreS[2];
-shoreS[W - 1] = shoreS[W - 2] = shoreS[W - 3];
+for (let x = 0; x < halfSolid; x++) shoreS[x] = shoreS[halfSolid];
+for (let x = W - halfSolid; x < W; x++) shoreS[x] = shoreS[W - halfSolid - 1];
 
-if (process.env.DEBUG) {
-  for (const x of [100, 350, 400, 600, 900, 1100]) {
-    console.log(x, { ridge: ridgeS[x], base: baseS[x], shore: shoreS[x] });
-  }
-  console.log("pool", { poolTopY, poolBottomY, offTop, offBottom });
-}
-
-// ---- the masks -------------------------------------------------------------------
-const sky = new Uint8Array(W * H);
-const sea = new Uint8Array(W * H);
-const pool = new Uint8Array(W * H);
-const veg = new Uint8Array(W * H);
+const sky = new Float32Array(N);
+const sea = new Float32Array(N);
+const pool = new Float32Array(N);
+const veg = new Float32Array(N);
 for (let y = 0; y < H; y++) {
   for (let x = 0; x < W; x++) {
     const i = y * W + x;
-    const pole = inPoly(POLE, x, y);
-    if (y < ridgeS[x] && !pole) sky[i] = inPoly(CANOPY, x, y) ? 128 : 255;
-    if (y >= baseS[x] && y < shoreS[x] && !pole && vegClosed[i] === 0) sea[i] = 255;
-    if (y >= poolTopY && y < poolBottomY && x < poolRight[y]) pool[i] = 255;
-    if (vegClosed[i] > 0) veg[i] = 255;
+    const pole = inPoly(POLE_S, x, y);
+    if (y < ridgeS[x] && !pole) sky[i] = inPoly(CANOPY_S, x, y) ? 0.5 : 1;
+    if (y >= baseS[x] && y < shoreS[x] && !pole && vegClosed[i] === 0) sea[i] = 1;
+    if (y >= poolTopY && y < poolBottomY && x < poolRight[y]) pool[i] = 1;
+    if (vegClosed[i] > 0) veg[i] = 1;
   }
 }
-const seaOpen = sea;
 
-// a soft edge of under a pixel: enough to antialias, not enough to blur the contour
-const channel = async (buf, blur) => {
-  const { data: out, info } = await sharp(buf, { raw: { width: W, height: H, channels: 1 } })
-    .blur(blur)
-    .toColourspace("b-w")
-    .raw()
-    .toBuffer({ resolveWithObject: true });
-  if (info.channels !== 1) throw new Error(`expected one channel, got ${info.channels}`);
+// ---- pass two: the guided filter, the photograph as guide -------------------------
+// box mean with border normalisation, separable, O(N)
+const boxMean = (src, r) => {
+  const tmp = new Float32Array(N);
+  const out = new Float32Array(N);
+  for (let y = 0; y < H; y++) {
+    const row = y * W;
+    let sum = 0;
+    for (let x = 0; x <= r && x < W; x++) sum += src[row + x];
+    for (let x = 0; x < W; x++) {
+      const lo = Math.max(0, x - r);
+      const hi = Math.min(W - 1, x + r);
+      tmp[row + x] = sum / (hi - lo + 1);
+      if (x + r + 1 < W) sum += src[row + x + r + 1];
+      if (x - r >= 0) sum -= src[row + x - r];
+    }
+  }
+  for (let x = 0; x < W; x++) {
+    let sum = 0;
+    for (let y = 0; y <= r && y < H; y++) sum += tmp[y * W + x];
+    for (let y = 0; y < H; y++) {
+      const lo = Math.max(0, y - r);
+      const hi = Math.min(H - 1, y + r);
+      out[y * W + x] = sum / (hi - lo + 1);
+      if (y + r + 1 < H) sum += tmp[(y + r + 1) * W + x];
+      if (y - r >= 0) sum -= tmp[(y - r) * W + x];
+    }
+  }
   return out;
 };
-const [r, g, b, a] = await Promise.all([channel(sky, 0.7), channel(seaOpen, 0.7), channel(pool, 0.8), channel(veg, 1.4)]);
-const rgba = Buffer.alloc(W * H * 4);
-for (let i = 0; i < W * H; i++) {
-  rgba[i * 4] = r[i];
-  rgba[i * 4 + 1] = g[i];
-  rgba[i * 4 + 2] = b[i];
-  rgba[i * 4 + 3] = a[i];
+const mul = (a, b) => {
+  const o = new Float32Array(N);
+  for (let i = 0; i < N; i++) o[i] = a[i] * b[i];
+  return o;
+};
+
+const R = Math.round(5 * S); // window radius: 11 original pixels
+const EPS = 2e-3;
+const I = [new Float32Array(N), new Float32Array(N), new Float32Array(N)];
+for (let i = 0; i < N; i++) {
+  I[0][i] = data[i * 3] / 255;
+  I[1][i] = data[i * 3 + 1] / 255;
+  I[2][i] = data[i * 3 + 2] / 255;
+}
+console.log("guided filter: guide statistics");
+const mI = I.map((c) => boxMean(c, R));
+const pairs = [[0, 0], [0, 1], [0, 2], [1, 1], [1, 2], [2, 2]];
+const mII = pairs.map(([a, b]) => boxMean(mul(I[a], I[b]), R));
+// per-pixel inverse of the 3×3 covariance (+ eps on the diagonal)
+const inv = new Float32Array(N * 9);
+for (let i = 0; i < N; i++) {
+  const rr = mII[0][i] - mI[0][i] * mI[0][i] + EPS;
+  const rg = mII[1][i] - mI[0][i] * mI[1][i];
+  const rb = mII[2][i] - mI[0][i] * mI[2][i];
+  const gg = mII[3][i] - mI[1][i] * mI[1][i] + EPS;
+  const gb = mII[4][i] - mI[1][i] * mI[2][i];
+  const bb = mII[5][i] - mI[2][i] * mI[2][i] + EPS;
+  const det = rr * (gg * bb - gb * gb) - rg * (rg * bb - gb * rb) + rb * (rg * gb - gg * rb);
+  const d = 1 / det;
+  const o = i * 9;
+  inv[o] = (gg * bb - gb * gb) * d;
+  inv[o + 1] = (rb * gb - rg * bb) * d;
+  inv[o + 2] = (rg * gb - rb * gg) * d;
+  inv[o + 3] = inv[o + 1];
+  inv[o + 4] = (rr * bb - rb * rb) * d;
+  inv[o + 5] = (rb * rg - rr * gb) * d;
+  inv[o + 6] = inv[o + 2];
+  inv[o + 7] = inv[o + 5];
+  inv[o + 8] = (rr * gg - rg * rg) * d;
+}
+const guided = (p) => {
+  const mp = boxMean(p, R);
+  const mIp = I.map((c) => boxMean(mul(c, p), R));
+  const a = [new Float32Array(N), new Float32Array(N), new Float32Array(N)];
+  const b = new Float32Array(N);
+  for (let i = 0; i < N; i++) {
+    const c0 = mIp[0][i] - mI[0][i] * mp[i];
+    const c1 = mIp[1][i] - mI[1][i] * mp[i];
+    const c2 = mIp[2][i] - mI[2][i] * mp[i];
+    const o = i * 9;
+    a[0][i] = inv[o] * c0 + inv[o + 1] * c1 + inv[o + 2] * c2;
+    a[1][i] = inv[o + 3] * c0 + inv[o + 4] * c1 + inv[o + 5] * c2;
+    a[2][i] = inv[o + 6] * c0 + inv[o + 7] * c1 + inv[o + 8] * c2;
+    b[i] = mp[i] - a[0][i] * mI[0][i] - a[1][i] * mI[1][i] - a[2][i] * mI[2][i];
+  }
+  const ma = a.map((c) => boxMean(c, R));
+  const mb = boxMean(b, R);
+  const q = new Uint8Array(N);
+  for (let i = 0; i < N; i++) {
+    const v = ma[0][i] * I[0][i] + ma[1][i] * I[1][i] + ma[2][i] * I[2][i] + mb[i];
+    q[i] = Math.round(Math.min(1, Math.max(0, v)) * 255);
+  }
+  return q;
+};
+console.log("guided filter: sky");
+const r = guided(sky);
+console.log("guided filter: sea");
+const g = guided(sea);
+// the pool's edges are exact fitted lines: no guided filter there (the lit inner face of
+// the coping matches the water's reflection line and the filter would bleed onto it),
+// only a one-pixel feather
+const poolHard = new Uint8Array(N);
+for (let i = 0; i < N; i++) poolHard[i] = pool[i] > 0 ? 255 : 0;
+const { data: b } = await sharp(poolHard, { raw: { width: W, height: H, channels: 1 } })
+  .blur(0.5 * S)
+  .toColourspace("b-w")
+  .raw()
+  .toBuffer({ resolveWithObject: true });
+console.log("guided filter: vegetation");
+const a = guided(veg);
+
+if (process.env.DEBUG) {
+  for (const x of [100, 350, 400, 600, 900, 1100].map((v) => v * S)) {
+    console.log(x / S, { ridge: ridgeS[x] / S, base: baseS[x] / S, shore: shoreS[x] / S });
+  }
+  console.log("pool", { poolTopY: poolTopY / S, poolBottomY: poolBottomY / S, offTop: offTop / S, offBottom: offBottom / S });
+}
+
+const rgbA = Buffer.alloc(N * 3);
+const rgbB = Buffer.alloc(N * 3);
+for (let i = 0; i < N; i++) {
+  rgbA[i * 3] = r[i];
+  rgbA[i * 3 + 1] = g[i];
+  rgbA[i * 3 + 2] = b[i];
+  rgbB[i * 3] = a[i];
 }
 mkdirSync("public/media/golden", { recursive: true });
-await sharp(rgba, { raw: { width: W, height: H, channels: 4 } }).png({ compressionLevel: 9 }).toFile(DEST);
-console.log("wrote", DEST, `${W}×${H}`);
+await sharp(rgbA, { raw: { width: W, height: H, channels: 3 } }).webp({ lossless: true, effort: 6 }).toFile(DEST);
+await sharp(rgbB, { raw: { width: W, height: H, channels: 3 } }).webp({ lossless: true, effort: 6 }).toFile(DEST_B);
+console.log("wrote", DEST, `${Math.round(statSync(DEST).size / 1024)} KB`, "and", DEST_B, `${Math.round(statSync(DEST_B).size / 1024)} KB`, `(${W}×${H})`);
 
 if (process.argv.includes("--preview")) {
   const tint = (m, color, alpha = 0.45) => {
-    const out = Buffer.alloc(W * H * 4);
-    for (let i = 0; i < W * H; i++) {
+    const out = Buffer.alloc(N * 4);
+    for (let i = 0; i < N; i++) {
       out[i * 4] = color[0];
       out[i * 4 + 1] = color[1];
       out[i * 4 + 2] = color[2];
@@ -351,22 +485,26 @@ if (process.argv.includes("--preview")) {
     tint(b, [255, 60, 200]),
     tint(a, [255, 220, 0]),
   ]);
-  const cover = [r, g, b, a].map((m) => ((m.filter((v) => v > 128).length / (W * H)) * 100).toFixed(1) + "%");
+  const cover = [r, g, b, a].map((m) => ((m.filter((v) => v > 128).length / N) * 100).toFixed(1) + "%");
   console.log("coverage sky/sea/pool/veg", cover.join(" "));
   const full = await sharp(PHOTO)
-    .resize(W, H)
     .composite(layers.map((input) => ({ input })))
     .png()
     .toBuffer();
-  await sharp(full).jpeg({ quality: 85 }).toFile(`${PREVIEW_DIR}/mask-preview.jpg`);
+  await sharp(full).resize(1200).jpeg({ quality: 85 }).toFile(`${PREVIEW_DIR}/mask-preview.jpg`);
   const crops = [
     ["left", 0, 370, 420, 240],
     ["middle", 380, 400, 440, 240],
     ["right", 800, 320, 400, 300],
     ["pool", 560, 570, 340, 310],
+    ["ridge-zoom", 150, 380, 240, 120],
   ];
   for (const [name, left, top, width, height] of crops) {
-    await sharp(full).extract({ left, top, width, height }).resize(width * 2, height * 2, { kernel: "nearest" }).jpeg({ quality: 88 }).toFile(`${PREVIEW_DIR}/mask-${name}.jpg`);
+    await sharp(full)
+      .extract({ left: left * S, top: top * S, width: width * S, height: height * S })
+      .resize({ width: Math.min(1400, width * 4) })
+      .jpeg({ quality: 88 })
+      .toFile(`${PREVIEW_DIR}/mask-${name}.jpg`);
   }
   console.log("previews in", PREVIEW_DIR);
 }

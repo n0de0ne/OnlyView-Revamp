@@ -4,7 +4,8 @@
  * A living photograph. The base is the villa's own shot of the bay from the
  * pool at golden hour; a fragment shader (three.js through react-three-fiber)
  * brings it to life on top of the real pixels, region by region, using the
- * hand-traced masks in /media/golden (R sky · G sea · B pool · A vegetation):
+ * masks in /media/golden, derived from the photograph by scripts/golden-mask.mjs
+ * (file a: R sky · G sea · B pool; file b: R vegetation):
  *
  *  - the sea swells and the sun's path glitters on the water,
  *  - the pool ripples, and rings spread where the visitor touches it,
@@ -61,7 +62,8 @@ const VERT = /* glsl */ `
 const FRAG = /* glsl */ `
   precision highp float;
   uniform sampler2D uPhoto;
-  uniform sampler2D uMask;
+  uniform sampler2D uMask;   // R sky · G sea · B pool
+  uniform sampler2D uMaskB;  // R vegetation (no alpha anywhere: browsers premultiply it)
   uniform float uTime;
   uniform float uSunk;
   uniform float uDusk;
@@ -95,16 +97,18 @@ const FRAG = /* glsl */ `
 
     // depth lean: the sky barely moves, the pool moves most
     vec4 m0 = texture2D(uMask, uv);
+    float veg0 = texture2D(uMaskB, uv).r;
     float sky0 = smoothstep(0.15, 0.55, m0.r);
-    float other = clamp(1.0 - (sky0 + m0.g + m0.b + m0.a), 0.0, 1.0);
-    float depth = 0.10 * sky0 + 0.28 * m0.g + 0.62 * m0.a + 0.92 * m0.b + other * mix(0.92, 0.14, smoothstep(0.36, 0.5, uv.y));
+    float other = clamp(1.0 - (sky0 + m0.g + m0.b + veg0), 0.0, 1.0);
+    float depth = 0.10 * sky0 + 0.28 * m0.g + 0.62 * veg0 + 0.92 * m0.b + other * mix(0.92, 0.14, smoothstep(0.36, 0.5, uv.y));
     uv += uParallax * (depth - 0.35);
 
     vec4 m = texture2D(uMask, uv);
     // skyG: everything that takes the sky's colour (the canopy included); sky: open sky only
     float skyG = smoothstep(0.15, 0.55, m.r);
     float sky = smoothstep(0.6, 0.95, m.r);
-    float sea = m.g, pool = m.b, veg = m.a;
+    float sea = m.g, pool = m.b;
+    float veg = texture2D(uMaskB, uv).r;
     float land = clamp(1.0 - (skyG + sea + pool + veg), 0.0, 1.0);
     // the hills across the bay: the land above the terrace
     float hills = land * smoothstep(0.42, 0.47, uv.y);
@@ -138,14 +142,14 @@ const FRAG = /* glsl */ `
     // the water moves, the coping around it does not; the surface settles toward
     // the right-hand edge (a straight line in the photograph) so the coping's
     // reflection never scallops
-    float edgeX = 0.559 + (0.333 - uv.y) * 0.4826;
+    float edgeX = 0.5565 + (0.3333 - uv.y) * 0.3844; // printed by scripts/golden-mask.mjs
     float edgeIn = smoothstep(0.0, 0.035, edgeX - uv.x);
     float water = pool * smoothstep(0.352, 0.335, uv.y) * edgeIn;
     vec2 dP = water * pr;
     dP *= texture2D(uMask, uv + dP).b;
 
     vec2 dV = veg * vec2(sin(t * 1.1 + uv.y * 40.0 + uv.x * 12.0) * 0.0014, sin(t * 0.8 + uv.x * 50.0) * 0.0006) * (0.6 + 0.4 * sin(t * 0.3));
-    dV *= texture2D(uMask, uv + dV).a;
+    dV *= texture2D(uMaskB, uv + dV).r;
 
     vec2 d = dS + dW + dP + dV;
     vec3 c = texture2D(uPhoto, uv + d).rgb;
@@ -233,6 +237,7 @@ const FRAG = /* glsl */ `
 function Picture({
   photo,
   mask,
+  maskB,
   hour,
   dim,
   controls,
@@ -240,12 +245,13 @@ function Picture({
 }: {
   photo: string;
   mask: string;
+  maskB: string;
   hour: number;
   dim: number;
   controls: React.MutableRefObject<SceneControls>;
   onReady?: () => void;
 }) {
-  const [tex, maskTex] = useLoader(THREE.TextureLoader, [photo, mask]);
+  const [tex, maskTex, maskTexB] = useLoader(THREE.TextureLoader, [photo, mask, maskB]);
   const { size } = useThree();
   const mat = useRef<THREE.ShaderMaterial>(null);
   const shift = useRef(new THREE.Vector2());
@@ -258,19 +264,20 @@ function Picture({
     if (img && Math.abs(img.width / img.height - 4 / 3) > 0.01) {
       console.warn(`golden hour: frame is ${img.width}×${img.height}, the masks expect 4:3 — contours will not line up`);
     }
-    for (const t of [tex, maskTex]) {
+    for (const t of [tex, maskTex, maskTexB]) {
       // the shader works in display space: no decoding, no re-encoding
       t.colorSpace = THREE.NoColorSpace;
       t.minFilter = THREE.LinearFilter;
       t.generateMipmaps = false;
       t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
     }
-  }, [tex, maskTex]);
+  }, [tex, maskTex, maskTexB]);
 
   const uniforms = useMemo(
     () => ({
       uPhoto: { value: tex },
       uMask: { value: maskTex },
+      uMaskB: { value: maskTexB },
       uTime: { value: 0 },
       uSunk: { value: 0 },
       uDusk: { value: 0 },
@@ -349,6 +356,7 @@ function Picture({
 export default function GoldenHourScene({
   photo,
   mask,
+  maskB,
   hour,
   dim,
   active,
@@ -357,6 +365,7 @@ export default function GoldenHourScene({
 }: {
   photo: string;
   mask: string;
+  maskB: string;
   hour: number;
   dim: number;
   active: boolean;
@@ -374,7 +383,7 @@ export default function GoldenHourScene({
       className="!absolute inset-0"
       style={{ background: "#0b1220" }}
     >
-      <Picture photo={photo} mask={mask} hour={hour} dim={dim} controls={controls} onReady={onReady} />
+      <Picture photo={photo} mask={mask} maskB={maskB} hour={hour} dim={dim} controls={controls} onReady={onReady} />
     </Canvas>
   );
 }

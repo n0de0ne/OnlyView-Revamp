@@ -23,7 +23,8 @@ const Scene = dynamic(() => import("./GoldenHourScene"), { ssr: false });
  */
 const PHOTO = "night/night-01.webp";
 const FRAME = "/media/golden/view-night-01.webp";
-const MASK = "/media/golden/mask-night-01.png";
+const MASK = "/media/golden/mask-night-01-a.webp"; // sky · sea · pool
+const MASK_B = "/media/golden/mask-night-01-b.webp"; // vegetation (its own file: no alpha channel anywhere)
 const START = 17.3;
 const END = 19.5;
 
@@ -157,6 +158,7 @@ export function GoldenHour({
             <Scene
               photo={src}
               mask={MASK}
+              maskB={MASK_B}
               hour={hour}
               dim={dim}
               active={visible && !reduced}
