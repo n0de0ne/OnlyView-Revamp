@@ -16,7 +16,13 @@ import type { SceneControls } from "./GoldenHourScene";
 
 const Scene = dynamic(() => import("./GoldenHourScene"), { ssr: false });
 
+/**
+ * The scene's own copy of the frame. The masks were traced on this exact file,
+ * so the scene must never load the photo library's version of the shot: an
+ * admin re-upload with a different size or framing would shift every contour.
+ */
 const PHOTO = "night/night-01.webp";
+const FRAME = "/media/golden/view-night-01.webp";
 const MASK = "/media/golden/mask-night-01.png";
 const START = 17.3;
 const END = 19.5;
@@ -59,8 +65,9 @@ export function GoldenHour({
   // once the scene has drawn, the still under it is hidden: nothing can show through
   const [live, setLive] = useState(false);
 
+  // the library only lends its caption; the pixels are the scene's own
   const photo = photos.find((p) => p.url.endsWith(PHOTO));
-  const src = photo?.url ?? `/media/photos/${PHOTO}`;
+  const src = FRAME;
 
   useEffect(() => {
     const el = ref.current;

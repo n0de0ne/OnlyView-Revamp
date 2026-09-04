@@ -25,7 +25,9 @@ import { mkdirSync } from "node:fs";
 
 const W = 1200;
 const H = 900;
-const PHOTO = "public/media/photos/night/night-01.webp";
+// the scene's own copy of the frame (public/media/golden/view-night-01.webp is
+// what the site loads; the masks are traced on it, never on the photo library's file)
+const PHOTO = "public/media/golden/view-night-01.webp";
 const DEST = "public/media/golden/mask-night-01.png";
 const PREVIEW_DIR = process.env.PREVIEW_DIR ?? "public/media/golden";
 
@@ -61,6 +63,8 @@ const RAIL = (x) => 507 - (x - 820) * 0.025; // the top rail, x ≥ 820
 const POSTS = [[889, 901], [1007, 1019], [1157, 1169]];
 
 // ---- the photograph ------------------------------------------------------------
+const meta = await sharp(PHOTO).metadata();
+if (Math.abs(meta.width / meta.height - W / H) > 0.001) throw new Error(`${PHOTO} is ${meta.width}×${meta.height}; the masks need a 4:3 frame`);
 const { data } = await sharp(PHOTO).resize(W, H).removeAlpha().raw().toBuffer({ resolveWithObject: true });
 const px = (x, y) => {
   const i = (Math.min(H - 1, Math.max(0, y)) * W + Math.min(W - 1, Math.max(0, x))) * 3;

@@ -253,6 +253,11 @@ function Picture({
   const ready = useRef(false);
 
   useEffect(() => {
+    // the masks were traced on a 4:3 frame; any other shape means the wrong file was served
+    const img = tex.image as { width: number; height: number } | undefined;
+    if (img && Math.abs(img.width / img.height - 4 / 3) > 0.01) {
+      console.warn(`golden hour: frame is ${img.width}×${img.height}, the masks expect 4:3 — contours will not line up`);
+    }
     for (const t of [tex, maskTex]) {
       // the shader works in display space: no decoding, no re-encoding
       t.colorSpace = THREE.NoColorSpace;
