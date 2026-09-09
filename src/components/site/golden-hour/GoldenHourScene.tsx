@@ -88,6 +88,27 @@ const FRAG = /* glsl */ `
     p3 += dot(p3, p3.yzx + 33.33);
     return fract((p3.x + p3.y) * p3.z);
   }
+  // cellular distance field: the net a pool's surface projects on its floor,
+  // and the cell pattern real caustics make — noise alone only gives blobs
+  vec2 worley(vec2 p, float time) {
+    vec2 i = floor(p), f = fract(p);
+    float f1 = 1.0, f2 = 1.0;
+    for (int y = -1; y <= 1; y++) {
+      for (int x = -1; x <= 1; x++) {
+        vec2 g = vec2(float(x), float(y));
+        vec2 o = vec2(hash(i + g), hash(i + g + 31.4));
+        o = 0.5 + 0.42 * sin(time + 6.2831 * o);
+        float d = length(g + o - f);
+        if (d < f1) { f2 = f1; f1 = d; } else if (d < f2) { f2 = d; }
+      }
+    }
+    return vec2(f1, f2);
+  }
+  /** the bright filament where two cells meet — a caustic net, not a field of dots */
+  float causticNet(vec2 p, float time, float sharp) {
+    vec2 w = worley(p, time);
+    return pow(1.0 - clamp((w.y - w.x) * sharp, 0.0, 1.0), 3.0);
+  }
   float noise(vec2 p) {
     vec2 i = floor(p), f = fract(p);
     f = f * f * (3.0 - 2.0 * f);
@@ -125,15 +146,29 @@ const FRAG = /* glsl */ `
     vec2 dS = skyFar * ((vec2(noise(uv * 3.0 + t * 0.02), noise(uv * 3.0 + 7.0 - t * 0.017)) - 0.5) * 0.014 + vec2(sin(t * 0.05) * 0.004, 0.0));
     dS *= smoothstep(0.5, 0.9, texture2D(uMask, uv + dS).r);
 
+    // The bay in perspective: the same swell reads finer and slower near the
+    // horizon and coarser near the shore, and it rolls in toward the terrace
+    // (phase runs with +uv.y, and uv.y falls toward the viewer).
     float near = clamp((0.49 - uv.y) / 0.08, 0.0, 1.0);
-    float swell = sin(uv.x * 90.0 + t * 0.9 + noise(uv * 20.0) * 4.0) * 0.5 + sin(uv.x * 160.0 - t * 1.4 + uv.y * 400.0) * 0.5;
-    vec2 dW = sea * vec2(swell * 0.25, swell) * 0.0012 * (0.25 + near);
+    float persp = mix(3.4, 1.0, near);
+    float ky = 300.0 * persp;
+    float swell =
+        sin(uv.y * ky + t * 1.15 + noise(uv * vec2(7.0, 26.0)) * 3.2) * 0.55
+      + sin(uv.y * ky * 1.73 - t * 1.7 + uv.x * 44.0) * 0.28
+      + sin(uv.x * 52.0 + uv.y * ky * 0.55 + t * 0.6) * 0.17;
+    vec2 dW = sea * vec2(swell * 0.2, swell) * 0.0011 * mix(0.18, 1.0, near);
     dW *= texture2D(uMask, uv + dW).g;
 
-    vec2 pr = vec2(sin(uv.y * 70.0 + t * 1.6) + sin(uv.x * 48.0 - t * 1.1 + uv.y * 30.0), cos(uv.x * 55.0 + t * 1.35) + sin(uv.y * 90.0 - t * 0.9)) * 0.0017;
-    // a touch on the water: a drop. Three dispersive rings (the short waves run
-    // ahead), fading as they spread; signed, so the crests catch the light and
-    // the troughs go dark; and a small splash at the first instant.
+    // Two crossing trains of capillary ripples and a slow drift underneath:
+    // a pool is never a standing pattern, it breathes and travels.
+    vec2 k1 = normalize(vec2(0.82, 0.57));
+    vec2 k2 = normalize(vec2(-0.46, 0.89));
+    float w1 = sin(dot(uv, k1) * 250.0 - t * 2.1);
+    float w2 = sin(dot(uv, k2) * 172.0 + t * 1.55);
+    float drift = noise(uv * vec2(60.0, 95.0) + vec2(t * 0.06, -t * 0.1)) - 0.5;
+    vec2 pr = (k1 * w1 * 0.55 + k2 * w2 * 0.32 + vec2(drift * 1.2)) * 0.0013;
+    // a touch on the water: the packet a drop makes, signed so the crests catch
+    // the light and the troughs go dark
     float rings = 0.0;
     float splash = 0.0;
     for (int i = 0; i < 4; i++) {
@@ -143,19 +178,25 @@ const FRAG = /* glsl */ `
       if (age < 0.0) continue;
       vec2 q = (uv - r.xy) * vec2(1.333, 1.0);
       float dist = length(q);
-      // at this scale a hand's splash makes rings a centimetre or two apart that
-      // travel a few decimetres a second: fine, slow, and gone in a few seconds
-      float wave = 0.0;
-      for (int k = 0; k < 3; k++) {
-        float fk = float(k);
-        float rad = 0.004 + age * (0.036 - fk * 0.007);
-        float env = exp(-pow((dist - rad) * 120.0, 2.0));
-        wave += sin((dist - rad) * (520.0 + fk * 190.0)) * env * (1.0 - fk * 0.3);
-      }
-      wave *= exp(-age * 0.35) / (1.0 + dist * 25.0);
-      pr += normalize(q + 1e-5) * wave * 0.006;
+      // A drop makes a wave packet, not a set of fixed rings: one front runs
+      // out, the packet widens behind it as the waves disperse (the shorter
+      // ones trail), the crests ride ~1/sqrt(r) as the energy spreads over a
+      // growing circle, and the hollow the drop punched rebounds once.
+      // To scale: the pool is about ten metres across, so one uv is roughly
+      // eighteen. A hand's ripples are ~15 cm crest to crest (k ≈ 750) and run
+      // out at ~0.5 m/s, reaching a metre and a half before they die.
+      float front = age * 0.030;
+      float widen = 0.007 + age * 0.011;
+      float band = exp(-pow((dist - front) / widen, 2.0));
+      float phase = (dist - front) * (760.0 + age * 120.0) - age * 6.0;
+      float wave = sin(phase) * band * exp(-age * 0.28) * inversesqrt(1.0 + dist * 140.0);
+      // the hollow the drop punched, rebounding once
+      wave += sin(age * 15.0) * exp(-age * 5.0) * exp(-dist * dist * 120000.0) * 0.4;
+      pr += normalize(q + 1e-5) * wave * 0.0032;
       rings += wave;
-      splash += exp(-dist * dist * 20000.0) * exp(-age * 5.0);
+      // the crown at the instant of impact
+      splash += exp(-dist * dist * 260000.0) * exp(-age * 9.0)
+              + exp(-pow((dist - age * 0.05) * 900.0, 2.0)) * exp(-age * 13.0) * 0.5;
     }
     // the water moves, the coping around it does not; the surface settles toward
     // the right-hand edge (a straight line in the photograph) so the coping's
@@ -188,11 +229,13 @@ const FRAG = /* glsl */ `
     c += sea * exp(-sn * 6.0) * vec3(0.35, 0.2, 0.08) * smoothstep(0.0, 0.35, uSunk) * (1.0 - uDusk * 0.6);
 
     // ---- glitter on the sea, along the sun's path, and a general shimmer
-    float sp = pow(noise(uv * vec2(420.0, 700.0) + vec2(t * 0.5, -t * 2.0)) * noise(uv * vec2(380.0, 650.0) - vec2(t * 0.7, t * 1.5)), 3.0) * 6.0;
+    // glints are wider than they are tall, and pack tighter toward the horizon
+    vec2 gk = vec2(300.0, 620.0) * mix(1.9, 1.0, near);
+    float sp = pow(noise(uv * gk + vec2(t * 0.5, -t * 2.0)) * noise(uv * gk * 0.92 - vec2(t * 0.7, t * 1.5)), 3.0) * 6.0;
     float column = exp(-pow((uv.x - sunNow.x) / (0.035 + near * 0.13), 2.0) * 2.0);
     c += sea * sp * (column * 0.9 * (1.0 - uSunk * 0.6) + 0.12) * vec3(1.0, 0.88, 0.65) * (1.0 - uNight * 0.92) * (0.5 + near);
     // the pool: highlights on the ripples
-    c += water * (rings * 0.4 + splash * 0.5) * vec3(1.0, 0.95, 0.85) * (1.0 - uNight * 0.6);
+    c += water * (rings * 0.55 + splash * 0.5) * vec3(1.0, 0.95, 0.85) * (1.0 - uNight * 0.6);
 
     // ---- the evening. Each region has its own dusk and night colour; they are
     // blended by the masks first and applied once, so a soft edge between two
@@ -254,8 +297,14 @@ const FRAG = /* glsl */ `
     // ripples, deeper teal in the troughs, deeper still away from the lights
     vec3 surface = mix(vec3(0.01, 0.12, 0.19), vec3(0.14, 0.58, 0.64), structure * (0.4 + 0.6 * wall));
     // fine ripple texture moving over it, faint
-    float caus = noise(uv * vec2(170.0, 260.0) + t * 0.3) * noise(uv * vec2(140.0, 220.0) - t * 0.25);
-    surface += vec3(0.05, 0.2, 0.22) * (caus - 0.25) * 0.35;
+    // the caustic net on the floor: cells, sharp where they fold, drifting
+    // The caustic net on the floor: cells about a hand wide, bright and thin
+    // where the surface folds the light, drifting slowly with the ripples.
+    float caus = causticNet(uv * vec2(70.0, 108.0) + vec2(t * 0.03, 0.0), t * 0.7, 3.2);
+    caus += causticNet(uv * vec2(132.0, 205.0) + 11.0, t * 1.05, 4.0) * 0.45;
+    // the net is never even: it pools where the surface happens to focus
+    caus *= 0.45 + 0.85 * noise(uv * vec2(9.0, 14.0) + vec2(t * 0.05, -t * 0.03));
+    surface += vec3(0.07, 0.30, 0.30) * (caus - 0.22) * 0.6;
     // the underwater lights along the far wall and their halo in the water
     float lights = 0.0;
     for (int i = 0; i < 3; i++) {
@@ -280,6 +329,17 @@ const FRAG = /* glsl */ `
     vec2 off = (vec2(hash(id + 3.1), hash(id + 7.7)) - 0.5) * 0.7;
     float star = smoothstep(0.13, 0.0, length(f - off)) * step(0.935, h) * (0.55 + 0.45 * sin(t * (2.0 + h * 4.0) + h * 40.0));
     g += sky * star * uNight * uNight * smoothstep(0.55, 0.75, uv.y) * vec3(0.9, 0.95, 1.0);
+
+    // ---- the grade, in this same pass (an EffectComposer would cost a full
+    // render target per effect for what three lines do here). Kept light: the
+    // colours are the photograph's and must stay its own.
+    float vig = 1.0 - 0.34 * pow(length((vUv - 0.5) * vec2(1.06, 1.0)), 2.4);
+    g *= vig;
+    // a whisper of contrast around the mid-tones
+    g = mix(g, g * g * (3.0 - 2.0 * g), 0.12);
+    // film grain, finer in the highlights the way real stock behaves
+    float grain = hash(gl_FragCoord.xy + fract(t) * 91.7) - 0.5;
+    g += grain * 0.014 * (1.0 - 0.6 * dot(g, vec3(0.333)));
 
     gl_FragColor = vec4(g * (1.0 - uDim), 1.0);
   }
