@@ -212,41 +212,46 @@ export function GoldenHour({
               className="golden-range mt-2 w-full"
               aria-valuetext={fmt(hour)}
             />
-            <div className="mt-2 flex items-center justify-between gap-2 text-[0.62rem] uppercase tracking-[0.16em] text-white/50">
-              {labels.moments.map(([h, label]) => (
+            {/* On a phone the five moments plus the transport will not fit one
+                row: the moments wrap onto two lines (nothing is ever cut) and
+                the transport sits under them; from sm up it is one row again. */}
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[0.62rem] uppercase tracking-[0.16em] text-white/50 sm:flex-nowrap sm:justify-between sm:gap-2">
+                {labels.moments.map(([h, label]) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => {
+                      setPlaying(false);
+                      setDim(0);
+                      setHour(h);
+                    }}
+                    className={`tap shrink-0 whitespace-nowrap py-2 transition hover:text-gold sm:py-0 ${Math.abs(hour - h) < 0.18 ? "text-gold" : ""}`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              <div className="ml-auto flex shrink-0 items-center gap-2 sm:ml-1">
                 <button
-                  key={label}
+                  type="button"
+                  onClick={() => setPlaying((p) => !p)}
+                  className="tap border border-white/25 px-2.5 py-1.5 text-white/80 transition hover:border-gold hover:text-gold sm:py-1"
+                  aria-pressed={playing}
+                >
+                  {playing ? labels.pause : labels.play}
+                </button>
+                <button
                   type="button"
                   onClick={() => {
-                    setPlaying(false);
-                    setDim(0);
-                    setHour(h);
+                    setSpeed((s) => SPEEDS[(SPEEDS.indexOf(s) + 1) % SPEEDS.length]);
+                    setPlaying(true);
                   }}
-                  className={`tap whitespace-nowrap transition hover:text-gold ${Math.abs(hour - h) < 0.18 ? "text-gold" : ""}`}
+                  className="tap border border-white/25 px-2.5 py-1.5 font-semibold text-gold transition hover:border-gold sm:py-1"
+                  aria-label={`${labels.speed} ${speed}×`}
+                  title={labels.speed}
                 >
-                  {label}
+                  {speed}×
                 </button>
-              ))}
-              <button
-                type="button"
-                onClick={() => setPlaying((p) => !p)}
-                className="tap ml-1 border border-white/25 px-2 py-1 text-white/80 transition hover:border-gold hover:text-gold"
-                aria-pressed={playing}
-              >
-                {playing ? labels.pause : labels.play}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setSpeed((s) => SPEEDS[(SPEEDS.indexOf(s) + 1) % SPEEDS.length]);
-                  setPlaying(true);
-                }}
-                className="tap border border-white/25 px-2 py-1 font-semibold text-gold transition hover:border-gold"
-                aria-label={`${labels.speed} ${speed}×`}
-                title={labels.speed}
-              >
-                {speed}×
-              </button>
+              </div>
             </div>
           </div>
         </div>

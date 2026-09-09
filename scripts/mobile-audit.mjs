@@ -79,14 +79,24 @@ const MEASURE = () => {
 
   // 1. overflow
   // scrollWidth misses content clipped by overflow-x:hidden — measure the
-  // widest visible element too, since a clipped button is just as unusable
+  // widest visible element too, since a clipped button is just as unusable.
+  // But content a parent deliberately crops (a parallax photo rendered
+  // oversized, leaflet's tile plane, a chip row meant to scroll) is not a
+  // layout fault: walk the ancestors and ask the computed style, rather than
+  // guessing from class names.
+  const clipped = (el) => {
+    for (let a = el.parentElement; a && a !== document.body; a = a.parentElement) {
+      const o = getComputedStyle(a).overflowX;
+      if (o !== "visible" && a.getBoundingClientRect().right <= vw + 1) return true;
+    }
+    return false;
+  };
   let maxRight = 0;
   for (const el of document.querySelectorAll("body *")) {
     if (!visible(el)) continue;
     const cs = getComputedStyle(el);
     if (cs.position === "fixed" && cs.pointerEvents === "none") continue;
-    const scroller = el.parentElement?.closest(".overflow-x-auto, .overflow-auto, .scroll-thin, [style*='overflow']");
-    if (scroller && getComputedStyle(scroller).overflowX !== "visible") continue;
+    if (clipped(el)) continue;
     const r = el.getBoundingClientRect();
     if (r.width > 8 && r.width < vw * 3 && r.top < window.innerHeight * 6) maxRight = Math.max(maxRight, r.right);
   }
@@ -99,9 +109,8 @@ const MEASURE = () => {
         // skip children of an already-listed offender
         if (wide.some((w) => w.el.contains(el))) continue;
         const cs = getComputedStyle(el);
-        // scrollable containers are fine — they're meant to scroll
-        const scroller = el.closest("[style*='overflow'], .overflow-x-auto, .overflow-auto, .scroll-thin");
-        if (scroller && scroller !== el && getComputedStyle(scroller).overflowX !== "visible") continue;
+        // clipped or scrollable containers are fine — nothing escapes the screen
+        if (clipped(el)) continue;
         if (cs.position === "fixed" && r.left >= vw) continue; // off-screen panels
         wide.push({ el, s: `${sel(el)} right=${Math.round(r.right)} w=${Math.round(r.width)}` });
       }
