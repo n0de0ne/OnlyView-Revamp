@@ -6,6 +6,7 @@ import { breadcrumbJsonLd, jsonLd, lodgingBusinessJsonLd, pageMetadata, vacation
 import { getPhotos, firstOf } from "@/lib/photos";
 import { getContact } from "@/lib/contact";
 import { PageHero } from "@/components/site/PageHero";
+import { GoldenHour } from "@/components/site/golden-hour/GoldenHour";
 
 export const revalidate = 3600;
 
@@ -108,6 +109,12 @@ export default async function LocationPage({
                 {fr ? "Comment venir" : "Getting here"}
               </Link>
             </div>
+            <Link
+              href={localePath(locale, "/map")}
+              className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-navy hover:text-gold"
+            >
+              🗺️ {t.location.islandMapCta} →
+            </Link>
           </div>
           <div className="space-y-4">
             {firstOf(photos, "exterior") && (
@@ -143,6 +150,7 @@ export default async function LocationPage({
           </ul>
         </div>
       </section>
+      <GoldenHour labels={t.goldenHour} photos={photos} />
     </>
   );
 }

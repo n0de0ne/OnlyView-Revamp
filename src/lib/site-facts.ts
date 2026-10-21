@@ -8,7 +8,14 @@
  */
 export const VILLA = {
   name: "Villa ONLY VIEW",
-  alternateNames: ["Only View St Barth", "Villa Only View St Barth", "Only View Pointe Milou"],
+  alternateNames: [
+    "Villa Only View",
+    "Only View St Barth",
+    "Only View St Barths",
+    "Villa Only View St Barth",
+    "Only View Pointe Milou",
+    "Villa Only View Pointe Milou",
+  ],
   legalOwner: "SCI Efis",
   ownerFirstName: "Annie",
   ownerName: "Annie Chriqui",
@@ -17,8 +24,8 @@ export const VILLA = {
   islandShort: "St Barth",
   postalCode: "97133",
   country: "FR",
-  lat: 17.9124,
-  lng: -62.8272,
+  lat: 17.914904,
+  lng: -62.816212,
   bedrooms: 4,
   bathrooms: 4,
   guests: 8,

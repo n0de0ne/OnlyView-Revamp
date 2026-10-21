@@ -25,6 +25,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/booking", priority: 1.0, changeFrequency: "daily" },
     { path: "/reviews", priority: 0.7, changeFrequency: "weekly" },
     { path: "/location", priority: 0.8, changeFrequency: "monthly", images: ["exterior", "night"] },
+    { path: "/map", priority: 0.8, changeFrequency: "monthly", images: ["exterior"] },
     { path: "/why-book-direct", priority: 0.7, changeFrequency: "monthly" },
     { path: "/faq", priority: 0.7, changeFrequency: "monthly" },
     { path: "/contact", priority: 0.6, changeFrequency: "yearly" },

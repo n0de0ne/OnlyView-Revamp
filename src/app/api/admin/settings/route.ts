@@ -45,6 +45,7 @@ const ALLOWED_KEYS = [
   "social_tripadvisor",
   "social_google",
   "social_youtube",
+  "listing_urls",
   "google_site_verification",
   "bing_site_verification",
   "villa_lat",
@@ -58,7 +59,7 @@ export const GET = adminRoute("owner", async () => {
   return jsonOk({ settings, keys: ALLOWED_KEYS });
 });
 
-const Body = z.object({ settings: z.record(z.string(), z.string().max(500)) });
+const Body = z.object({ settings: z.record(z.string(), z.string().max(2000)) });
 
 export const PUT = adminRoute("owner", async (req, _ctx, user) => {
   const parsed = Body.safeParse(await req.json().catch(() => null));

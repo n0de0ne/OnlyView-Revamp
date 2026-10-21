@@ -34,6 +34,8 @@ SEED_DEMO=1 npm run setup
 | **Booking module** — live availability calendar, instant quote (seasons, holiday packages, promo codes), request form | `/booking` |
 | **Guest portal** — passwordless magic-link login, reservations, payment status, contract signing (loyalty panel when the programme is on) | `/account` |
 | Online **contract e-signature** (draw + type-to-confirm) & PDF download | `/contracts/sign/[token]` |
+| **Interactive island map** — 15 beaches, 40+ restaurants, supermarkets, bakeries, pharmacies, airport/ferry/gas, sports, each with its drive time and a road itinerary from the villa (via-points for St Barth's tricky lanes, walk-in beaches drawn as a dashed leg), Google Maps / Waze hand-off, search, category filters, a text directory + `TouristDestination` JSON-LD for SEO/GEO | `/map` |
+| **Golden hour** — a living photograph: the villa's own shot of the bay from the pool, animated region by region in WebGL (three.js / react-three-fiber): the sea swells and glitters, the pool ripples where you touch it, clouds and trees move, and the hour sinks the sun, turns the sky violet then navy, brings out the stars and lights the pool. The regions come from semantic segmentation (`scripts/golden-segment.mjs`: SegFormer-B5 trained on ADE20K, run at three scales and averaged, decided per pixel), then `scripts/golden-mask.mjs` refines every contour on the photograph with a colour guided filter, keeps the pool on its fitted water line and the umbrella and rail on their measured shapes, and writes two lossless WebPs without alpha. The model is only needed to re-segment; the label map is committed | `/`, `/location` |
 | Reviews with moderation, St Barth guide hub, FAQ, location, why-book-direct, legal/privacy | … |
 
 **SEO / GEO:** one canonical per language + `hreflang` en/fr/x-default, complete Open Graph / Twitter cards on every page, one H1 per page, a linked JSON-LD graph (`VacationRental`, `LodgingBusiness`, `Organization`, `Person` owner, `WebSite`, `AggregateOffer`, `FAQPage`, `Review`, `Article`, `ImageGallery`, `ContactPage`, `BreadcrumbList`), plain-text key facts and a named-neighbourhood section that answer engines can quote, `/llms.txt`, a robots.txt that welcomes 21 AI crawlers by name, a bilingual image sitemap with real `lastmod`, 301s from every legacy `.php` URL and from `www`. `scripts/seo-audit.mjs` crawls a running instance and fails on any regression; `docs/seo-playbook.md` is the off-site checklist (Google Business Profile, Search Console, reviews, `sameAs` profiles).
@@ -63,6 +65,7 @@ renders the full page.
 - **Loyalty** *(switched off by default)* — automatic earning (1 pt/$100 paid, configurable), tiers (Silver/Gold/Platinum), manual adjustments. The whole programme is behind the `loyalty_enabled` setting (Réglages → Programme de fidélité): at `0` nothing is shown or credited anywhere — site copy, guest portal, admin menu and API — and `1` brings it all back without a deploy.
 - **Agencies / Promotions** — CRUD, commission stats, promo-code rules (nights, windows, must-include date, usage caps).
 - **Site & content** — photo manager (upload → auto WebP/resize), review moderation, email log.
+- **Island map** — the pins of `/map`: add/edit/hide places by category, drop the pin on a map, add the via-points the drive from the villa must follow (drag to adjust), flag "park here, walk the rest", and test the itinerary against the router before saving.
 - **Settings** (owner) — all rates & seasons, tax, min-stay, deposit %, loyalty config, profitability constants, bank details for contracts, contact info.
 - **Users** (owner) — multiple accounts with roles, forced password change, self-lockout protection, audit log on every action.
 
@@ -74,9 +77,13 @@ renders the full page.
 - 5% tourist tax, 30% deposit, balance 30 days before arrival.
 - Checkout day is bookable for the next arrival (half-day calendar rendering).
 
+### Motion
+
+Inertial scrolling (Lenis, driven by GSAP's ticker and synced with ScrollTrigger), scroll reveals that never hide content from crawlers or no-script readers, word-by-word heading reveals in pure CSS, count-up figures (GSAP), magnetic buttons and tilting cards (Framer Motion), route transitions that skip the first paint, parallax photos, and the golden-hour living photograph (WebGL) that mounts only near the viewport and renders only while visible. Everything respects `prefers-reduced-motion`.
+
 ## Stack
 
-Next.js 15 (App Router, TS) · Tailwind CSS 4 · Prisma + PostgreSQL · Recharts · pdf-lib · nodemailer · zod · bcryptjs — no auth SaaS, no CMS SaaS: sessions are httpOnly-cookie + hashed DB tokens.
+Next.js 15 (App Router, TS) · Tailwind CSS 4 · Prisma + PostgreSQL · Framer Motion · GSAP · Lenis · three.js / react-three-fiber / drei · Leaflet · Recharts · pdf-lib · nodemailer · zod · bcryptjs — no auth SaaS, no CMS SaaS: sessions are httpOnly-cookie + hashed DB tokens.
 
 ```
 src/
@@ -88,6 +95,7 @@ src/
   lib/…                    auth, guest-auth, loyalty, stats, mailer, seo, i18n
 prisma/schema.prisma       full data model  ·  prisma/seed.mjs
 scripts/migrate-legacy.mjs legacy PHP data → new schema importer
+scripts/fix-direct-agency.mjs  detach direct bookings from a "Direct" agency row
 scripts/prepare-media.ts   photo pipeline from the legacy repo
 ```
 
@@ -184,6 +192,25 @@ Check first without writing anything:
 ```bash
 docker exec -it onlyview node scripts/migrate-legacy.mjs --report   # what is missing
 docker exec -it onlyview node scripts/migrate-legacy.mjs --force    # import it
+```
+
+The legacy site had no "no agency" state: a direct booking carried the agency
+named *Direct*. Here direct means no agency at all, so that row is not
+imported and those reservations arrive with no agency. A database migrated
+before this was fixed shows a **0 % direct share** and charges that agency's
+commission against direct bookings — repair it once:
+
+```bash
+docker exec -it onlyview node scripts/fix-direct-agency.mjs           # report
+docker exec -it onlyview node scripts/fix-direct-agency.mjs --apply   # fix
+```
+
+The image ships the maintenance scripts, so rebuild it first if the container
+predates this version (`Cannot find module …/fix-direct-agency.mjs`). To repair
+without rebuilding, copy the script into the running container:
+
+```bash
+docker cp scripts/fix-direct-agency.mjs onlyview:/app/scripts/
 ```
 
 The report also names the legacy schema it read and, when several look like

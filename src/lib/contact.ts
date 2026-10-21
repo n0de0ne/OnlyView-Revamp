@@ -13,7 +13,9 @@ export { OWNER_EMAIL, OWNER_PHONE, OWNER_WHATSAPP, VILLA_MAP_URL };
 export const whatsappHref = (number: string) =>
   `https://wa.me/${number.replace(/[^0-9]/g, "")}`;
 
-/** Réglages → Contact: one URL each, empty = not listed */
+/** Réglages → Contact: one URL each, empty = not listed. `listing_urls`
+    (several, separated by spaces or commas) are the villa's pages on the
+    agencies' sites — they join `sameAs` too. */
 export const SOCIAL_KEYS = [
   "social_instagram",
   "social_facebook",
@@ -50,6 +52,11 @@ export async function getContact(): Promise<ContactDetails> {
     for (const key of SOCIAL_KEYS) {
       const v = s[key]?.trim();
       if (v && /^https?:\/\//.test(v)) sameAs.push(v);
+    }
+    // the villa's pages on the agencies' and platforms' sites (WIMCO,
+    // Airbnb, Eden Rock Villa Rental…): the same house, so the same entity
+    for (const v of (s.listing_urls ?? "").split(/[\s,]+/)) {
+      if (/^https?:\/\//.test(v) && !sameAs.includes(v)) sameAs.push(v);
     }
   } catch {
     // defaults above

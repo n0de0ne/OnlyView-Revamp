@@ -1,7 +1,7 @@
 export const en = {
   meta: {
     siteName: "Villa ONLY VIEW",
-    titleHome: "Only View St Barth — Luxury Villa Rental Direct from Owner",
+    titleHome: "Villa ONLY VIEW — Only View St Barth, Luxury Villa Direct from Owner",
     descHome:
       "Villa ONLY VIEW, Pointe Milou, St Barth: 4-bedroom luxury villa with heated pool, 180° ocean view and concierge. Book direct with the owner — no agency fees.",
     titleVilla: "The Villa — 4 Bedrooms, Heated Pool, Sea View",
@@ -31,6 +31,9 @@ export const en = {
     titleLocation: "Location — Pointe Milou, St Barth",
     descLocation:
       "Villa ONLY VIEW sits on the hillside of Pointe Milou, Saint-Barthélemy: 10 minutes from the airport, 5 minutes from Lorient beach, next to Christopher Hotel.",
+    titleMap: "St Barth Map — Beaches, Restaurants & Shops",
+    descMap:
+      "Interactive map of St Barth from Villa ONLY VIEW: 15 beaches, restaurants, supermarkets, bakeries and pharmacies, with drive times and itineraries from the villa.",
     titleAccount: "My Stay — Guest Portal",
     descAccount: "Manage your reservations, contracts and loyalty points.",
     descAccountNoLoyalty: "Manage your reservations and contracts.",
@@ -47,6 +50,7 @@ export const en = {
     rates: "Rates",
     booking: "Book Now",
     guide: "St Barth Guide",
+    map: "Island Map",
     contact: "Contact",
     reviews: "Reviews",
     account: "My Stay",
@@ -141,6 +145,67 @@ export const en = {
     gustavia: "Gustavia — 12 min",
     restaurants: "Restaurants & beach clubs — 5 min",
     mapCta: "Getting here",
+    islandMapCta: "Open the interactive island map",
+  },
+  map: {
+    label: "Interactive map",
+    title: "St Barth, from the villa's doorstep",
+    text: "The island's beaches, tables and shops, each with its drive time from Villa ONLY VIEW and the road to take.",
+    exploreLabel: "Explore",
+    exploreTitle: "Everything within twenty minutes",
+    intro:
+      "Pointe Milou is one of St Barth's most central addresses: from the terrace, the whole island is a short drive. Pick a place on the map or in the list — every pin shows its drive time from the villa and draws the itinerary through the right turn-offs, because St Barth's lanes rarely follow the shortest line. Some beaches end on foot from a car park; those legs are drawn in gold.",
+    all: "All",
+    villa: "Villa ONLY VIEW",
+    search: "Search a place, a village…",
+    noResults: "No place matches",
+    min: "min",
+    route: "Itinerary",
+    routeTo: "Itinerary from the villa",
+    routing: "Computing the itinerary…",
+    distance: "Distance",
+    duration: "Drive",
+    thenWalk: "Then on foot",
+    parking: "Park here, then continue on foot",
+    approx: "Straight-line estimate — the router is unavailable.",
+    openMaps: "Google Maps",
+    openWaze: "Waze",
+    close: "Close",
+    website: "Website",
+    call: "Call",
+    directoryIntro:
+      "The 15 beaches, 40 restaurants, shops and services of the island, with drive times and road itineraries from the villa.",
+    beachesTitle: "The 15 beaches of St Barth",
+    beachesByUse: "Which beach, for what",
+    beachUses: [
+      ["Swimming", "Flamands, Lorient, Gouverneur"],
+      ["Snorkelling", "Colombier, Marigot"],
+      ["Water sports", "Grand Cul-de-Sac"],
+      ["Sunset", "Shell Beach, Gouverneur"],
+      ["Seclusion", "Colombier, Petit Cul-de-Sac, Saline"],
+      ["Closest to the villa", "Lorient (5 min), St Jean (7 min)"],
+    ] as Array<[string, string]>,
+    figures: {
+      beaches: "beaches",
+      restaurants: "restaurants",
+      shops: "shops & services",
+      maxDrive: "furthest drive",
+    },
+    gettingAround: "Getting around the island",
+    gettingAroundText:
+      "St Barth is 25 km² with one main road looping through Gustavia, St-Jean, Lorient and Grand Cul-de-Sac; nowhere is more than twenty minutes from the villa. A small car or a Mini Moke is all you need — the concierge has it delivered to the villa before you land.",
+    gettingAroundTips: [
+      "Lanes are steep and narrow: book a small car, not a large one.",
+      "Colombier and Anse des Cayes are reached on foot from a car park — the itineraries show that last leg.",
+      "Gas stations close on Sundays; fill up on Saturday.",
+      "Parking in Gustavia is tight at dinner time: arrive early or let the concierge drop you.",
+    ],
+    ctaLabel: "Concierge",
+    ctaTitle: "Your days, planned from the terrace",
+    ctaText:
+      "Beach picnics, restaurant tables, a boat for the day, water sports — the concierge arranges everything, all within minutes of Villa ONLY VIEW.",
+    ctaButton: "Contact the concierge",
+    noscript: "JavaScript is required to display the interactive map; the list of places works without it.",
   },
   cta: {
     title: "The view is waiting",
@@ -493,6 +558,23 @@ export const en = {
   },
   galleryIntro:
     "Every photo is the actual house, taken from its terraces and rooms — the pool at sunset, the open living room, the four en-suite bedrooms and the view over Pointe Milou bay that gives the villa its name. Filter by space, or open any picture full screen.",
+  goldenHour: {
+    eyebrow: "Golden hour",
+    title: "The sun sets in front of the terrace, every evening",
+    text: "One photograph, taken from the pool at golden hour, and everything in it alive: the swell on the bay, the sun's path on the water, the clouds, the breeze in the trees. Drag the hour to watch the sun sink behind the hills, the sky turn violet, the first stars come out and the pool light up — at its best from November to March.",
+    hint: "Touch the water",
+    hour: "Hour",
+    play: "Play",
+    pause: "Pause",
+    speed: "Speed",
+    moments: [
+      [17.6, "Golden hour"],
+      [17.95, "Sunset"],
+      [18.3, "Dusk"],
+      [18.75, "Blue hour"],
+      [19.3, "Night"],
+    ] as Array<[number, string]>,
+  },
   guideIntro:
     "Written from the terrace, not from a brochure: how to reach St Barth and the villa, which beaches to choose and when, where we eat, and what each season of the year is really like. Short, factual and kept up to date.",
   whyDirect: {

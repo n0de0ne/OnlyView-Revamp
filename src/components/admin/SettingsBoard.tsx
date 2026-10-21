@@ -98,6 +98,11 @@ const GROUPS: Array<{
       ["social_tripadvisor", "TripAdvisor (URL)"],
       ["social_google", "Fiche Google Business (URL)"],
       ["social_youtube", "YouTube (URL)"],
+      [
+        "listing_urls",
+        "Annonces de la villa chez les agences (URLs)",
+        "Les pages de la villa sur les sites des agences et plateformes (WIMCO, Eden Rock Villa Rental, Airbnb, Corcoran…), séparées par des espaces. Google et les moteurs IA relient ainsi ces annonces à ce site comme une seule et même villa — et ce site comme son adresse officielle.",
+      ],
       ["google_site_verification", "Google Search Console (code de vérification)"],
       ["bing_site_verification", "Bing Webmaster (code de vérification)"],
       ["villa_lat", "Latitude"],

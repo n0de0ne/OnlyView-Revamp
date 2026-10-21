@@ -12,6 +12,7 @@ export function SiteFooter({ locale }: { locale: Locale }) {
     [localePath(locale, "/rates"), t.nav.rates],
     [localePath(locale, "/reviews"), t.nav.reviews],
     [localePath(locale, "/guide"), t.nav.guide],
+    [localePath(locale, "/map"), t.nav.map],
   ];
   const practical: Array<[string, string]> = [
     [localePath(locale, "/booking"), t.nav.booking],

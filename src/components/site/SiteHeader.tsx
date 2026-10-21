@@ -44,9 +44,12 @@ export function SiteHeader({ locale }: { locale: Locale }) {
     [localePath(locale, "/reviews"), t.nav.reviews],
     [localePath(locale, "/contact"), t.nav.contact],
   ];
-  /** the tab bar already carries villa / tour / gallery / rates / booking */
+  /** the tab bar already carries villa / tour / gallery / rates / booking;
+      the island map is one link too many for the desktop bar (it wraps) and
+      lives in the menu, the footer, the guide hub and the location page */
   const secondary: Array<[string, string]> = [
     [localePath(locale, "/guide"), t.nav.guide],
+    [localePath(locale, "/map"), t.nav.map],
     [localePath(locale, "/reviews"), t.nav.reviews],
     [localePath(locale, "/why-book-direct"), t.footer.whyDirect],
     [localePath(locale, "/location"), t.location.title],

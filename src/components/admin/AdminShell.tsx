@@ -25,6 +25,7 @@ const NAV: Array<{
   { href: "/admin/agencies", label: "Agences", icon: "🤝" },
   { href: "/admin/promotions", label: "Promotions", icon: "🏷️" },
   { href: "/admin/site", label: "Site & contenu", icon: "🖼️" },
+  { href: "/admin/map", label: "Carte de l'île", icon: "🗺️" },
   { href: "/admin/settings", label: "Réglages", icon: "⚙️", minRole: "owner" },
   { href: "/admin/users", label: "Utilisateurs", icon: "🔐", minRole: "owner" },
 ];

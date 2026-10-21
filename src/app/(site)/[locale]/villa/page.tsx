@@ -7,6 +7,8 @@ import { getContact } from "@/lib/contact";
 import { KeyFacts } from "@/components/site/KeyFacts";
 import { getPhotos, firstOf } from "@/lib/photos";
 import { PageHero } from "@/components/site/PageHero";
+import { CountUp } from "@/components/motion/CountUp";
+import { Parallax } from "@/components/motion/Parallax";
 
 export const revalidate = 300;
 
@@ -94,7 +96,9 @@ export default async function VillaPage({
             ["180°", locale === "fr" ? "vue mer" : "ocean view"],
           ].map(([n, label]) => (
             <div key={label} className="px-4 py-8">
-              <div className="font-display text-4xl text-gold">{n}</div>
+              <div className="font-display text-4xl text-gold">
+                <CountUp value={n} />
+              </div>
               <div className="mt-1 text-[0.72rem] uppercase tracking-[0.2em] text-ink/50">
                 {label}
               </div>
@@ -123,16 +127,18 @@ export default async function VillaPage({
             >
               <Link
                 href={localePath(locale, `/gallery?c=${room.cat}`)}
-                className="group block overflow-hidden reveal"
+                className="group block reveal"
               >
-                <Image
-                  src={photo.url}
-                  alt={photo.alt}
-                  width={900}
-                  height={640}
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  className="aspect-[4/3] w-full object-cover transition duration-700 group-hover:scale-105"
-                />
+                <Parallax className="aspect-[4/3]">
+                  <Image
+                    src={photo.url}
+                    alt={photo.alt}
+                    width={900}
+                    height={640}
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    className="aspect-[4/3] w-full object-cover transition duration-700 group-hover:scale-105"
+                  />
+                </Parallax>
               </Link>
               <div className="reveal">
                 <p className="eyebrow mb-3">{String(i + 1).padStart(2, "0")}</p>

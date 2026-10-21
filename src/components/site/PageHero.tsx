@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { SplitHeading } from "@/components/motion/SplitHeading";
 
 export function PageHero(props: {
   title: string;
@@ -16,17 +17,23 @@ export function PageHero(props: {
             fill
             sizes="100vw"
             priority
-            className="object-cover opacity-40"
+            className="hero-drift object-cover opacity-40"
             aria-hidden
           />
           <div className="absolute inset-0 bg-gradient-to-b from-night/60 to-night" />
         </>
       )}
       <div className="relative mx-auto max-w-7xl px-5 lg:px-8">
-        {props.eyebrow && <p className="eyebrow mb-4">{props.eyebrow}</p>}
-        <h1 className="font-display text-4xl leading-tight md:text-6xl">{props.title}</h1>
+        {props.eyebrow && (
+          <p className="eyebrow rise-in mb-4" style={{ animationDelay: "0.05s" }}>
+            {props.eyebrow}
+          </p>
+        )}
+        <SplitHeading as="h1" text={props.title} delay={0.15} className="font-display text-4xl leading-tight md:text-6xl" />
         {props.intro && (
-          <p className="mt-5 max-w-2xl leading-relaxed text-white/75">{props.intro}</p>
+          <p className="rise-in mt-5 max-w-2xl leading-relaxed text-white/75" style={{ animationDelay: "0.55s" }}>
+            {props.intro}
+          </p>
         )}
       </div>
     </section>

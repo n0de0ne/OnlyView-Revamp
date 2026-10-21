@@ -3,7 +3,7 @@ import type { Dict } from "./en";
 export const fr: Dict = {
   meta: {
     siteName: "Villa ONLY VIEW",
-    titleHome: "Only View St Barth — Villa de luxe en direct propriétaire",
+    titleHome: "Villa ONLY VIEW — Only View St Barth, villa de luxe en direct",
     descHome:
       "Villa ONLY VIEW, Pointe Milou, St Barth : villa de luxe 4 chambres, piscine chauffée, vue mer à 180°, conciergerie. En direct propriétaire, sans frais d'agence.",
     titleVilla: "La Villa — 4 chambres en suite, piscine, vue mer",
@@ -33,6 +33,9 @@ export const fr: Dict = {
     titleLocation: "Localisation — Pointe Milou, St Barth",
     descLocation:
       "La Villa ONLY VIEW domine la baie de Pointe Milou, Saint-Barthélemy : à 10 minutes de l'aéroport, 5 minutes de la plage de Lorient, voisine de l'hôtel Christopher.",
+    titleMap: "Carte de St Barth — Plages, restaurants & commerces",
+    descMap:
+      "Carte de St Barth depuis la Villa ONLY VIEW : 15 plages, restaurants, supermarchés, boulangeries, pharmacies, temps de trajet et itinéraires depuis la villa.",
     titleAccount: "Mon séjour — Espace client",
     descAccount: "Gérez vos réservations, contrats et points de fidélité.",
     descAccountNoLoyalty: "Gérez vos réservations et vos contrats.",
@@ -49,6 +52,7 @@ export const fr: Dict = {
     rates: "Tarifs",
     booking: "Réserver",
     guide: "Guide St Barth",
+    map: "Carte de l'île",
     contact: "Contact",
     reviews: "Avis",
     account: "Mon séjour",
@@ -142,6 +146,67 @@ export const fr: Dict = {
     gustavia: "Gustavia — 12 min",
     restaurants: "Restaurants & beach clubs — 5 min",
     mapCta: "Venir à la villa",
+    islandMapCta: "Ouvrir la carte interactive de l'île",
+  },
+  map: {
+    label: "Carte interactive",
+    title: "Saint-Barth, depuis le pas de la porte",
+    text: "Les plages, les tables et les commerces de l'île, chacun avec son temps de trajet depuis la Villa ONLY VIEW et la route à prendre.",
+    exploreLabel: "Explorer",
+    exploreTitle: "Tout à moins de vingt minutes",
+    intro:
+      "Pointe Milou est l'une des adresses les plus centrales de Saint-Barth : depuis la terrasse, toute l'île est à quelques minutes de route. Choisissez un lieu sur la carte ou dans la liste — chaque repère indique son temps de trajet depuis la villa et trace l'itinéraire par les bons embranchements, car les routes de St Barth suivent rarement la ligne droite. Certaines plages se terminent à pied depuis un parking ; ce dernier tronçon est dessiné en or.",
+    all: "Tout",
+    villa: "Villa ONLY VIEW",
+    search: "Rechercher un lieu, un village…",
+    noResults: "Aucun lieu ne correspond",
+    min: "min",
+    route: "Itinéraire",
+    routeTo: "Itinéraire depuis la villa",
+    routing: "Calcul de l'itinéraire…",
+    distance: "Distance",
+    duration: "En voiture",
+    thenWalk: "Puis à pied",
+    parking: "Garez-vous ici, puis continuez à pied",
+    approx: "Estimation à vol d'oiseau — le calcul d'itinéraire est indisponible.",
+    openMaps: "Google Maps",
+    openWaze: "Waze",
+    close: "Fermer",
+    website: "Site web",
+    call: "Appeler",
+    directoryIntro:
+      "Les 15 plages, 40 restaurants, commerces et services de l'île, avec temps de trajet et itinéraires depuis la villa.",
+    beachesTitle: "Les 15 plages de Saint-Barth",
+    beachesByUse: "Quelle plage, pour quoi",
+    beachUses: [
+      ["Baignade", "Flamands, Lorient, Gouverneur"],
+      ["Snorkeling", "Colombier, Marigot"],
+      ["Sports nautiques", "Grand Cul-de-Sac"],
+      ["Coucher de soleil", "Shell Beach, Gouverneur"],
+      ["Tranquillité", "Colombier, Petit Cul-de-Sac, Saline"],
+      ["Les plus proches de la villa", "Lorient (5 min), St Jean (7 min)"],
+    ] as Array<[string, string]>,
+    figures: {
+      beaches: "plages",
+      restaurants: "restaurants",
+      shops: "commerces & services",
+      maxDrive: "trajet le plus long",
+    },
+    gettingAround: "Se déplacer sur l'île",
+    gettingAroundText:
+      "Saint-Barth fait 25 km², avec une route principale qui relie Gustavia, St-Jean, Lorient et Grand Cul-de-Sac ; rien n'est à plus de vingt minutes de la villa. Une petite voiture ou une Mini Moke suffit — la conciergerie la fait livrer à la villa avant votre arrivée.",
+    gettingAroundTips: [
+      "Les routes sont étroites et pentues : réservez une petite voiture, pas une grande.",
+      "Colombier et Anse des Cayes se rejoignent à pied depuis un parking — les itinéraires montrent ce dernier tronçon.",
+      "Les stations-service ferment le dimanche : faites le plein le samedi.",
+      "Se garer à Gustavia le soir est difficile : arrivez tôt ou laissez la conciergerie vous déposer.",
+    ],
+    ctaLabel: "Conciergerie",
+    ctaTitle: "Vos journées, organisées depuis la terrasse",
+    ctaText:
+      "Pique-niques sur la plage, tables de restaurant, un bateau pour la journée, sports nautiques — la conciergerie organise tout, à quelques minutes de la Villa ONLY VIEW.",
+    ctaButton: "Contacter la conciergerie",
+    noscript: "JavaScript est nécessaire pour afficher la carte interactive ; la liste des lieux fonctionne sans.",
   },
   cta: {
     title: "La vue vous attend",
@@ -491,6 +556,23 @@ export const fr: Dict = {
   },
   galleryIntro:
     "Chaque photo montre la vraie maison, prise depuis ses terrasses et ses pièces — la piscine au coucher du soleil, le grand salon ouvert, les quatre chambres en suite et la vue sur la baie de Pointe Milou qui donne son nom à la villa. Filtrez par espace, ou ouvrez n'importe quelle image en plein écran.",
+  goldenHour: {
+    eyebrow: "Golden hour",
+    title: "Le soleil se couche face à la terrasse, chaque soir",
+    text: "Une seule photo, prise depuis la piscine à la golden hour, et tout y vit : la houle sur la baie, le chemin du soleil sur l'eau, les nuages, la brise dans les arbres. Faites glisser l'heure pour voir le soleil passer derrière les collines, le ciel virer au violet, les premières étoiles et la piscine s'allumer — au plus beau de novembre à mars.",
+    hint: "Touchez l'eau",
+    hour: "Heure",
+    play: "Lecture",
+    pause: "Pause",
+    speed: "Vitesse",
+    moments: [
+      [17.6, "Golden hour"],
+      [17.95, "Coucher"],
+      [18.3, "Crépuscule"],
+      [18.75, "Heure bleue"],
+      [19.3, "Nuit"],
+    ] as Array<[number, string]>,
+  },
   guideIntro:
     "Écrit depuis la terrasse, pas depuis une brochure : comment rejoindre St Barth et la villa, quelles plages choisir et quand, où nous mangeons, et à quoi ressemble vraiment chaque saison. Court, factuel et tenu à jour.",
   whyDirect: {

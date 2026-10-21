@@ -264,6 +264,7 @@ const expectLd = {
   "/reviews": ["Review"],
   "/rates": ["AggregateOffer", "Offer", "Product", "VacationRental"],
   "/location": ["LodgingBusiness", "VacationRental"],
+  "/map": ["TouristDestination"],
 };
 for (const [p, wanted] of Object.entries(expectLd)) {
   const i = seen.get(p);

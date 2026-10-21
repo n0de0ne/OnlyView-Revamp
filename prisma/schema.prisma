@@ -415,6 +415,43 @@ model Testimonial {
   createdAt  DateTime @default(now())
 }
 
+/// A pin on the public island map (/map): beaches, restaurants, shops…
+/// Ported from the legacy PHP map.php + restaurants table.
+model MapPlace {
+  id       Int     @id @default(autoincrement())
+  slug     String  @unique
+  /// beach | restaurant | supermarket | bakery | pharmacy | transport | sport
+  category String
+  /// icon variant inside the category — restaurants: restaurant | beach_club |
+  /// lounge | snack | nightlife; transport: gas | airport | ferry | info;
+  /// sport: gym | court. Empty = the category's default icon.
+  kind     String?
+  name     String
+  /// the village / area, shown next to the name (Gustavia, Saint-Jean…)
+  zone     String?
+  lat      Float
+  lng      Float
+  descriptionEn String?
+  descriptionFr String?
+  /// approximate drive time from the villa, in minutes
+  driveMinutes Int?
+  /// via-points the driving route must pass through, in order, as
+  /// "lat,lng|lat,lng" — St Barth's one-way lanes and hidden turn-offs make
+  /// the router's shortest path wrong for some places
+  waypoints String?
+  /// the last via-point is where you park; the rest of the way is on foot
+  /// (drawn as a dashed walking line)
+  walkFromLastWaypoint Boolean @default(false)
+  website  String?
+  phone    String?
+  sortOrder Int     @default(0)
+  isActive  Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category, isActive])
+}
+
 model Setting {
   key   String @id
   value String
