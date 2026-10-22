@@ -6,9 +6,11 @@ export function PageHero(props: {
   eyebrow?: string;
   intro?: string;
   image?: { url: string; alt: string };
+  /** shorter on a phone, where the page below needs the room (booking) */
+  compact?: boolean;
 }) {
   return (
-    <section className="relative overflow-hidden bg-night pb-16 pt-36 text-white md:pb-20 md:pt-44">
+    <section className={`relative overflow-hidden bg-night text-white md:pb-20 md:pt-44 ${props.compact ? "pb-8 pt-28" : "pb-16 pt-36"}`}>
       {props.image && (
         <>
           <Image
@@ -29,9 +31,17 @@ export function PageHero(props: {
             {props.eyebrow}
           </p>
         )}
-        <SplitHeading as="h1" text={props.title} delay={0.15} className="font-display text-4xl leading-tight md:text-6xl" />
+        <SplitHeading
+          as="h1"
+          text={props.title}
+          delay={0.15}
+          className={`font-display leading-tight md:text-6xl ${props.compact ? "text-3xl" : "text-4xl"}`}
+        />
         {props.intro && (
-          <p className="rise-in mt-5 max-w-2xl leading-relaxed text-white/75" style={{ animationDelay: "0.55s" }}>
+          <p
+            className={`rise-in mt-5 max-w-2xl leading-relaxed text-white/75 ${props.compact ? "hidden md:block" : ""}`}
+            style={{ animationDelay: "0.55s" }}
+          >
             {props.intro}
           </p>
         )}

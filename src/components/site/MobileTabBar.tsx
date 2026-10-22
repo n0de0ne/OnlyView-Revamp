@@ -124,7 +124,7 @@ export function MobileTabBar({ locale }: { locale: Locale }) {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-50 xl:hidden"
+      className={`fixed inset-x-0 bottom-0 z-50 xl:hidden ${onBooking ? "max-lg:hidden" : ""}`}
       style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
       aria-label="Principal"
     >

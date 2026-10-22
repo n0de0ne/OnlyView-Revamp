@@ -61,8 +61,8 @@ export default async function BookingPage({
           ),
         }}
       />
-      <PageHero eyebrow={t.nav.booking} title={t.booking.title} intro={t.booking.intro} />
-      <section className="mx-auto max-w-7xl px-5 py-14 lg:px-8">
+      <PageHero eyebrow={t.nav.booking} title={t.booking.title} intro={t.booking.intro} compact />
+      <section className="mx-auto max-w-7xl px-4 py-6 md:px-5 md:py-14 lg:px-8">
         <BookingWidget locale={locale} initialBookings={bookings} />
       </section>
     </>
