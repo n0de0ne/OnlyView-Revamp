@@ -2,6 +2,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { adminRoute, jsonError, jsonOk } from "@/lib/admin-api";
 import { invalidateSettings } from "@/lib/settings";
+import { isMonthDay } from "@/lib/pricing";
 import { audit } from "@/lib/audit";
 
 export const dynamic = "force-dynamic";
@@ -22,6 +23,25 @@ const ALLOWED_KEYS = [
   "min_stay",
   "min_stay_peak",
   "deposit_percent",
+  "season_winter_start",
+  "season_winter_end",
+  "season_low_start",
+  "season_low_end",
+  "season_christmas_start",
+  "season_christmas_end",
+  "season_newyear_start",
+  "season_newyear_end",
+  "reminders_enabled",
+  "reminder_option",
+  "reminder_option_release",
+  "reminder_balance",
+  "reminder_balance_days",
+  "reminder_prearrival",
+  "reminder_prearrival_days",
+  "reminder_review",
+  "reminder_review_days",
+  "loyalty_enabled",
+  "tour_3d_url",
   "loyalty_earn_per_dollar",
   "loyalty_point_value",
   "loyalty_min_redeem",
@@ -67,6 +87,10 @@ export const PUT = adminRoute("owner", async (req, _ctx, user) => {
   const entries = Object.entries(parsed.data.settings).filter(([k]) =>
     (ALLOWED_KEYS as readonly string[]).includes(k)
   );
+  const badSeason = entries.find(
+    ([k, v]) => k.startsWith("season_") && v.trim() !== "" && !isMonthDay(v.trim())
+  );
+  if (badSeason) return jsonError(`invalid_season_date: ${badSeason[0]}`);
   for (const [key, value] of entries) {
     await prisma.setting.upsert({ where: { key }, create: { key, value }, update: { value } });
   }

@@ -5,6 +5,7 @@ import { computeQuote, type PeriodInput } from "./pricing";
 import { getRateConfig } from "./settings";
 import { toISODate } from "./dates";
 import { earnForReservation } from "./loyalty";
+import { serializeReservationExtra } from "./extras";
 
 export const RESERVATION_STATUSES = [
   "option",
@@ -131,6 +132,7 @@ const include = {
   periods: { orderBy: { sortOrder: "asc" as const } },
   payments: { orderBy: { receivedAt: "asc" as const } },
   contracts: { orderBy: { createdAt: "desc" as const } },
+  extras: { orderBy: { createdAt: "asc" as const } },
 } as const;
 
 export type ReservationWithRelations = NonNullable<
@@ -184,6 +186,18 @@ export function serializeReservation(r: ReservationWithRelations) {
     lateCheckout: r.lateCheckout,
     departureTime: r.departureTime,
     notes: r.notes,
+    guestDetails: {
+      arrivalFlight: r.arrivalFlight,
+      arrivalEta: r.arrivalEta,
+      departureFlight: r.departureFlight,
+      departureEta: r.departureEta,
+      adults: r.adults,
+      children: r.children,
+      guestNames: r.guestNames,
+      specialRequests: r.specialRequests,
+      updatedAt: r.guestDetailsUpdatedAt?.toISOString() ?? null,
+    },
+    extras: r.extras.map(serializeReservationExtra),
     portalToken: r.portalToken,
     isArchived: r.isArchived,
     confirmationEmailSent: r.confirmationEmailSent,

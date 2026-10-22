@@ -6,6 +6,7 @@ import { breadcrumbJsonLd, jsonLd, pageMetadata, SITE_URL } from "@/lib/seo";
 import { getRateConfig } from "@/lib/settings";
 import { publicRateTable } from "@/lib/pricing";
 import { usd } from "@/lib/money";
+import { formatDateShort, addDays, todayISO } from "@/lib/dates";
 import { PageHero } from "@/components/site/PageHero";
 import { prisma } from "@/lib/db";
 
@@ -53,7 +54,7 @@ export default async function RatesPage({
     getWebsitePromotions(),
     isLoyaltyEnabled(),
   ]);
-  const table = publicRateTable(rates);
+  const table = publicRateTable(rates, todayISO());
 
   const offers = {
     "@context": "https://schema.org",
@@ -165,6 +166,50 @@ export default async function RatesPage({
           ))}
         </div>
         <p className="mt-4 text-sm text-ink/60">{t.rates.holidayNote}</p>
+
+        {/* Dated periods the owner published (regatta weeks…) */}
+        {table.specials.length > 0 && (
+          <>
+            <h2 className="section-title mt-16 mb-6 !text-3xl">{t.rates.specialTitle}</h2>
+            <div className="space-y-3">
+              {table.specials.map((sp) => (
+                <div
+                  key={sp.id}
+                  className="flex flex-wrap items-center justify-between gap-3 border border-ink/10 bg-white px-6 py-4"
+                >
+                  <div>
+                    <div className="font-display text-xl">{sp.name}</div>
+                    <div className="mt-1 text-xs uppercase tracking-[0.18em] text-ink/50">
+                      {formatDateShort(sp.start, locale)} → {formatDateShort(addDays(sp.end, 1), locale)}
+                      {sp.minStay ? ` · ${tpl(t.rates.specialMinStay, { n: sp.minStay })}` : ""}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    {sp.mode === "percent" ? (
+                      <div className="font-display text-2xl text-gold">
+                        {tpl(t.rates.specialPercent, {
+                          pct: `${sp.adjustPercent >= 0 ? "+" : ""}${sp.adjustPercent}%`,
+                        })}
+                      </div>
+                    ) : (
+                      <>
+                        <div className="font-display text-2xl text-gold">
+                          {([2, 3, 4] as const)
+                            .filter((b) => sp.weekly[b] != null)
+                            .map((b) => `${b} ${t.common.bedrooms} ${usd(sp.weekly[b]!)}`)
+                            .join(" · ")}
+                        </div>
+                        <div className="text-[0.72rem] uppercase tracking-widest text-ink/45">
+                          {t.rates.specialFixed}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
 
         {/* Active promotions */}
         {promos.length > 0 && (
