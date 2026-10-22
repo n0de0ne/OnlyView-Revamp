@@ -9,6 +9,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#12324a",
+  viewportFit: "cover",
 };
 
 export default function AdminRootLayout({

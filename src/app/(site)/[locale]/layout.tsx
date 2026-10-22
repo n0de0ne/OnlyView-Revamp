@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 import "../../globals.css";
 import { fontClasses } from "@/lib/fonts";
@@ -14,6 +14,14 @@ import { RevealObserver } from "@/components/motion/RevealObserver";
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));
 }
+
+// viewport-fit=cover lets the hero run under the status bar and makes iOS
+// report the env(safe-area-inset-*) values the floating bars rely on
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 export async function generateMetadata({
   params,
@@ -41,6 +49,8 @@ export async function generateMetadata({
       template: `%s | ${t.meta.siteName}`,
     },
     applicationName: t.meta.siteName,
+    // home-screen app: transparent status bar over the page instead of a white strip
+    appleWebApp: { capable: true, title: t.meta.siteName, statusBarStyle: "black-translucent" },
     formatDetection: { telephone: false },
     openGraph: {
       siteName: t.meta.siteName,
