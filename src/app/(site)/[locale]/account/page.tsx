@@ -3,12 +3,14 @@ import Link from "next/link";
 import { getDict, isLocale, localePath, tpl, type Locale } from "@/lib/i18n";
 import { getGuestClientId } from "@/lib/guest-auth";
 import { prisma } from "@/lib/db";
-import { formatDateShort, toISODate, todayISO, nightsBetween } from "@/lib/dates";
+import { addDays, formatDateShort, toISODate, todayISO, nightsBetween } from "@/lib/dates";
 import { usd } from "@/lib/money";
 import { tierFor, nextTier } from "@/lib/loyalty";
 import { isLoyaltyEnabled } from "@/lib/features";
 import { PageHero } from "@/components/site/PageHero";
 import { GuestLoginForm } from "@/components/site/GuestLoginForm";
+import { StayPlanner } from "@/components/site/StayPlanner";
+import { confirmedExtrasTotal } from "@/lib/extras";
 
 export const dynamic = "force-dynamic";
 
@@ -64,6 +66,7 @@ export default async function AccountPage({
         orderBy: { startDate: "desc" },
         include: {
           contracts: { orderBy: { createdAt: "desc" }, take: 1 },
+          extras: { orderBy: { createdAt: "asc" } },
         },
       },
       loyalty: {
@@ -89,6 +92,18 @@ export default async function AccountPage({
   const upcoming = client.reservations.filter((r) => toISODate(r.endDate) >= today);
   const past = client.reservations.filter((r) => toISODate(r.endDate) < today);
   const loyaltyOn = await isLoyaltyEnabled();
+  const catalog = (
+    await prisma.extra.findMany({
+      where: { isActive: true, guestBookable: true },
+      orderBy: [{ sortOrder: "asc" }, { nameEn: "asc" }],
+    })
+  ).map((x) => ({
+    id: x.id,
+    name: locale === "fr" ? x.nameFr : x.nameEn,
+    description: (locale === "fr" ? x.descriptionFr : x.descriptionEn) ?? null,
+    price: x.price,
+    unit: x.unit,
+  }));
   const points = client.loyalty?.points ?? 0;
   const lifetime = client.loyalty?.lifetimePoints ?? 0;
   const tier = tierFor(lifetime);
@@ -122,6 +137,11 @@ export default async function AccountPage({
             <div className="eyebrow !text-[0.6rem]">{t.account.paymentTitle}</div>
             <div className="mt-2 text-sm">
               <div className="font-semibold">{usd(r.priceTTC)}</div>
+              {confirmedExtrasTotal(r.extras) > 0 && (
+                <div className="text-xs text-ink/60">
+                  + {t.account.extrasTitle} {usd(confirmedExtrasTotal(r.extras))}
+                </div>
+              )}
               <div className="mt-1 text-xs text-ink/60">
                 {r.balanceReceived
                   ? `✓ ${t.account.balanceReceived}`
@@ -159,6 +179,35 @@ export default async function AccountPage({
             </div>
           </div>
         </div>
+
+        {["option", "confirmed"].includes(r.status) && !r.isArchived && toISODate(r.endDate) >= today && (
+          <StayPlanner
+            reservationId={r.id}
+            locale={locale}
+            t={t.account}
+            catalog={catalog}
+            defaultOpen={!r.guestDetailsUpdatedAt && toISODate(r.startDate) <= addDays(today, 21)}
+            details={{
+              arrivalFlight: r.arrivalFlight,
+              arrivalEta: r.arrivalEta,
+              departureFlight: r.departureFlight,
+              departureEta: r.departureEta,
+              adults: r.adults,
+              children: r.children,
+              guestNames: r.guestNames,
+              specialRequests: r.specialRequests,
+            }}
+            items={r.extras.map((i) => ({
+              id: i.id,
+              label: i.label,
+              quantity: i.quantity,
+              amount: i.amount,
+              status: i.status,
+              serviceDate: i.serviceDate ? toISODate(i.serviceDate) : null,
+              requestedByGuest: i.requestedByGuest,
+            }))}
+          />
+        )}
       </div>
     );
   };

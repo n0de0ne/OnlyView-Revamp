@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { api, Card, Spinner, useToast } from "./ui";
+import { RemindersPanel } from "./RemindersPanel";
 
 const GROUPS: Array<{
   title: string;
   fields: Array<[key: string, label: string, hint?: string]>;
 }> = [
   {
-    title: "Tarifs hebdomadaires — Hiver (15 déc → 14 avr)",
+    title: "Tarifs hebdomadaires — Hiver",
     fields: [
       ["price_winter_2", "2 chambres ($)"],
       ["price_winter_3", "3 chambres ($)"],
@@ -24,7 +25,7 @@ const GROUPS: Array<{
     ],
   },
   {
-    title: "Tarifs hebdomadaires — Été (1 juin → 31 août)",
+    title: "Tarifs hebdomadaires — Été",
     fields: [
       ["price_low_season_2", "2 chambres ($)"],
       ["price_low_season_3", "3 chambres ($)"],
@@ -34,12 +35,47 @@ const GROUPS: Array<{
   {
     title: "Forfaits festifs & règles",
     fields: [
-      ["price_christmas", "Semaine de Noël ($)", "20–26 déc, forfait 7 nuits"],
-      ["price_newyear", "Semaine du Nouvel An ($)", "27 déc–2 janv, forfait 7 nuits"],
+      ["price_christmas", "Semaine de Noël ($)", "forfait 7 nuits"],
+      ["price_newyear", "Semaine du Nouvel An ($)", "forfait 7 nuits"],
       ["tax_rate", "Taxe de séjour (%)"],
       ["min_stay", "Séjour minimum (nuits)"],
       ["min_stay_peak", "Séjour min. festif (nuits)"],
       ["deposit_percent", "Acompte (%)"],
+    ],
+  },
+  {
+    title: "Dates des saisons (MM-JJ, inclus)",
+    fields: [
+      ["season_winter_start", "Hiver — début", "défaut 12-15"],
+      ["season_winter_end", "Hiver — fin", "défaut 04-14"],
+      ["season_low_start", "Été — début", "défaut 06-01"],
+      ["season_low_end", "Été — fin", "défaut 08-31"],
+      ["season_christmas_start", "Noël — début", "défaut 12-20"],
+      ["season_christmas_end", "Noël — fin", "défaut 12-26"],
+      ["season_newyear_start", "Nouvel An — début", "défaut 12-27"],
+      ["season_newyear_end", "Nouvel An — fin", "défaut 01-02 · le reste de l'année = mi-saison. Semaines d'événement : menu Tarifs par date"],
+    ],
+  },
+  {
+    title: "Rappels automatiques",
+    fields: [
+      [
+        "reminders_enabled",
+        "Rappels actifs",
+        "1 = envoyés automatiquement chaque heure · 0 = aucun envoi (défaut)",
+      ],
+      ["reminder_option", "Options qui expirent", "1 = rappel au client la veille + alerte à vous le jour J"],
+      [
+        "reminder_option_release",
+        "Libérer les options expirées",
+        "1 = l'option passe en « Annulé » et les dates se libèrent · 0 = alerte seulement",
+      ],
+      ["reminder_balance", "Solde à régler", "1 = rappel au client avant l'échéance (J-30 de l'arrivée) + alerte à vous si en retard"],
+      ["reminder_balance_days", "Rappel du solde — jours avant l'échéance", "défaut 7"],
+      ["reminder_prearrival", "Email avant l'arrivée", "1 = infos pratiques + lien pour remplir vols et invités, commander des extras"],
+      ["reminder_prearrival_days", "Avant l'arrivée — jours", "défaut 10"],
+      ["reminder_review", "Demande d'avis après le séjour", "1 = activé"],
+      ["reminder_review_days", "Demande d'avis — jours après le départ", "défaut 2"],
     ],
   },
   {
@@ -115,6 +151,7 @@ export function SettingsBoard() {
   const { push } = useToast();
   const [settings, setSettings] = useState<Record<string, string> | null>(null);
   const [saving, setSaving] = useState(false);
+  const [savedAt, setSavedAt] = useState(0);
 
   useEffect(() => {
     api<{ settings: Record<string, string> }>("/api/admin/settings").then(
@@ -127,7 +164,10 @@ export function SettingsBoard() {
     setSaving(true);
     const res = await api("/api/admin/settings", { method: "PUT", json: { settings } });
     setSaving(false);
-    if (res.success) push("Réglages enregistrés — appliqués immédiatement aux nouveaux calculs");
+    if (res.success) {
+      push("Réglages enregistrés — appliqués immédiatement aux nouveaux calculs");
+      setSavedAt(Date.now());
+    }
     else push(`Erreur : ${res.error}`, "error");
   };
 
@@ -160,6 +200,7 @@ export function SettingsBoard() {
           </Card>
         ))}
       </div>
+      <RemindersPanel key={savedAt} />
       <p className="text-xs text-slate-400">
         Les tarifs modifiés s&apos;appliquent aux nouveaux devis et aux réservations recalculées —
         jamais rétroactivement aux montants déjà enregistrés.

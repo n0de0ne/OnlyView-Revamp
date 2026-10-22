@@ -1,5 +1,12 @@
 import { prisma } from "./db";
-import { DEFAULT_RATES, type RateConfig } from "./pricing";
+import {
+  DEFAULT_RATES,
+  isMonthDay,
+  type RateConfig,
+  type SeasonBounds,
+  type SpecialRate,
+} from "./pricing";
+import { toISODate } from "./dates";
 
 let cache: { at: number; map: Record<string, string> } | null = null;
 const TTL = 30_000;
@@ -57,7 +64,56 @@ export async function getRateConfig(): Promise<RateConfig> {
     minStay: num(s.min_stay, d.minStay),
     minStayPeak: num(s.min_stay_peak, d.minStayPeak),
     depositPercent: num(s.deposit_percent, d.depositPercent * 100) / 100,
+    seasons: seasonBounds(s),
+    specials: await getSpecialRates(),
   };
+}
+
+/** Season dates from Réglages ("MM-DD", inclusive); a bad value keeps the default. */
+function seasonBounds(s: Record<string, string>): SeasonBounds {
+  const d = DEFAULT_RATES.seasons;
+  const pair = (key: string, fallback: [string, string]): [string, string] => {
+    const from = s[`season_${key}_start`]?.trim();
+    const to = s[`season_${key}_end`]?.trim();
+    return [isMonthDay(from) ? from : fallback[0], isMonthDay(to) ? to : fallback[1]];
+  };
+  return {
+    winter: pair("winter", d.winter),
+    lowSeason: pair("low", d.lowSeason),
+    christmas: pair("christmas", d.christmas),
+    newyear: pair("newyear", d.newyear),
+  };
+}
+
+/**
+ * Every active dated period — past ones too, so re-saving an old stay
+ * prices it the way it was quoted.
+ */
+async function getSpecialRates(): Promise<SpecialRate[]> {
+  try {
+    const rows = await prisma.ratePeriod.findMany({
+      where: { isActive: true },
+      orderBy: { startDate: "asc" },
+    });
+    return rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      start: toISODate(r.startDate),
+      end: toISODate(r.endDate),
+      mode: r.mode === "percent" ? "percent" : "fixed",
+      weekly: {
+        ...(r.rate2 != null ? { 2: r.rate2 } : {}),
+        ...(r.rate3 != null ? { 3: r.rate3 } : {}),
+        ...(r.rate4 != null ? { 4: r.rate4 } : {}),
+      },
+      adjustPercent: r.adjustPercent ?? 0,
+      minStay: r.minStay,
+      showOnWebsite: r.showOnWebsite,
+    }));
+  } catch {
+    // DB unavailable (image build) — seasons only
+    return [];
+  }
 }
 
 export interface LoyaltyConfig {

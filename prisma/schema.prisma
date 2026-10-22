@@ -187,6 +187,20 @@ model Reservation {
   departureTime String?
   notes         String?
 
+  // ── Guest details (filled by the guest in the portal, or by the admin) ──
+  arrivalFlight         String?
+  /// estimated arrival time at the villa (the guest's own estimate)
+  arrivalEta            String?
+  departureFlight       String?
+  departureEta          String?
+  adults                Int?
+  children              Int?
+  /// one guest per line
+  guestNames            String?
+  /// allergies, celebrations, special needs…
+  specialRequests       String?
+  guestDetailsUpdatedAt DateTime?
+
   // ── Guest communication ──
   /// booking confirmation email sent to the client (opt-in when confirming)
   confirmationEmailSent Boolean @default(false)
@@ -203,6 +217,8 @@ model Reservation {
   contracts          Contract[]
   loyaltyTransactions LoyaltyTransaction[]
   bookingRequest     BookingRequest?
+  extras             ReservationExtra[]
+  reminders          ReminderLog[]
 
   @@index([startDate, endDate])
   @@index([status])
@@ -242,6 +258,99 @@ model Payment {
 
   @@index([reservationId])
   @@index([receivedAt])
+}
+
+// ──────────────────────────────────────────────────────────────────── Extras
+
+/// Catalog of services offered on top of the rental (chef, car, boat…).
+model Extra {
+  id            Int      @id @default(autoincrement())
+  nameEn        String
+  nameFr        String
+  descriptionEn String?
+  descriptionFr String?
+  /// USD, per unit below
+  price         Float    @default(0)
+  /// stay | night | person | unit
+  unit          String   @default("stay")
+  isActive      Boolean  @default(true)
+  /// guests can request it from their portal
+  guestBookable Boolean  @default(true)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  items ReservationExtra[]
+}
+
+/// An extra added to a stay — copied from the catalog (label + price) so
+/// later catalog edits never change what was agreed.
+model ReservationExtra {
+  id               Int         @id @default(autoincrement())
+  reservationId    Int
+  reservation      Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  extraId          Int?
+  extra            Extra?      @relation(fields: [extraId], references: [id], onDelete: SetNull)
+  label            String
+  quantity         Float       @default(1)
+  unitPrice        Float       @default(0)
+  /// quantity × unitPrice, USD
+  amount           Float       @default(0)
+  /// requested | confirmed | cancelled
+  status           String      @default("requested")
+  /// day the service is wanted, when it matters
+  serviceDate      DateTime?
+  notes            String?
+  requestedByGuest Boolean     @default(false)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  @@index([reservationId])
+}
+
+// ─────────────────────────────────────────────────────────────── Automations
+
+/// One row per automatic message already handled for a stay, so a reminder
+/// is never sent twice (the unique key is the claim).
+model ReminderLog {
+  id            Int         @id @default(autoincrement())
+  reservationId Int
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  /// option_expiring | option_expired | balance_due | balance_overdue | pre_arrival | review_request
+  kind          String
+  sentAt        DateTime    @default(now())
+
+  @@unique([reservationId, kind])
+}
+
+// ───────────────────────────────────────────────────────────── Date pricing
+
+/// A dated rate override (regatta week, carnival, a quiet fortnight…). Nights
+/// inside the range use it instead of the season rate.
+model RatePeriod {
+  id            Int      @id @default(autoincrement())
+  name          String
+  /// first night
+  startDate     DateTime
+  /// last night (inclusive)
+  endDate       DateTime
+  /// fixed | percent
+  mode          String   @default("fixed")
+  /// weekly USD per bedrooms in use (mode fixed)
+  rate2         Float?
+  rate3         Float?
+  rate4         Float?
+  /// +/- % on the season rate (mode percent)
+  adjustPercent Float?
+  /// minimum nights for a stay touching the period
+  minStay       Int?
+  isActive      Boolean  @default(true)
+  showOnWebsite Boolean  @default(false)
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([startDate, endDate])
 }
 
 // ─────────────────────────────────────────────────────────── Booking requests

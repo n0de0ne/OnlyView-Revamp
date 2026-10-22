@@ -119,3 +119,79 @@ export const MapPlaceInput = z.object({
   sortOrder: z.number().int().min(-100000).max(100000).default(0),
   isActive: z.boolean().default(true),
 });
+
+/* ───────────────────────── date pricing ───────────────────────── */
+
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+export const RatePeriodInput = z
+  .object({
+    name: z.string().trim().min(1).max(120),
+    /** first night */
+    startDate: z.string().regex(ISO_DATE),
+    /** last night (inclusive) */
+    endDate: z.string().regex(ISO_DATE),
+    mode: z.enum(["fixed", "percent"]).default("fixed"),
+    rate2: z.number().min(0).nullable().optional(),
+    rate3: z.number().min(0).nullable().optional(),
+    rate4: z.number().min(0).nullable().optional(),
+    adjustPercent: z.number().min(-90).max(500).nullable().optional(),
+    minStay: z.number().int().min(1).max(60).nullable().optional(),
+    isActive: z.boolean().default(true),
+    showOnWebsite: z.boolean().default(false),
+    notes: z.string().max(2000).nullable().optional(),
+  })
+  .refine((d) => d.endDate >= d.startDate, { message: "end_before_start" })
+  .refine(
+    (d) => (d.mode === "percent" ? d.adjustPercent != null : [d.rate2, d.rate3, d.rate4].some((r) => r != null)),
+    { message: "missing_rate" }
+  );
+
+/* ───────────────────────── extras ───────────────────────── */
+
+export const EXTRA_UNITS = ["stay", "night", "person", "unit"] as const;
+
+export const ExtraInput = z.object({
+  nameEn: z.string().trim().min(1).max(120),
+  nameFr: z.string().trim().min(1).max(120),
+  descriptionEn: z.string().trim().max(1000).nullable().optional(),
+  descriptionFr: z.string().trim().max(1000).nullable().optional(),
+  price: z.number().min(0).default(0),
+  unit: z.enum(EXTRA_UNITS).default("stay"),
+  isActive: z.boolean().default(true),
+  guestBookable: z.boolean().default(true),
+  sortOrder: z.number().int().min(-10000).max(10000).default(0),
+});
+
+export const ReservationExtraInput = z.object({
+  extraId: z.number().int().positive().nullable().optional(),
+  label: z.string().trim().min(1).max(200),
+  quantity: z.number().min(0).max(1000).default(1),
+  unitPrice: z.number().min(0).default(0),
+  status: z.enum(["requested", "confirmed", "cancelled"]).default("confirmed"),
+  serviceDate: z.string().regex(ISO_DATE).nullable().optional(),
+  notes: z.string().max(2000).nullable().optional(),
+});
+
+/** Editing a line already on a stay — no defaults, so a status change keeps the amounts. */
+export const ReservationExtraPatch = z.object({
+  label: z.string().trim().min(1).max(200).optional(),
+  quantity: z.number().min(0).max(1000).optional(),
+  unitPrice: z.number().min(0).optional(),
+  status: z.enum(["requested", "confirmed", "cancelled"]).optional(),
+  serviceDate: z.string().regex(ISO_DATE).nullable().optional(),
+  notes: z.string().max(2000).nullable().optional(),
+});
+
+/** Arrival details — the same shape from the admin editor and the guest portal. */
+export const GuestDetailsInput = z.object({
+  arrivalFlight: z.string().trim().max(100).nullable().optional(),
+  /** estimated time at the villa — separate from the early check-in time the owner grants */
+  arrivalEta: z.string().trim().max(20).nullable().optional(),
+  departureFlight: z.string().trim().max(100).nullable().optional(),
+  departureEta: z.string().trim().max(20).nullable().optional(),
+  adults: z.number().int().min(0).max(20).nullable().optional(),
+  children: z.number().int().min(0).max(20).nullable().optional(),
+  guestNames: z.string().trim().max(2000).nullable().optional(),
+  specialRequests: z.string().trim().max(4000).nullable().optional(),
+});

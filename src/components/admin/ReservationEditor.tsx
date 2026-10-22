@@ -17,6 +17,7 @@ import {
   Spinner,
   useToast,
 } from "./ui";
+import { ReservationStayPanel } from "./ReservationStayPanel";
 
 interface AgencyOpt {
   id: number;
@@ -160,6 +161,7 @@ export function ReservationEditor({
   });
   const depositTouched = useRef(false);
   const [showProfit, setShowProfit] = useState(false);
+  const [extrasTotal, setExtrasTotal] = useState(0);
   const [payModal, setPayModal] = useState(false);
   // opt-in, like the legacy "envoyer l'email de confirmation" checkbox
   const [sendConfirmation, setSendConfirmation] = useState(false);
@@ -1324,8 +1326,11 @@ export function ReservationEditor({
           <div className="pb-1 text-sm">
             <div className="text-xs text-slate-400">Balance restante</div>
             <div className="font-display text-2xl text-navy">
-              {quote ? fmtUSD(Math.max(0, quote.totalTTC - totalPaid)) : "—"}
+              {quote ? fmtUSD(Math.max(0, quote.totalTTC + extrasTotal - totalPaid)) : "—"}
             </div>
+            {extrasTotal > 0 && (
+              <div className="text-[0.65rem] text-slate-400">dont extras {fmtUSD(extrasTotal)}</div>
+            )}
           </div>
         </div>
 
@@ -1379,6 +1384,19 @@ export function ReservationEditor({
           </div>
         )}
       </Card>
+
+      {/* Arrival details & extras — saved on their own */}
+      {reservationId && loaded && (
+        <ReservationStayPanel
+          key={loaded.id}
+          reservationId={reservationId}
+          details={loaded.guestDetails}
+          extras={loaded.extras}
+          nights={quote?.nights ?? 0}
+          guests={form.guests}
+          onExtrasTotal={setExtrasTotal}
+        />
+      )}
 
       {/* Documents & actions */}
       {reservationId && (
