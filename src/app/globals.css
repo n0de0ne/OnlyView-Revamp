@@ -338,7 +338,8 @@ html.lenis body {
 .field input,
 .field select,
 .field textarea {
-  @apply w-full border border-ink/15 bg-white px-3.5 py-2.5 text-sm text-ink outline-none transition focus:border-gold focus:ring-1 focus:ring-gold;
+  /* 16px on phones: anything smaller makes iOS zoom into the field */
+  @apply w-full border border-ink/15 bg-white px-3.5 py-2.5 text-base text-ink outline-none transition focus:border-gold focus:ring-1 focus:ring-gold md:text-sm;
 }
 
 .afield label {

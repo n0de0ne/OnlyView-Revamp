@@ -120,16 +120,21 @@ export function AvailabilityCalendar({
     for (let d = 1; d <= daysInMonth; d++) cells.push({ d, date: iso(y, m, d) });
 
     return (
-      <div key={mOffset} className="w-full">
-        <div className="mb-3 text-center font-display text-lg">
-          {monthNames[m]} {y}
+      // a phone shows one month (arrows beside its name); two from lg up
+      <div key={mOffset} className={`w-full ${mOffset > 0 ? "hidden lg:block" : ""}`}>
+        <div className="mb-2 flex items-center justify-between lg:mb-3 lg:block lg:text-center">
+          {mOffset === 0 && <span className="lg:hidden">{prevButton}</span>}
+          <span className="font-display text-xl lg:text-lg">
+            {monthNames[m]} {y}
+          </span>
+          {mOffset === 0 && <span className="lg:hidden">{nextButton}</span>}
         </div>
-        <div className="grid grid-cols-7 gap-y-1 text-center text-[0.72rem] uppercase text-ink/40 sm:text-[0.65rem]">
+        <div className="grid grid-cols-7 gap-y-1 text-center text-[0.72rem] uppercase text-ink/40 lg:text-[0.65rem]">
           {dayNames.map((n, i) => (
             <div key={i}>{n}</div>
           ))}
         </div>
-        <div className="mt-1 grid grid-cols-7 gap-y-1">
+        <div className="mt-1 grid grid-cols-7 gap-y-0.5 lg:gap-y-1">
           {cells.map((cell, i) => {
             if (!cell) return <div key={i} />;
             const s = dayStatus.get(cell.date);
@@ -160,7 +165,7 @@ export function AvailabilityCalendar({
                 disabled={past || booked}
                 onClick={() => clickDay(cell.date)}
                 aria-label={cell.date}
-                className={`mx-auto flex h-10 w-10 items-center justify-center rounded-full text-sm transition sm:h-9 sm:w-9 sm:text-xs ${cls}`}
+                className={`mx-auto flex h-10 w-10 items-center justify-center rounded-full text-sm transition lg:h-9 lg:w-9 lg:text-xs ${cls}`}
               >
                 {cell.d}
               </button>
@@ -171,40 +176,56 @@ export function AvailabilityCalendar({
     );
   };
 
+  const navCls =
+    "flex h-11 w-11 items-center justify-center rounded-full border border-ink/15 text-lg transition hover:border-gold hover:text-gold disabled:opacity-30 lg:h-9 lg:w-9 lg:text-base";
+  const prevButton = (
+    <button
+      onClick={() => setOffset((o) => Math.max(0, o - 1))}
+      disabled={offset === 0}
+      className={navCls}
+      aria-label="Previous month"
+    >
+      ‹
+    </button>
+  );
+  const nextButton = (
+    <button
+      onClick={() => setOffset((o) => Math.min(22, o + 1))}
+      className={navCls}
+      aria-label="Next month"
+    >
+      ›
+    </button>
+  );
+  const legendRow = (
+    <>
+      <span className="flex items-center gap-1.5">
+        <span className="h-2.5 w-2.5 rounded-full bg-st-free/30 lg:h-3 lg:w-3" /> {legend.free}
+      </span>
+      <span className="flex items-center gap-1.5">
+        <span className="h-2.5 w-2.5 rounded-full bg-st-option lg:h-3 lg:w-3" /> {legend.option}
+      </span>
+      <span className="flex items-center gap-1.5">
+        <span className="h-2.5 w-2.5 rounded-full bg-st-confirmed lg:h-3 lg:w-3" /> {legend.booked}
+      </span>
+    </>
+  );
+
   return (
     <div>
-      {/* month nav first; the legend drops under it on a phone instead of
-          squeezing between the arrows */}
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-y-3">
-        <button
-          onClick={() => setOffset((o) => Math.max(0, o - 1))}
-          disabled={offset === 0}
-          className="flex h-11 w-11 items-center justify-center rounded-full border border-ink/15 text-lg transition hover:border-gold hover:text-gold disabled:opacity-30 sm:h-9 sm:w-9 sm:text-base"
-          aria-label="Previous month"
-        >
-          ‹
-        </button>
-        <div className="order-last flex w-full flex-wrap justify-center gap-x-4 gap-y-1 text-[0.75rem] uppercase tracking-wider text-ink/60 sm:order-none sm:w-auto sm:text-[0.65rem]">
-          <span className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-full bg-st-free/30" /> {legend.free}
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-full bg-st-option" /> {legend.option}
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-full bg-st-confirmed" /> {legend.booked}
-          </span>
+      <div className="mb-4 hidden items-center justify-between lg:flex">
+        {prevButton}
+        <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-[0.65rem] uppercase tracking-wider text-ink/60">
+          {legendRow}
         </div>
-        <button
-          onClick={() => setOffset((o) => Math.min(22, o + 1))}
-          className="flex h-11 w-11 items-center justify-center rounded-full border border-ink/15 text-lg transition hover:border-gold hover:text-gold sm:h-9 sm:w-9 sm:text-base"
-          aria-label="Next month"
-        >
-          ›
-        </button>
+        {nextButton}
       </div>
-      <div className={`grid gap-8 ${months > 1 ? "md:grid-cols-2" : ""}`}>
+      <div className={`grid gap-8 ${months > 1 ? "lg:grid-cols-2" : ""}`}>
         {Array.from({ length: months }, (_, i) => renderMonth(i))}
+      </div>
+      {/* on a phone the legend is one quiet line under the month */}
+      <div className="mt-3 flex justify-center gap-x-4 text-[0.7rem] text-ink/65 lg:hidden">
+        {legendRow}
       </div>
     </div>
   );

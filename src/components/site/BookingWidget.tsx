@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getDict, tpl, type Locale } from "@/lib/i18n";
 import { usd } from "@/lib/money";
 import { AvailabilityCalendar, type BookedRange } from "./AvailabilityCalendar";
@@ -43,6 +43,11 @@ export function BookingWidget({
   const [promoCode, setPromoCode] = useState("");
   const [quote, setQuote] = useState<QuoteResponse | null>(null);
   const [quoteLoading, setQuoteLoading] = useState(false);
+  // phone layout: party steppers, promo field and the request sheet start tucked away
+  const [partyOpen, setPartyOpen] = useState(false);
+  const [promoOpen, setPromoOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const topRef = useRef<HTMLDivElement>(null);
 
   const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
   const [submitState, setSubmitState] = useState<"idle" | "sending" | "done" | "error">("idle");
@@ -78,6 +83,58 @@ export function BookingWidget({
     return () => clearTimeout(id);
   }, [fetchQuote]);
 
+  const bothDates = Boolean(range.start && range.end);
+
+  // the sheet only makes sense with a full range
+  useEffect(() => {
+    if (!bothDates) setSheetOpen(false);
+  }, [bothDates]);
+
+  // while the sheet is up the page behind it stays put; Escape closes it
+  useEffect(() => {
+    if (!sheetOpen) return;
+    const root = document.documentElement;
+    const prev = root.style.overflow;
+    root.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setSheetOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      root.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [sheetOpen]);
+
+  useEffect(() => {
+    if (submitState === "done") topRef.current?.scrollIntoView({ block: "start" });
+  }, [submitState]);
+
+  const shortDate = (d: string, withDay = false) =>
+    new Date(d + "T00:00:00").toLocaleDateString(locale === "fr" ? "fr-FR" : "en-US", {
+      ...(withDay ? { weekday: "short" as const } : {}),
+      day: "numeric",
+      month: "short",
+    });
+  const nightCount =
+    range.start && range.end
+      ? Math.round((Date.parse(range.end) - Date.parse(range.start)) / 86_400_000)
+      : 0;
+
+  let barTitle = t.booking.addDates;
+  let barSub = t.booking.pickArrival;
+  if (range.start && !range.end) {
+    barTitle = `${shortDate(range.start)} → …`;
+    barSub = t.booking.pickDeparture;
+  } else if (range.start && range.end) {
+    barTitle = quote
+      ? quote.available
+        ? tpl(t.booking.totalShort, { amount: usd(quote.quote.totalTTC) })
+        : t.booking.unavailable
+      : quoteLoading
+        ? t.common.loading
+        : `${shortDate(range.start)} → ${shortDate(range.end)}`;
+    barSub = `${shortDate(range.start)} → ${shortDate(range.end)} · ${nightCount} ${t.booking.nights}`;
+  }
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!range.start || !range.end) return;
@@ -107,7 +164,7 @@ export function BookingWidget({
 
   if (submitState === "done") {
     return (
-      <div className="mx-auto max-w-xl border border-gold/40 bg-white p-10 text-center">
+      <div ref={topRef} className="mx-auto max-w-xl scroll-mt-24 border border-gold/40 bg-white p-10 text-center">
         <div className="mb-4 text-4xl" aria-hidden>
           🌅
         </div>
@@ -117,11 +174,42 @@ export function BookingWidget({
     );
   }
 
+  const stepBtn =
+    "flex h-11 w-11 items-center justify-center rounded-full border border-ink/20 bg-white text-lg text-ink transition hover:border-gold disabled:opacity-30";
+
   return (
-    <div className="grid gap-10 lg:grid-cols-[1.15fr_1fr]">
+    <div ref={topRef} className="grid scroll-mt-24 gap-10 lg:grid-cols-[1.15fr_1fr]">
       {/* Left: calendar + selectors */}
-      <div className="border border-ink/10 bg-white p-6 md:p-8">
-        <h2 className="mb-6 font-display text-2xl">{t.booking.calTitle}</h2>
+      <div className="border border-ink/10 bg-white p-4 md:p-8">
+        <h2 className="mb-6 hidden font-display text-2xl lg:block">{t.booking.calTitle}</h2>
+
+        {/* Phone: the picked dates read back above the calendar */}
+        <div className="mb-4 grid grid-cols-2 border border-ink/15 lg:hidden">
+          {([
+            ["start", t.booking.checkin, range.start, () => setRange({ start: null, end: null })],
+            ["end", t.booking.checkout, range.end, () => range.start && setRange({ start: range.start, end: null })],
+          ] as const).map(([key, label, value, onClick]) => {
+            const picking = key === "start" ? !range.start || bothDates : Boolean(range.start && !range.end);
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={onClick}
+                className={`px-3.5 py-2.5 text-left transition ${key === "start" ? "border-r border-ink/10" : ""} ${
+                  picking ? "shadow-[inset_0_0_0_2px_var(--color-gold)]" : ""
+                }`}
+              >
+                <span className="block text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-ink/60">
+                  {label}
+                </span>
+                <span className={`mt-0.5 block text-[0.95rem] ${value ? "font-medium text-ink" : "text-ink/45"}`}>
+                  {value ? shortDate(value, true) : t.booking.addDate}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
         <AvailabilityCalendar
           bookings={initialBookings}
           months={2}
@@ -135,7 +223,7 @@ export function BookingWidget({
           }}
         />
 
-        <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="mt-8 hidden grid-cols-4 gap-4 lg:grid">
           <div className="field">
             <label htmlFor="bk-start">{t.booking.checkin}</label>
             <input
@@ -184,7 +272,72 @@ export function BookingWidget({
             </select>
           </div>
         </div>
-        <div className="field mt-4 max-w-[200px]">
+
+        {/* Phone: guests and bedrooms on one line, steppers on demand */}
+        <div className="mt-4 border border-ink/10 lg:hidden">
+          <div className="flex min-h-[3.25rem] items-center justify-between pl-3.5 pr-1">
+            <p className="text-sm">
+              <span className="font-semibold">{tpl(t.booking.guestsCount, { n: guests })}</span>
+              {" · "}
+              {tpl(t.booking.bedroomsCount, { n: bedrooms })}
+            </p>
+            <button
+              type="button"
+              onClick={() => setPartyOpen((o) => !o)}
+              aria-expanded={partyOpen}
+              className="h-11 px-3 text-[0.72rem] font-semibold uppercase tracking-[0.15em] text-gold-dark"
+            >
+              {partyOpen ? t.booking.done : t.booking.edit}
+            </button>
+          </div>
+          {partyOpen && (
+            <div className="space-y-1 border-t border-ink/10 px-3.5 py-2">
+              {([
+                [t.booking.guestsLabel, guests, setGuests, 1, 8],
+                [t.booking.bedroomsLabel, bedrooms, setBedrooms, 2, 4],
+              ] as const).map(([label, value, set, min, max]) => (
+                <div key={label} className="flex items-center justify-between">
+                  <span className="text-sm">{label}</span>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      className={stepBtn}
+                      disabled={value <= min}
+                      onClick={() => set(Math.max(min, value - 1))}
+                      aria-label={`${t.booking.fewer} — ${label}`}
+                    >
+                      −
+                    </button>
+                    <span className="w-5 text-center font-semibold" aria-live="polite">
+                      {value}
+                    </span>
+                    <button
+                      type="button"
+                      className={stepBtn}
+                      disabled={value >= max}
+                      onClick={() => set(Math.min(max, value + 1))}
+                      aria-label={`${t.booking.more} — ${label}`}
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* promo: always shown from lg up, behind a link on a phone */}
+        {!promoOpen && (
+          <button
+            type="button"
+            onClick={() => setPromoOpen(true)}
+            className="mt-2 h-11 text-[0.82rem] text-gold-dark underline underline-offset-4 lg:hidden"
+          >
+            {t.booking.promoAsk}
+          </button>
+        )}
+        <div className={`field mt-4 max-w-[200px] ${promoOpen ? "" : "hidden lg:block"}`}>
           <label htmlFor="bk-promo">{t.booking.promoLabel}</label>
           <input
             id="bk-promo"
@@ -196,9 +349,35 @@ export function BookingWidget({
         </div>
       </div>
 
-      {/* Right: quote + request form */}
-      <div className="space-y-6">
-        <div className="border border-ink/10 bg-night p-6 text-white md:p-8">
+      {/* Right: quote + request form — a bottom sheet on a phone, opened from the bar */}
+      {sheetOpen && (
+        <div
+          className="fixed inset-0 z-[65] bg-night/45 lg:hidden"
+          onClick={() => setSheetOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+      <div
+        data-lenis-prevent
+        role={sheetOpen ? "dialog" : undefined}
+        aria-modal={sheetOpen || undefined}
+        aria-label={sheetOpen ? t.booking.formTitle : undefined}
+        className={`space-y-6 max-lg:fixed max-lg:inset-x-0 max-lg:bottom-0 max-lg:z-[70] max-lg:max-h-[88dvh] max-lg:space-y-4 max-lg:overflow-y-auto max-lg:overscroll-contain max-lg:bg-sand max-lg:px-4 max-lg:pb-[max(1rem,env(safe-area-inset-bottom))] max-lg:shadow-2xl ${
+          sheetOpen ? "" : "max-lg:hidden"
+        }`}
+      >
+        <div className="sticky top-0 z-10 -mx-4 flex items-center justify-between bg-sand pl-4 pr-1 pt-2 lg:hidden">
+          <span className="mx-auto h-1 w-10 translate-x-5 rounded-full bg-ink/20" aria-hidden="true" />
+          <button
+            type="button"
+            onClick={() => setSheetOpen(false)}
+            className="flex h-11 w-11 items-center justify-center text-2xl leading-none text-ink/70"
+            aria-label={t.booking.close}
+          >
+            ×
+          </button>
+        </div>
+        <div className="border border-ink/10 bg-night p-5 text-white md:p-8">
           <h2 className="mb-5 font-display text-2xl">{t.booking.quoteTitle}</h2>
           {!range.start || !range.end ? (
             <p className="text-sm text-white/60">
@@ -280,8 +459,10 @@ export function BookingWidget({
         </div>
 
         {/* Request form */}
-        <form onSubmit={submit} className="border border-ink/10 bg-white p-6 md:p-8">
+        <form onSubmit={submit} className="border border-ink/10 bg-white p-5 md:p-8">
           <h2 className="mb-5 font-display text-2xl">{t.booking.formTitle}</h2>
+          {/* the hero drops this line on a phone; it reassures best right here */}
+          <p className="-mt-2 mb-5 text-sm leading-relaxed text-ink/65 lg:hidden">{t.booking.intro}</p>
           <div className="space-y-4">
             <div className="field">
               <label htmlFor="bk-name">{t.booking.name} *</label>
@@ -334,6 +515,27 @@ export function BookingWidget({
             {submitState === "sending" ? t.booking.sending : t.booking.submit}
           </button>
         </form>
+      </div>
+
+      {/* Phone: the booking bar replaces the tab bar on this page */}
+      <div
+        className="fixed inset-x-0 bottom-0 z-[60] border-t border-ink/10 bg-white/95 px-4 pt-3 shadow-[0_-8px_24px_rgba(16,24,32,0.06)] backdrop-blur lg:hidden"
+        style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
+      >
+        <div className="mx-auto flex max-w-xl items-center gap-3">
+          <div className="min-w-0 flex-1" aria-live="polite">
+            <p className="truncate text-[0.95rem] font-semibold text-ink">{barTitle}</p>
+            <p className="truncate text-xs text-ink/65">{barSub}</p>
+          </div>
+          <button
+            type="button"
+            disabled={!bothDates}
+            onClick={() => setSheetOpen(true)}
+            className="btn-gold shrink-0 disabled:cursor-not-allowed disabled:opacity-45"
+          >
+            {bothDates ? t.booking.requestBtn : t.booking.quoteBtn}
+          </button>
+        </div>
       </div>
     </div>
   );
