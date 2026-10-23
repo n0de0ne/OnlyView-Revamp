@@ -51,6 +51,7 @@ export async function generateMetadata({
       template: `%s | ${t.meta.siteName}`,
     },
     applicationName: t.meta.siteName,
+    manifest: "/manifest.webmanifest",
     // home-screen app: a solid dark status bar. Since iOS 26.1 "black-translucent"
     // no longer shows the page through it but lays a pale scrim over the hero
     appleWebApp: { capable: true, title: t.meta.siteName, statusBarStyle: "black" },
