@@ -130,9 +130,49 @@ const absImages = (images: string[]) =>
   images.map((u) => (u.startsWith("http") ? u : SITE_URL + u));
 
 /**
- * Primary entity: VacationRental (Google's dedicated type for villa rentals)
- * + LodgingBusiness fallback fields. This is the core of both SEO and GEO —
- * AI engines quote these structured facts directly.
+ * The photos the villa's structured data carries: one of each space first
+ * (pool and view lead, then living, kitchen, every bedroom, night, outside),
+ * then the rest, up to `max`. Photos come back sorted by category name, so a
+ * plain slice used to hand engines eight bedrooms and no pool. Google's
+ * vacation-rental spec wants at least 8, with a bedroom and a common area.
+ */
+export function schemaImages(photos: Array<{ category: string; url: string }>, max = 12): string[] {
+  const order = ["pool-terrace", "living", "exterior", "kitchen", "bedroom1", "bedroom2", "bedroom3", "bedroom4", "night"];
+  const picked: string[] = [];
+  for (const cat of order) {
+    const p = photos.find((x) => x.category === cat);
+    if (p) picked.push(p.url);
+  }
+  for (const p of photos) {
+    if (picked.length >= max) break;
+    if (!picked.includes(p.url)) picked.push(p.url);
+  }
+  return picked.slice(0, max);
+}
+
+/** Amenities in the names Google's vacation-rental spec reads (English
+    only, even on the French pages), then the villa's own in plain words. */
+const SPEC_AMENITIES = ["ac", "wifi", "pool", "kitchen", "tv", "outdoorGrill", "patio", "childFriendly"];
+const PLAIN_AMENITIES = [
+  "Heated infinity pool",
+  "180° ocean view",
+  "5 Gbps fiber Wi-Fi",
+  "Daily housekeeping",
+  "Concierge service",
+  "Fully equipped gourmet kitchen",
+  "Sonos sound system",
+  "Private parking",
+  "Safe",
+  "Ocean view terrace",
+];
+
+/**
+ * Primary entity: VacationRental, laid out the way Google's vacation-rental
+ * structured data asks — the house itself as one `EntirePlace` Accommodation
+ * in `containsPlace`, latitude/longitude at the top. VacationRental is a
+ * LodgingBusiness, so it also carries the contact point: one entity for the
+ * villa, not a separate "business" node competing with it. This is the core
+ * of both SEO and GEO — AI engines quote these structured facts directly.
  */
 export function vacationRentalJsonLd(opts: {
   locale: Locale;
@@ -147,19 +187,32 @@ export function vacationRentalJsonLd(opts: {
     "@context": "https://schema.org",
     "@type": "VacationRental",
     "@id": `${SITE_URL}/#villa`,
+    additionalType: "Villa",
     name: VILLA.name,
     alternateName: [...VILLA.alternateNames],
     identifier: "villa-only-view-st-barth",
     description: fr
-      ? "Villa de luxe de 4 chambres en suite à Pointe Milou, Saint-Barthélemy, avec piscine chauffée face à la mer, vue panoramique à 180°, ménage quotidien et conciergerie. Location en direct propriétaire, sans frais d'agence."
-      : "Luxury 4-bedroom villa in Pointe Milou, Saint-Barthélemy, with heated ocean-facing pool, 180° panoramic sea views, daily housekeeping and concierge service. Rented directly by the owner with no agency fees.",
+      ? "Villa ONLY VIEW (Only View St Barth / St Barts) : villa de luxe de 4 chambres en suite à Pointe Milou, Saint-Barthélemy, avec piscine chauffée face à la mer, vue panoramique à 180°, ménage quotidien et conciergerie. Site officiel, location en direct propriétaire, sans frais d'agence."
+      : "Villa ONLY VIEW (Only View St Barts / St Barth): luxury 4-bedroom villa in Pointe Milou, Saint-Barthélemy, with heated ocean-facing pool, 180° panoramic sea views, daily housekeeping and concierge service. Official website, rented directly by the owner with no agency fees.",
     url: SITE_URL + (fr ? "/fr" : ""),
+    mainEntityOfPage: SITE_URL + (fr ? "/fr" : ""),
     image: absImages(opts.images),
     address: ORG.address,
+    latitude: VILLA.lat,
+    longitude: VILLA.lng,
     geo: ORG.geo,
     hasMap: ORG.hasMap,
     telephone: ORG.telephone,
     email: ORG.email,
+    brand: { "@type": "Brand", "@id": `${SITE_URL}/#org`, name: VILLA.name },
+    founder: { "@id": `${SITE_URL}/#owner` },
+    contactPoint: {
+      "@type": "ContactPoint",
+      contactType: "reservations",
+      email: ORG.email,
+      telephone: ORG.telephone,
+      availableLanguage: ["English", "French"],
+    },
     ...(opts.sameAs?.length ? { sameAs: opts.sameAs } : {}),
     priceRange: opts.priceRange ?? "$10,000 – $50,000 per week",
     currenciesAccepted: "USD",
@@ -168,33 +221,28 @@ export function vacationRentalJsonLd(opts: {
     smokingAllowed: false,
     checkinTime: VILLA.checkin,
     checkoutTime: VILLA.checkout,
-    numberOfRooms: VILLA.bedrooms,
-    numberOfBathroomsTotal: VILLA.bathrooms,
-    numberOfBedrooms: VILLA.bedrooms,
-    occupancy: { "@type": "QuantitativeValue", maxValue: VILLA.guests, unitText: "guests" },
-    floorSize: { "@type": "QuantitativeValue", value: VILLA.sizeM2, unitCode: "MTK" },
     tourBookingPage: `${SITE_URL}${fr ? "/fr" : ""}/tour`,
     knowsLanguage: ["en", "fr"],
-    containsPlace: [1, 2, 3, 4].map((n) => ({
+    containsPlace: {
       "@type": "Accommodation",
-      name: `Bedroom ${n}`,
-      bed: { "@type": "BedDetails", numberOfBeds: 1, typeOfBed: n <= 2 ? "King" : "Queen" },
-      amenityFeature: [{ "@type": "LocationFeatureSpecification", name: "En-suite bathroom", value: true }],
-    })),
-    amenityFeature: [
-      "Heated infinity pool",
-      "180° ocean view",
-      "Air conditioning",
-      "5 Gbps fiber Wi-Fi",
-      "Daily housekeeping",
-      "Concierge service",
-      "Fully equipped gourmet kitchen",
-      "Sonos sound system",
-      "BBQ grill",
-      "Private parking",
-      "Safe",
-      "Ocean view terrace",
-    ].map((name) => ({
+      additionalType: "EntirePlace",
+      name: VILLA.name,
+      numberOfBedrooms: VILLA.bedrooms,
+      numberOfBathroomsTotal: VILLA.bathrooms,
+      occupancy: { "@type": "QuantitativeValue", value: VILLA.guests },
+      floorSize: { "@type": "QuantitativeValue", value: VILLA.sizeM2, unitCode: "MTK" },
+      bed: [
+        { "@type": "BedDetails", numberOfBeds: 2, typeOfBed: "King" },
+        { "@type": "BedDetails", numberOfBeds: 2, typeOfBed: "Queen" },
+      ],
+      amenityFeature: [
+        ...SPEC_AMENITIES.map((name) => ({ "@type": "LocationFeatureSpecification", name, value: true })),
+        { "@type": "LocationFeatureSpecification", name: "poolType", value: "Private" },
+        { "@type": "LocationFeatureSpecification", name: "parkingType", value: "Free" },
+        { "@type": "LocationFeatureSpecification", name: "internetType", value: "Free" },
+      ],
+    },
+    amenityFeature: PLAIN_AMENITIES.map((name) => ({
       "@type": "LocationFeatureSpecification",
       name,
       value: true,
@@ -209,31 +257,6 @@ export function vacationRentalJsonLd(opts: {
           },
         }
       : {}),
-  };
-}
-
-export function lodgingBusinessJsonLd(locale: Locale, sameAs: string[] = []) {
-  return {
-    "@context": "https://schema.org",
-    "@type": "LodgingBusiness",
-    "@id": `${SITE_URL}/#business`,
-    name: ORG.name,
-    alternateName: [...VILLA.alternateNames],
-    url: SITE_URL + (locale === "fr" ? "/fr" : ""),
-    email: ORG.email,
-    telephone: ORG.telephone,
-    address: ORG.address,
-    geo: ORG.geo,
-    hasMap: ORG.hasMap,
-    ...(sameAs.length ? { sameAs } : {}),
-    founder: { "@id": `${SITE_URL}/#owner` },
-    contactPoint: {
-      "@type": "ContactPoint",
-      contactType: "reservations",
-      email: ORG.email,
-      telephone: ORG.telephone,
-      availableLanguage: ["English", "French"],
-    },
   };
 }
 

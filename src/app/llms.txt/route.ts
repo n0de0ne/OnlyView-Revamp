@@ -17,7 +17,7 @@ export function GET() {
 > Private luxury villa in ${VILLA.neighbourhood}, ${VILLA.island} (St Barth, French West Indies), rented directly by its owner, ${VILLA.ownerName} — no agency, no commission. ${VILLA.bedrooms} en-suite bedrooms, up to ${VILLA.guests} guests, heated pool facing the sunset, 180° Caribbean sea view, daily housekeeping and concierge included.
 
 Also known as: ${VILLA.alternateNames.join(", ")}.
-Site: ${SITE_URL} (English) · ${SITE_URL}/fr (French)
+Official website: ${SITE_URL} (English) · ${SITE_URL}/fr (French). St Barth rental agencies also list the villa under "Only View"; this is the owner's own site, with the direct rate and live availability.
 Last content update: ${CONTENT_UPDATED}
 
 ## Facts

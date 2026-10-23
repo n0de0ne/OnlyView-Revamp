@@ -3,9 +3,9 @@ import type { Dict } from "./en";
 export const fr: Dict = {
   meta: {
     siteName: "Villa ONLY VIEW",
-    titleHome: "Villa ONLY VIEW — Only View St Barth, villa de luxe en direct",
+    titleHome: "Villa ONLY VIEW St Barth — Site officiel, location en direct",
     descHome:
-      "Villa ONLY VIEW, Pointe Milou, St Barth : villa de luxe 4 chambres, piscine chauffée, vue mer à 180°, conciergerie. En direct propriétaire, sans frais d'agence.",
+      "Site officiel de la Villa ONLY VIEW, Pointe Milou, St Barth : villa de luxe 4 chambres, piscine chauffée, vue mer à 180°, conciergerie. En direct propriétaire, sans frais d'agence.",
     titleVilla: "La Villa — 4 chambres en suite, piscine, vue mer",
     descVilla:
       "La Villa ONLY VIEW : 4 chambres en suite, grands espaces de vie, cuisine équipée, piscine chauffée et vue à 180° sur la mer, à Pointe Milou, Saint-Barthélemy.",
@@ -541,7 +541,7 @@ export const fr: Dict = {
     thanks: "Merci ! Votre avis apparaîtra après modération.",
   },
   seo: {
-    headingSuffix: " — villa de luxe à louer à Pointe Milou, Saint-Barthélemy, en direct propriétaire",
+    headingSuffix: " St Barth — villa de luxe à louer à Pointe Milou, Saint-Barthélemy, en direct propriétaire",
     factsTitle: "La Villa ONLY VIEW en bref",
     factsLabel: "L'essentiel",
     factsSummary:

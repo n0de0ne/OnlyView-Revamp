@@ -12,7 +12,7 @@ import {
   websiteJsonLd,
   faqJsonLd,
   jsonLd,
-  lodgingBusinessJsonLd,
+  schemaImages,
   vacationRentalJsonLd,
 } from "@/lib/seo";
 import { getPhotos, firstOf } from "@/lib/photos";
@@ -104,12 +104,11 @@ export default async function HomePage({
             websiteJsonLd(locale),
             vacationRentalJsonLd({
               locale,
-              images: photos.slice(0, 10).map((p) => p.url),
+              images: schemaImages(photos),
               ratingValue: avgRating ? Math.round(avgRating * 10) / 10 : undefined,
               reviewCount: testimonials.length || undefined,
               sameAs,
             }),
-            lodgingBusinessJsonLd(locale, sameAs),
             faqJsonLd(t.faq.items.filter((i) => loyalty || i.tag !== "loyalty").slice(0, 6)),
           ]),
         }}

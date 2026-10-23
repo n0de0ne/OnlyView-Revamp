@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { getDict, isLocale, localePath, type Locale } from "@/lib/i18n";
-import { breadcrumbJsonLd, jsonLd, lodgingBusinessJsonLd, pageMetadata, vacationRentalJsonLd } from "@/lib/seo";
+import { breadcrumbJsonLd, jsonLd, pageMetadata, schemaImages, vacationRentalJsonLd } from "@/lib/seo";
 import { getPhotos, firstOf } from "@/lib/photos";
 import { getContact } from "@/lib/contact";
 import { PageHero } from "@/components/site/PageHero";
@@ -67,8 +67,7 @@ export default async function LocationPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: jsonLd([
-            lodgingBusinessJsonLd(locale, sameAs),
-            vacationRentalJsonLd({ locale, images: photos.slice(0, 4).map((p) => p.url), sameAs }),
+            vacationRentalJsonLd({ locale, images: schemaImages(photos), sameAs }),
             breadcrumbJsonLd([
               { name: t.nav.home, url: fr ? "/fr" : "/" },
               { name: t.location.title, url: localePath(locale, "/location") },
