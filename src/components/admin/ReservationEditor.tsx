@@ -581,11 +581,13 @@ export function ReservationEditor({
   return (
     <div className={inModal ? "space-y-5" : "mx-auto max-w-5xl space-y-5 pb-24"}>
       {/* Header — in a modal the overlay already shows the title, so only the
-          archived flag and the save button are repeated here. */}
+          archived flag and the save button are repeated here. Sticky offsets
+          count from inside the scroller's padding, so -top-5 cancels its
+          py-5 and the bar sits flush under the title with nothing peeking. */}
       <div
         className={`flex flex-wrap items-center gap-3 ${
           inModal
-            ? "sticky top-0 z-20 -mx-4 -mt-5 justify-end border-b border-slate-200 bg-slate-50/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6"
+            ? "sticky -top-5 z-20 -mx-4 -mt-5 justify-end border-b border-slate-200 bg-slate-50/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6"
             : "justify-between"
         }`}
       >
