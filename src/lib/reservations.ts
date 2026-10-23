@@ -6,6 +6,7 @@ import { getRateConfig } from "./settings";
 import { toISODate } from "./dates";
 import { earnForReservation } from "./loyalty";
 import { serializeReservationExtra } from "./extras";
+import { maxGuestsFor } from "./site-facts";
 
 export const RESERVATION_STATUSES = [
   "option",
@@ -15,7 +16,8 @@ export const RESERVATION_STATUSES = [
   "blocked",
 ] as const;
 
-export const ReservationInput = z.object({
+export const ReservationInput = z
+  .object({
   status: z.enum(RESERVATION_STATUSES).default("option"),
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -55,7 +57,20 @@ export const ReservationInput = z.object({
       })
     )
     .default([]),
-});
+  })
+  .superRefine((r, ctx) => {
+    // a block is the owner's own hold, not a party of guests
+    if (r.status === "blocked") return;
+    // variable stays: the cap follows the most bedrooms opened at once
+    const bedrooms = Math.max(r.bedrooms, ...r.periods.map((p) => p.bedrooms));
+    if (r.guests > maxGuestsFor(bedrooms)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["guests"],
+        message: `${maxGuestsFor(bedrooms)} personnes maximum pour ${bedrooms} chambres (2 par chambre)`,
+      });
+    }
+  });
 
 export type ReservationInputType = z.infer<typeof ReservationInput>;
 

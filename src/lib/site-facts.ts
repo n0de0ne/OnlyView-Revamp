@@ -66,3 +66,11 @@ export const OWNER_PHONE = "+590 690 39 90 47";
 export const OWNER_WHATSAPP = "+590690399047";
 /** the villa's pin, shared by the owner */
 export const VILLA_MAP_URL = "https://maps.app.goo.gl/9eV7KhFcF9AJdWeLA";
+
+/** House rule: at most two guests per bedroom in use. */
+export const GUESTS_PER_BEDROOM = 2;
+
+/** Most guests allowed for a stay that opens `bedrooms` bedrooms. */
+export function maxGuestsFor(bedrooms: number): number {
+  return Math.max(1, Math.round(bedrooms)) * GUESTS_PER_BEDROOM;
+}

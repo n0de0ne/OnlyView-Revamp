@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { computeQuote, type RateConfig } from "@/lib/pricing";
 import { addDays, nightsBetween } from "@/lib/dates";
 import type { SerializedReservation } from "@/lib/reservations";
+import { maxGuestsFor } from "@/lib/site-facts";
 import {
   api,
   Card,
@@ -288,7 +289,6 @@ export function ReservationEditor({
   useEffect(() => {
     if (!quote || depositTouched.current) return;
     set("depositAmount", quote.depositAmount ? String(quote.depositAmount) : "");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quote?.depositAmount]);
 
   /* ── profitability (port of the PHP analysis panel) ── */
@@ -373,6 +373,17 @@ export function ReservationEditor({
       ...f,
       periods: f.periods.map((p, j) => (j === i ? { ...p, ...patch } : p)),
     }));
+
+  /** Two guests per bedroom; a variable stay is capped by its biggest period. */
+  const maxGuests = maxGuestsFor(
+    Math.max(form.bedrooms, ...(form.useVariable
+      ? form.periods.filter((p) => p.startDate && p.endDate).map((p) => p.bedrooms)
+      : []))
+  );
+  const guestsCapped = form.status !== "blocked";
+  useEffect(() => {
+    if (guestsCapped && form.guests > maxGuests) set("guests", maxGuests);
+  }, [guestsCapped, maxGuests, form.guests]);
 
   const coveredNights = useMemo(() => {
     if (!form.useVariable || !form.startDate || !form.endDate) return null;
@@ -570,11 +581,13 @@ export function ReservationEditor({
   return (
     <div className={inModal ? "space-y-5" : "mx-auto max-w-5xl space-y-5 pb-24"}>
       {/* Header — in a modal the overlay already shows the title, so only the
-          archived flag and the save button are repeated here. */}
+          archived flag and the save button are repeated here. Sticky offsets
+          count from inside the scroller's padding, so -top-5 cancels its
+          py-5 and the bar sits flush under the title with nothing peeking. */}
       <div
         className={`flex flex-wrap items-center gap-3 ${
           inModal
-            ? "sticky top-0 z-20 -mx-4 -mt-5 justify-end border-b border-slate-200 bg-slate-50/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6"
+            ? "sticky -top-5 z-20 -mx-4 -mt-5 justify-end border-b border-slate-200 bg-slate-50/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6"
             : "justify-between"
         }`}
       >
@@ -884,9 +897,9 @@ export function ReservationEditor({
             </select>
           </div>
           <div className="afield">
-            <label>Personnes</label>
+            <label>Personnes (2 max. par chambre)</label>
             <select value={form.guests} onChange={(e) => set("guests", parseInt(e.target.value))}>
-              {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+              {Array.from({ length: guestsCapped ? maxGuests : 8 }, (_, i) => i + 1).map((n) => (
                 <option key={n} value={n}>
                   {n} pers.
                 </option>

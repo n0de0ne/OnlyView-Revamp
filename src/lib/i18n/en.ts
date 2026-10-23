@@ -350,6 +350,7 @@ export const en = {
     pickDeparture: "Now tap your departure day",
     guestsCount: "{n} guests",
     bedroomsCount: "{n} bedrooms",
+    guestsRule: "Up to 2 guests per bedroom.",
     edit: "Edit",
     done: "Done",
     fewer: "Fewer",
