@@ -51,8 +51,9 @@ export async function generateMetadata({
       template: `%s | ${t.meta.siteName}`,
     },
     applicationName: t.meta.siteName,
-    // home-screen app: transparent status bar over the page instead of a white strip
-    appleWebApp: { capable: true, title: t.meta.siteName, statusBarStyle: "black-translucent" },
+    // home-screen app: a solid dark status bar. Since iOS 26.1 "black-translucent"
+    // no longer shows the page through it but lays a pale scrim over the hero
+    appleWebApp: { capable: true, title: t.meta.siteName, statusBarStyle: "black" },
     formatDetection: { telephone: false },
     openGraph: {
       siteName: t.meta.siteName,
