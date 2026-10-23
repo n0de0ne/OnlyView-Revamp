@@ -1,9 +1,9 @@
 export const en = {
   meta: {
     siteName: "Villa ONLY VIEW",
-    titleHome: "Villa ONLY VIEW — Only View St Barth, Luxury Villa Direct from Owner",
+    titleHome: "Villa ONLY VIEW St Barth (St Barts) — Official Site, Book Direct",
     descHome:
-      "Villa ONLY VIEW, Pointe Milou, St Barth: 4-bedroom luxury villa with heated pool, 180° ocean view and concierge. Book direct with the owner — no agency fees.",
+      "Official site of Villa ONLY VIEW, Pointe Milou, St Barts: 4-bedroom luxury villa, heated pool, 180° ocean view, concierge. Book direct with the owner — no agency fees.",
     titleVilla: "The Villa — 4 Bedrooms, Heated Pool, Sea View",
     descVilla:
       "Inside Villa ONLY VIEW: 4 en-suite bedrooms, open living spaces, gourmet kitchen, heated pool and 180° Caribbean sea views above Pointe Milou, Saint-Barthélemy.",
@@ -542,7 +542,7 @@ export const en = {
   },
   seo: {
     /** read by engines and screen readers after the wordmark in the home H1 */
-    headingSuffix: " — luxury villa rental in Pointe Milou, Saint-Barthélemy, direct from the owner",
+    headingSuffix: " St Barth — luxury villa rental in Pointe Milou, Saint-Barthélemy (St Barts), direct from the owner",
     factsTitle: "Villa ONLY VIEW at a glance",
     factsLabel: "Key facts",
     /** the headline, for phones — the full table sits behind the toggle */

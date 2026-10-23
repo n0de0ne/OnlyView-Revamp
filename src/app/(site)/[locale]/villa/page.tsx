@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { getDict, isLocale, localePath, type Locale } from "@/lib/i18n";
-import { breadcrumbJsonLd, jsonLd, pageMetadata, vacationRentalJsonLd } from "@/lib/seo";
+import { breadcrumbJsonLd, jsonLd, pageMetadata, schemaImages, vacationRentalJsonLd } from "@/lib/seo";
 import { getContact } from "@/lib/contact";
 import { KeyFacts } from "@/components/site/KeyFacts";
 import { getPhotos, firstOf } from "@/lib/photos";
@@ -70,7 +70,7 @@ export default async function VillaPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: jsonLd([
-            vacationRentalJsonLd({ locale, images: photos.slice(0, 8).map((p) => p.url), sameAs }),
+            vacationRentalJsonLd({ locale, images: schemaImages(photos), sameAs }),
             breadcrumbJsonLd([
               { name: t.nav.home, url: locale === "fr" ? "/fr" : "/" },
               { name: t.nav.villa, url: localePath(locale, "/villa") },
