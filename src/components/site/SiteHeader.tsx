@@ -135,8 +135,10 @@ export function SiteHeader({ locale }: { locale: Locale }) {
           and the menu sits in its own glass button on the right. */}
       {/* Safari 26 ignores theme-color and tints the status bar from an opaque,
           full-width fixed element (≥6px) at the top edge, else from the body's
-          sand background, which showed as a white strip above the hero */}
-      <div aria-hidden className="pointer-events-none fixed inset-x-0 top-0 z-50 h-1.5 bg-night xl:hidden" />
+          sand background, which showed as a white strip above the hero. The
+          home-screen app draws under its translucent status bar instead, so
+          the band is hidden there (.browser-only). */}
+      <div aria-hidden className="browser-only pointer-events-none fixed inset-x-0 top-0 z-50 h-1.5 bg-night xl:hidden" />
       <header
         className="fixed inset-x-0 top-0 z-50 xl:hidden"
         style={{ paddingTop: "max(0.6rem, env(safe-area-inset-top))" }}

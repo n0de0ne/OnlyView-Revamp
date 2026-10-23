@@ -156,6 +156,13 @@ body {
   }
 }
 
+/* Hidden in the installed home-screen app */
+@media (display-mode: standalone) {
+  .browser-only {
+    display: none;
+  }
+}
+
 /* Room for the floating tab bar (mobile only) */
 .has-tabbar {
   padding-bottom: calc(4.75rem + env(safe-area-inset-bottom));
