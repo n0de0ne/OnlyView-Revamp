@@ -21,6 +21,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  // Safari ≤18 and Chrome tint their bars with this; Safari 26 ignores it (see SiteHeader)
+  themeColor: "#0c141b",
 };
 
 export async function generateMetadata({
