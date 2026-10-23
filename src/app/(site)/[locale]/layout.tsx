@@ -21,6 +21,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  // Safari ≤18 and Chrome tint their bars with this; Safari 26 ignores it (see SiteHeader)
+  themeColor: "#0c141b",
 };
 
 export async function generateMetadata({
@@ -49,8 +51,10 @@ export async function generateMetadata({
       template: `%s | ${t.meta.siteName}`,
     },
     applicationName: t.meta.siteName,
-    // home-screen app: transparent status bar over the page instead of a white strip
-    appleWebApp: { capable: true, title: t.meta.siteName, statusBarStyle: "black-translucent" },
+    manifest: "/manifest.webmanifest",
+    // home-screen app: a solid dark status bar. Since iOS 26.1 "black-translucent"
+    // no longer shows the page through it but lays a pale scrim over the hero
+    appleWebApp: { capable: true, title: t.meta.siteName, statusBarStyle: "black" },
     formatDetection: { telephone: false },
     openGraph: {
       siteName: t.meta.siteName,

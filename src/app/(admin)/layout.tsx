@@ -5,6 +5,9 @@ import { fontClasses } from "@/lib/fonts";
 export const metadata: Metadata = {
   title: { default: "Admin — Villa ONLY VIEW", template: "%s — Admin ONLY VIEW" },
   robots: { index: false, follow: false },
+  // its own home-screen app, otherwise the site manifest's start_url "/" wins
+  manifest: "/manifest-admin.webmanifest",
+  appleWebApp: { capable: true, title: "OV Admin" },
 };
 
 export const viewport: Viewport = {
