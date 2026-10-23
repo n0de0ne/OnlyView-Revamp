@@ -9,6 +9,7 @@ import {
   ReservationInput,
 } from "@/lib/reservations";
 import { isRangeAvailable } from "@/lib/availability";
+import { maxGuestsFor } from "@/lib/site-facts";
 
 export const dynamic = "force-dynamic";
 
@@ -79,7 +80,8 @@ export const PUT = adminRoute<Ctx>("manager", async (req, { params }, user) => {
     email: request.email,
     phone: request.phone,
     bedrooms: request.bedrooms,
-    guests: request.guests,
+    // requests sent before the 2-per-bedroom rule may ask for more
+    guests: Math.min(request.guests, maxGuestsFor(request.bedrooms)),
     promoCode: request.promoCode,
     optionExpires: d.optionExpires ?? null,
     notes: request.message,

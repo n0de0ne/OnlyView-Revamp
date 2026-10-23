@@ -351,6 +351,7 @@ export const fr: Dict = {
     pickDeparture: "Touchez maintenant votre jour de départ",
     guestsCount: "{n} personnes",
     bedroomsCount: "{n} chambres",
+    guestsRule: "2 personnes maximum par chambre.",
     edit: "Modifier",
     done: "OK",
     fewer: "Moins",

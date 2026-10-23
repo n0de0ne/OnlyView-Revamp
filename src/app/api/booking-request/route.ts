@@ -5,6 +5,7 @@ import { sendMail } from "@/lib/mailer";
 import { todayISO } from "@/lib/dates";
 import { siteUrl } from "@/lib/seo";
 import { ownerNotifyEmail } from "@/lib/contact";
+import { maxGuestsFor } from "@/lib/site-facts";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +23,7 @@ const Body = z.object({
   quote: z.unknown().optional(),
   /** honeypot */
   website: z.string().max(0).optional(),
-});
+}).refine((b) => b.guests <= maxGuestsFor(b.bedrooms), { path: ["guests"] });
 
 // naive in-memory rate limit (per runtime instance)
 const hits = new Map<string, { count: number; at: number }>();
@@ -45,7 +46,11 @@ export async function POST(req: NextRequest) {
 
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ success: false, error: "invalid_input" }, { status: 400 });
+    const tooMany = parsed.error.issues.some((i) => i.path[0] === "guests");
+    return NextResponse.json(
+      { success: false, error: tooMany ? "too_many_guests" : "invalid_input" },
+      { status: 400 }
+    );
   }
   const d = parsed.data;
   if (d.endDate <= d.startDate || d.startDate < todayISO()) {

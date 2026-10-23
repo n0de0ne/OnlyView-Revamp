@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { computeQuote, type RateConfig } from "@/lib/pricing";
 import { addDays, nightsBetween } from "@/lib/dates";
 import type { SerializedReservation } from "@/lib/reservations";
+import { maxGuestsFor } from "@/lib/site-facts";
 import {
   api,
   Card,
@@ -288,7 +289,6 @@ export function ReservationEditor({
   useEffect(() => {
     if (!quote || depositTouched.current) return;
     set("depositAmount", quote.depositAmount ? String(quote.depositAmount) : "");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quote?.depositAmount]);
 
   /* ── profitability (port of the PHP analysis panel) ── */
@@ -373,6 +373,17 @@ export function ReservationEditor({
       ...f,
       periods: f.periods.map((p, j) => (j === i ? { ...p, ...patch } : p)),
     }));
+
+  /** Two guests per bedroom; a variable stay is capped by its biggest period. */
+  const maxGuests = maxGuestsFor(
+    Math.max(form.bedrooms, ...(form.useVariable
+      ? form.periods.filter((p) => p.startDate && p.endDate).map((p) => p.bedrooms)
+      : []))
+  );
+  const guestsCapped = form.status !== "blocked";
+  useEffect(() => {
+    if (guestsCapped && form.guests > maxGuests) set("guests", maxGuests);
+  }, [guestsCapped, maxGuests, form.guests]);
 
   const coveredNights = useMemo(() => {
     if (!form.useVariable || !form.startDate || !form.endDate) return null;
@@ -884,9 +895,9 @@ export function ReservationEditor({
             </select>
           </div>
           <div className="afield">
-            <label>Personnes</label>
+            <label>Personnes (2 max. par chambre)</label>
             <select value={form.guests} onChange={(e) => set("guests", parseInt(e.target.value))}>
-              {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+              {Array.from({ length: guestsCapped ? maxGuests : 8 }, (_, i) => i + 1).map((n) => (
                 <option key={n} value={n}>
                   {n} pers.
                 </option>

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getDict, tpl, type Locale } from "@/lib/i18n";
 import { usd } from "@/lib/money";
+import { maxGuestsFor } from "@/lib/site-facts";
 import { AvailabilityCalendar, type BookedRange } from "./AvailabilityCalendar";
 
 interface QuoteResponse {
@@ -38,8 +39,14 @@ export function BookingWidget({
     start: null,
     end: null,
   });
-  const [bedrooms, setBedrooms] = useState(4);
+  const [bedrooms, setBedroomsRaw] = useState(4);
   const [guests, setGuests] = useState(8);
+  // two guests per bedroom: fewer bedrooms bring the party size down with them
+  const maxGuests = maxGuestsFor(bedrooms);
+  const setBedrooms = (n: number) => {
+    setBedroomsRaw(n);
+    setGuests((g) => Math.min(g, maxGuestsFor(n)));
+  };
   const [promoCode, setPromoCode] = useState("");
   const [quote, setQuote] = useState<QuoteResponse | null>(null);
   const [quoteLoading, setQuoteLoading] = useState(false);
@@ -264,7 +271,7 @@ export function BookingWidget({
               value={guests}
               onChange={(e) => setGuests(parseInt(e.target.value))}
             >
-              {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+              {Array.from({ length: maxGuests }, (_, i) => i + 1).map((n) => (
                 <option key={n} value={n}>
                   {n}
                 </option>
@@ -293,7 +300,7 @@ export function BookingWidget({
           {partyOpen && (
             <div className="space-y-1 border-t border-ink/10 px-3.5 py-2">
               {([
-                [t.booking.guestsLabel, guests, setGuests, 1, 8],
+                [t.booking.guestsLabel, guests, setGuests, 1, maxGuests],
                 [t.booking.bedroomsLabel, bedrooms, setBedrooms, 2, 4],
               ] as const).map(([label, value, set, min, max]) => (
                 <div key={label} className="flex items-center justify-between">
@@ -326,6 +333,8 @@ export function BookingWidget({
             </div>
           )}
         </div>
+
+        <p className="mt-2 text-[0.78rem] text-ink/55">{t.booking.guestsRule}</p>
 
         {/* promo: always shown from lg up, behind a link on a phone */}
         {!promoOpen && (
