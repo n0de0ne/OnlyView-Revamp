@@ -577,6 +577,17 @@ export function ReservationEditor({
   const totalPaid =
     loaded?.payments.reduce((s, p) => s + (p.kind === "refund" ? -p.amount : p.amount), 0) ?? 0;
   const latestContract = loaded?.contracts.find((c) => c.status !== "void");
+  // A ticked "Acompte reçu" counts the expected deposit as paid, minus any
+  // deposit already recorded as a payment so it is not counted twice.
+  const depositPaid =
+    loaded?.payments.reduce((s, p) => s + (p.kind === "deposit" ? p.amount : 0), 0) ?? 0;
+  const depositCredit = form.depositReceived
+    ? Math.max(0, (parseFloat(form.depositAmount) || 0) - depositPaid)
+    : 0;
+  const remainingBalance =
+    quote && !form.balanceReceived
+      ? Math.max(0, quote.totalTTC + extrasTotal - totalPaid - depositCredit)
+      : 0;
 
   return (
     <div className={inModal ? "space-y-5" : "mx-auto max-w-5xl space-y-5 pb-24"}>
@@ -1339,7 +1350,7 @@ export function ReservationEditor({
           <div className="pb-1 text-sm">
             <div className="text-xs text-slate-400">Balance restante</div>
             <div className="font-display text-2xl text-navy">
-              {quote ? fmtUSD(Math.max(0, quote.totalTTC + extrasTotal - totalPaid)) : "—"}
+              {quote ? fmtUSD(remainingBalance) : "—"}
             </div>
             {extrasTotal > 0 && (
               <div className="text-[0.65rem] text-slate-400">dont extras {fmtUSD(extrasTotal)}</div>
