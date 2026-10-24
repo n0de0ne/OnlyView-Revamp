@@ -1,7 +1,7 @@
 /**
  * St Barth guide — evergreen content hub (SEO/GEO).
- * Condensed from the legacy site's content pages; structured so AI engines
- * and search can quote clean facts (headings + short paragraphs).
+ * Written in the owners' voice; structured so AI engines and search can
+ * quote clean facts (headings + short paragraphs).
  */
 export interface GuideSection {
   h: string;
@@ -29,65 +29,81 @@ export const GUIDES: GuideArticle[] = [
       fr: "Venir à St Barth (et jusqu'à la villa)",
     },
     description: {
-      en: "Flights via St Maarten (SXM) or San Juan (SJU), the famous SBH landing, ferries, VIP transfers and the 10-minute drive to Pointe Milou — everything about reaching Villa ONLY VIEW.",
-      fr: "Vols via St Maarten (SXM) ou San Juan (SJU), le fameux atterrissage à SBH, les ferries, les transferts VIP et les 10 minutes de route jusqu'à Pointe Milou — tout pour rejoindre la Villa ONLY VIEW.",
+      en: "How to reach St Barth through St Maarten (SXM) or San Juan (SJU), the short flight into SBH, the ferry option, transfers and VIP services, and the 10-minute drive to Villa ONLY VIEW in Pointe Milou.",
+      fr: "Comment rejoindre St Barth via St Maarten (SXM) ou San Juan (SJU), le petit vol jusqu'à SBH, l'option ferry, les transferts et services VIP, et les 10 minutes de route jusqu'à la Villa ONLY VIEW à Pointe Milou.",
     },
     sections: {
       en: [
         {
-          h: "By air — two gateways: SXM or SJU",
+          h: "First, pick your gateway: SXM or SJU",
           p: [
-            "There are two ways in. Most guests fly long-haul into St Maarten (SXM), then take a 10-minute connecting flight to St Barth's Gustaf III Airport (SBH) with Winair or St Barth Commuter. The short hop over the channel — and the landing between the hills of St Jean — is part of the experience.",
-            "The other gateway is San Juan, Puerto Rico (SJU), a smooth option from the US. From SJU the connection to SBH is Tradewind Aviation — note that Tradewind flies from San Juan only, not from St Maarten. Private charters can be arranged from either gateway.",
+            "There's no long-haul flight into St Barth. The runway is far too short, so everyone connects through a bigger airport nearby. You have two choices.",
+            "St Maarten (SXM) is the one most of our guests use. It has direct flights from the US East Coast, Canada and Paris, and from there it's a very short hop to St Barth with Winair or St Barth Commuter.",
+            "San Juan, Puerto Rico (SJU) is the other option, and often the easier one if you're coming from the US: lots of flights, US domestic arrivals, no extra passport control. From San Juan, Tradewind Aviation flies you to St Barth in about an hour. One thing people mix up: Tradewind only flies from San Juan, not from St Maarten.",
           ],
           flightSearch: true,
         },
         {
-          h: "By sea",
+          h: "The last leg into St Barth (SBH)",
           p: [
-            "Ferries (Voyager, Great Bay Express) connect St Maarten to Gustavia in 45–90 minutes. It's the budget-friendly and weather-proof alternative when the last SBH flight is gone.",
+            "The planes are small, so pack light and keep a swimsuit and your essentials in your hand luggage. On busy days bags sometimes follow on the next flight.",
+            "The landing at Gustaf III airport is famous for a reason: the plane drops over the hill at La Tourmente and lands straight towards St Jean beach. It looks dramatic and it's perfectly routine for the pilots. The airport doesn't operate after dark, so leave yourself enough time on your connection to land before sunset.",
+          ],
+        },
+        {
+          h: "By sea from St Maarten",
+          p: [
+            "If the last flight has gone, or you'd simply rather take the boat, ferries (Voyager, Great Bay Express) run between St Maarten and Gustavia. The crossing takes roughly 45 minutes to an hour and a half depending on the boat and the sea, and the channel can be choppy. Check the timetables before you book your arrival flight.",
+          ],
+        },
+        {
+          h: "Transfers and VIP services",
+          p: [
+            "Tell us your flight details and our concierge can take care of the whole journey: a car or a driver waiting at the airport or the ferry dock, a private charter between SXM or SJU and St Barth, and VIP assistance on arrival so you skip the queues. It's all arranged from your guest portal before you leave home.",
           ],
         },
         {
           h: "From the airport to Pointe Milou",
           p: [
-            "The villa is a 10-minute drive from the airport. Most guests rent a small car (recommended on the island's steep roads) — we can have it delivered to the villa. Prefer not to drive? The concierge arranges your taxi and any transfers.",
-            "Check-in is from 3 pm; early arrival can often be accommodated — ask via your guest portal.",
-          ],
-        },
-        {
-          h: "Transfers & VIP services",
-          p: [
-            "Let the concierge handle the journey: airport and ferry transfers, private charter flights between SXM or SJU and St Barth, and VIP assistance on arrival. Send your flight details from your guest portal and everything is lined up before you land.",
+            "The villa is about a 10-minute drive from the airport. We'd recommend renting a small car: the roads are narrow and steep in places, parking in Gustavia is tight, and you'll want to explore. We can have the car delivered to the villa. If you'd rather not drive, the concierge books your taxis and transfers.",
+            "Check-in is from 3 pm. If you land earlier, ask us through your guest portal and we'll do our best to have the house ready.",
           ],
         },
       ],
       fr: [
         {
-          h: "En avion — deux portes d'entrée : SXM ou SJU",
+          h: "D'abord, choisir sa porte d'entrée : SXM ou SJU",
           p: [
-            "Il y a deux façons d'arriver. La plupart des voyageurs atterrissent à St Maarten (SXM), puis prennent un vol de 10 minutes vers l'aéroport Gustaf III de St Barth (SBH) avec Winair ou St Barth Commuter. Ce petit saut au-dessus du canal — et l'atterrissage entre les collines de St Jean — fait partie de l'expérience.",
-            "L'autre porte d'entrée est San Juan, à Porto Rico (SJU), pratique depuis les États-Unis. Depuis SJU, la correspondance vers SBH se fait avec Tradewind Aviation — attention, Tradewind ne vole que depuis San Juan, pas depuis St Maarten. Des charters privés sont possibles depuis l'une ou l'autre.",
+            "Aucun long-courrier n'atterrit à St Barth. La piste est bien trop courte, donc tout le monde passe par un aéroport voisin plus grand. Il y a deux possibilités.",
+            "St Maarten (SXM) est celle que choisissent la plupart de nos hôtes. On y arrive en direct depuis Paris, la côte Est des États-Unis ou le Canada, puis un tout petit vol avec Winair ou St Barth Commuter vous dépose à St Barth.",
+            "San Juan, à Porto Rico (SJU), est l'autre option, souvent la plus simple depuis les États-Unis : beaucoup de vols, et ce sont des vols intérieurs américains. Depuis San Juan, Tradewind Aviation vous emmène à St Barth en une heure environ. Petite précision que beaucoup confondent : Tradewind ne vole que depuis San Juan, pas depuis St Maarten.",
           ],
           flightSearch: true,
         },
         {
-          h: "Par la mer",
+          h: "Le dernier vol jusqu'à St Barth (SBH)",
           p: [
-            "Les ferries (Voyager, Great Bay Express) relient St Maarten à Gustavia en 45 à 90 minutes. C'est l'option économique, fiable par tous les temps quand le dernier vol SBH est parti.",
+            "Les avions sont petits : voyagez léger et gardez un maillot et l'essentiel en cabine. Les jours chargés, il arrive que les bagages suivent sur le vol d'après.",
+            "L'atterrissage à l'aéroport Gustaf III est célèbre, à juste titre : l'avion passe au ras de la colline de la Tourmente et se pose face à la plage de St Jean. Impressionnant, mais parfaitement habituel pour les pilotes. L'aéroport ne fonctionne pas de nuit, prévoyez donc une correspondance qui vous fait atterrir avant le coucher du soleil.",
+          ],
+        },
+        {
+          h: "Par la mer depuis St Maarten",
+          p: [
+            "Si le dernier vol est parti, ou si vous préférez le bateau, des ferries (Voyager, Great Bay Express) relient St Maarten à Gustavia. Comptez entre 45 minutes et une heure et demie selon le bateau et la mer, qui peut être agitée dans le canal. Vérifiez les horaires avant de réserver votre vol d'arrivée.",
+          ],
+        },
+        {
+          h: "Transferts et services VIP",
+          p: [
+            "Donnez-nous vos horaires et notre conciergerie s'occupe de tout le trajet : voiture ou chauffeur qui vous attend à l'aéroport ou au quai du ferry, vol charter privé entre SXM ou SJU et St Barth, assistance VIP à l'arrivée pour éviter l'attente. Tout s'organise depuis votre espace client, avant même votre départ.",
           ],
         },
         {
           h: "De l'aéroport à Pointe Milou",
           p: [
-            "La villa est à 10 minutes de route de l'aéroport. La plupart des hôtes louent une petite voiture (recommandé sur les routes pentues de l'île) — nous pouvons la faire livrer à la villa. Vous préférez ne pas conduire ? La conciergerie organise taxi et transferts.",
-            "Arrivée à partir de 15 h ; un early check-in est souvent possible — demandez-le via votre espace client.",
-          ],
-        },
-        {
-          h: "Transferts & services VIP",
-          p: [
-            "Confiez le trajet à la conciergerie : transferts aéroport et ferry, vols charter privés entre SXM ou SJU et St Barth, et assistance VIP à l'arrivée. Envoyez vos horaires de vol depuis votre espace client, tout est organisé avant votre atterrissage.",
+            "La villa est à une dizaine de minutes de route de l'aéroport. Nous conseillons de louer une petite voiture : les routes sont étroites et parfois très pentues, on se gare difficilement à Gustavia, et vous aurez envie de bouger. Nous pouvons la faire livrer à la villa. Si vous préférez ne pas conduire, la conciergerie réserve vos taxis et transferts.",
+            "L'arrivée se fait à partir de 15 h. Si vous atterrissez plus tôt, demandez-nous via votre espace client et nous ferons notre possible pour que la maison soit prête.",
           ],
         },
       ],
@@ -101,68 +117,102 @@ export const GUIDES: GuideArticle[] = [
       fr: "Plages de St Barth, vues de Pointe Milou",
     },
     description: {
-      en: "Sixteen beaches, no bad choices: our honest shortlist — Lorient, St Jean, Gouverneur, Saline, Toiny, Colombier — with drive times from Villa ONLY VIEW.",
-      fr: "Seize plages, aucun mauvais choix : notre sélection — Lorient, St Jean, Gouverneur, Saline, Toiny, Colombier — avec les temps de route depuis la Villa ONLY VIEW.",
+      en: "Our favourite beaches in St Barth and how long it takes to reach them from Villa ONLY VIEW: Lorient, St Jean, Grand Cul-de-Sac, Gouverneur, Saline, Toiny, Colombier, Flamands and Shell Beach.",
+      fr: "Nos plages préférées à St Barth et le temps pour les rejoindre depuis la Villa ONLY VIEW : Lorient, St Jean, Grand Cul-de-Sac, Gouverneur, Saline, Toiny, Colombier, Flamands et Shell Beach.",
     },
     sections: {
       en: [
         {
-          h: "The everyday beaches (5–8 min)",
+          h: "Good to know before you go",
           p: [
-            "Lorient (5 min) is the villa's local beach: calm mornings, a surf break at the far end, and the Oasis supermarket nearby for picnic supplies. St Jean (8 min) is the lively one — Nikki Beach, Eden Rock, boutiques and turquoise shallows.",
+            "All beaches in St Barth are public, including the ones in front of the big hotels. Some have restaurants and sunbeds, others have nothing at all, so for Gouverneur, Saline or Colombier bring water, snacks and something for shade. The island is small: nothing is more than about 20 minutes from the villa.",
+          ],
+        },
+        {
+          h: "Close to the villa: Lorient and St Jean",
+          p: [
+            "Lorient, 5 minutes away, is our everyday beach. It's calm in the morning, popular with surfers at the far end, and the Oasis supermarket is right there if you want to pick up a picnic.",
+            "St Jean, 8 minutes away, is the busy one, and in a good way. The rock of Eden Rock splits the bay in two, the water is shallow and clear, and there are beach clubs (Nikki Beach is here), shops and planes coming in over your head.",
           ],
           places: ["lorient-beach", "st-jean-beach-restaurants-side"],
         },
         {
-          h: "The wild south (15–18 min)",
+          h: "Grand Cul-de-Sac, the lagoon",
           p: [
-            "Gouverneur and Saline are the postcard beaches: no buildings, no clubs, just white sand and blue water. Saline's short walk over the dune keeps it uncrowded. Go late afternoon and stay for the light.",
+            "Seven minutes from the villa, Grand Cul-de-Sac is a shallow lagoon protected by the reef. It's the place for kitesurfing, paddleboarding and kayaking, and you'll often see turtles feeding near the shore. It's also where you'll find Ti'Corail, one of our favourite lunches on the island.",
+          ],
+          places: ["grand-cul-de-sac"],
+        },
+        {
+          h: "The wild south: Gouverneur and Saline",
+          p: [
+            "These are the two beaches people come back from talking about. No buildings, no beach clubs, just a long stretch of pale sand and very blue water.",
+            "Gouverneur is reached by a steep road down the hill, and the view on the way is worth stopping for. At Saline you park and walk a couple of minutes over a sand dune, which keeps it quieter. Both are lovely in the late afternoon when the light softens.",
           ],
           places: ["gouverneur-beach", "saline-beach"],
         },
         {
-          h: "Toiny — the wild east, and a beach club lunch",
+          h: "Toiny and the Le Toiny beach club",
           p: [
-            "On the Atlantic side, Toiny is raw and dramatic: rolling waves, rocky coves and almost nobody around — beautiful for a walk and photos rather than a swim. Below the cliff, the beach club of the Hotel Le Toiny is one of the island's loveliest lunches: barefoot tables under the sea grapes, grilled fish and a pool by the sand. Reservations are a must — ask the concierge.",
+            "Toiny, on the Atlantic side, is a different St Barth: rocky, windy, with big waves rolling in and hardly anyone around. It's beautiful for a walk along the coast or for photos, but the sea is rough, so it's not a swimming beach.",
+            "Below the cliffs, the Hotel Le Toiny has its own beach club, and it's one of the nicest lunches on the island. You eat in the shade by the sand, there's a pool, and the menu is mostly grilled fish and fresh salads. Reservations are essential, and our concierge can make one for you.",
           ],
           places: ["toiny-beach"],
         },
         {
-          h: "Worth the detour",
+          h: "Worth the trip: Colombier, Flamands and Shell Beach",
           p: [
-            "Colombier is reached by boat or a 25-minute coastal walk — the reward is St Barth's most private bay. Grand Cul-de-Sac (7 min) is the lagoon for kitesurf, paddling, and turtle-spotting; Shell Beach in Gustavia is made of shells and sunsets.",
+            "Colombier, at the far north-west, has no road. You get there by boat or by a walking trail of about half an hour from the end of Flamands, and the bay at the end is the most secluded on the island. Go in the morning before it gets hot.",
+            "Flamands is a wide, long beach on the north coast, good for a long swim. Shell Beach in Gustavia is, as the name says, made of tiny shells. You can walk there from the harbour, and it's a nice place to finish the day at sunset.",
           ],
-          places: ["anse-de-colombier", "grand-cul-de-sac", "shell-beach"],
+          places: ["anse-de-colombier", "flamands-beach", "shell-beach"],
         },
       ],
       fr: [
         {
-          h: "Les plages du quotidien (5–8 min)",
+          h: "À savoir avant d'y aller",
           p: [
-            "Lorient (5 min) est la plage « maison » de la villa : matinées calmes, un spot de surf à l'extrémité, et le supermarché Oasis à côté pour le pique-nique. St Jean (8 min) est la plage animée — Nikki Beach, Eden Rock, boutiques et eaux turquoise.",
+            "Toutes les plages de St Barth sont publiques, y compris celles devant les grands hôtels. Certaines ont restaurants et transats, d'autres rien du tout : pour Gouverneur, Saline ou Colombier, prévoyez de l'eau, de quoi grignoter et un peu d'ombre. L'île est petite, aucune plage n'est à plus d'une vingtaine de minutes de la villa.",
+          ],
+        },
+        {
+          h: "Tout près de la villa : Lorient et St Jean",
+          p: [
+            "Lorient, à 5 minutes, c'est notre plage du quotidien. Calme le matin, fréquentée par les surfeurs au bout, et le supermarché Oasis juste à côté si vous voulez préparer un pique-nique.",
+            "St Jean, à 8 minutes, est la plus animée, dans le bon sens du terme. Le rocher de l'Eden Rock coupe la baie en deux, l'eau est peu profonde et claire, et on y trouve des beach clubs (dont Nikki Beach), des boutiques et les avions qui passent juste au-dessus.",
           ],
           places: ["lorient-beach", "st-jean-beach-restaurants-side"],
         },
         {
-          h: "Le sud sauvage (15–18 min)",
+          h: "Grand Cul-de-Sac, le lagon",
           p: [
-            "Gouverneur et Saline sont les plages de carte postale : aucune construction, aucun club, juste du sable blanc et une eau bleue. La petite marche par la dune de Saline la garde préservée. Allez-y en fin d'après-midi, restez pour la lumière.",
+            "À 7 minutes de la villa, Grand Cul-de-Sac est un lagon peu profond protégé par la barrière de corail. C'est l'endroit pour le kitesurf, le paddle et le kayak, et on y voit souvent des tortues près du bord. C'est aussi là que se trouve Ti'Corail, l'un de nos déjeuners préférés de l'île.",
+          ],
+          places: ["grand-cul-de-sac"],
+        },
+        {
+          h: "Le sud sauvage : Gouverneur et Saline",
+          p: [
+            "Ce sont les deux plages dont on revient en parlant encore. Aucune construction, aucun beach club, juste une longue bande de sable clair et une eau très bleue.",
+            "On descend à Gouverneur par une route raide, et la vue en chemin mérite un arrêt. À Saline, on se gare et on marche deux minutes par-dessus une dune, ce qui la garde plus tranquille. Les deux sont superbes en fin d'après-midi, quand la lumière s'adoucit.",
           ],
           places: ["gouverneur-beach", "saline-beach"],
         },
         {
-          h: "Toiny — l'est sauvage, et un déjeuner au beach club",
+          h: "Toiny et le beach club du Toiny",
           p: [
-            "Côté Atlantique, Toiny est brute et spectaculaire : rouleaux, criques rocheuses et presque personne — idéale pour marcher et photographier plutôt que pour nager. Au pied de la falaise, le beach club de l'Hôtel Le Toiny offre l'un des plus beaux déjeuners de l'île : tables pieds nus sous les raisiniers, poisson grillé et piscine au bord du sable. Réservation indispensable — demandez à la conciergerie.",
+            "Toiny, côté Atlantique, c'est un autre St Barth : des rochers, du vent, de grosses vagues et presque personne. Magnifique pour marcher le long de la côte ou faire des photos, mais la mer y est forte, ce n'est pas une plage de baignade.",
+            "En contrebas des falaises, l'Hôtel Le Toiny a son propre beach club, et c'est l'un des plus beaux déjeuners de l'île. On mange à l'ombre au bord du sable, il y a une piscine, et la carte fait la part belle au poisson grillé et aux salades. Réservation indispensable, notre conciergerie peut s'en charger.",
           ],
           places: ["toiny-beach"],
         },
         {
-          h: "Valent le détour",
+          h: "Valent le déplacement : Colombier, Flamands et Shell Beach",
           p: [
-            "Colombier s'atteint en bateau ou par un sentier côtier de 25 minutes — la récompense : la baie la plus privée de St Barth. Grand Cul-de-Sac (7 min) est le lagon du kitesurf, du paddle et des tortues ; Shell Beach à Gustavia est faite de coquillages et de couchers de soleil.",
+            "Colombier, tout au nord-ouest, n'a pas de route. On y va en bateau ou par un sentier d'une demi-heure environ depuis le bout de Flamands, et la baie qui vous attend est la plus isolée de l'île. Allez-y le matin, avant la chaleur.",
+            "Flamands est une grande plage sur la côte nord, idéale pour nager longtemps. Shell Beach, à Gustavia, est faite de minuscules coquillages, comme son nom l'indique. On y va à pied depuis le port, et c'est un bel endroit pour finir la journée au coucher du soleil.",
           ],
-          places: ["anse-de-colombier", "grand-cul-de-sac", "shell-beach"],
+          places: ["anse-de-colombier", "flamands-beach", "shell-beach"],
         },
       ],
     },
@@ -175,84 +225,112 @@ export const GUIDES: GuideArticle[] = [
       fr: "Où manger à St Barth : nos coups de cœur",
     },
     description: {
-      en: "Sushi, Italian, French brasserie, beach lunches and fine dining: our favourite restaurants in St Barth — Bonito, L'Isola, Ti'Corail, L'Esprit and more — and why every table on the island is worth trying.",
-      fr: "Sushi, italien, brasserie française, déjeuners de plage et gastronomie : nos restaurants préférés à St Barth — Bonito, L'Isola, Ti'Corail, L'Esprit et d'autres — et pourquoi chaque table de l'île vaut le détour.",
+      en: "The St Barth restaurants we recommend to our own friends: Ti'Corail, La Cantina, Le Repaire, Barry Rooftop, L'Isola, L'Isoletta, Bonito and L'Esprit, plus beach clubs and tips for booking in season.",
+      fr: "Les restaurants de St Barth que nous recommandons à nos propres amis : Ti'Corail, La Cantina, Le Repaire, Barry Rooftop, L'Isola, L'Isoletta, Bonito et L'Esprit, plus les beach clubs et nos conseils pour réserver en saison.",
     },
     sections: {
       en: [
         {
-          h: "Our top picks — a starting point, not a limit",
+          h: "Before we start",
           p: [
-            "These are the tables we send our own friends to. But St Barth has one of the Caribbean's best restaurant scenes for its size: every restaurant here is worth trying, and each has its own vibe. Use this list as a first evening's plan, then explore.",
+            "For such a small island, St Barth eats remarkably well, and honestly, it's hard to have a bad meal here. Every restaurant has its own style and its regulars. What follows are simply the places we keep going back to and the ones we send our friends to. Use it as a starting point, then try whatever catches your eye.",
           ],
         },
         {
           h: "Lunch",
           p: [
-            "Ti'Corail is a must: a tiny lunch-only spot on the beach at Grand Cul-de-Sac, with a daily menu of local seafood and Caribbean spices — book ahead, there are only a handful of tables. For a quick, easy lunch in Gustavia, La Cantina has the harbour view. For more of a French brasserie vibe, Le Repaire on the port is the classic.",
-            "Want your toes in the sand? The beach club of the Hotel Le Toiny is one of the island's loveliest lunches (see our beaches guide).",
+            "If you only do one lunch, make it Ti'Corail. It's a tiny place right on the beach at Grand Cul-de-Sac, open for lunch only, with a short menu that changes every day depending on what came in from the sea. There are only a few tables, so book ahead.",
+            "In Gustavia, La Cantina is our go-to for something quick and easy. It sits on the harbour, so you get the boats and the view with your lunch. If you're in the mood for a proper French brasserie, Le Repaire, also on the harbour, is open all day from breakfast onwards.",
+            "And for a long lunch with your feet in the sand, the beach club at the Hotel Le Toiny is hard to beat (more on that in our beaches guide).",
           ],
           places: ["la-cantina", "le-repaire"],
         },
         {
-          h: "Sushi & Italian",
+          h: "Sushi",
           p: [
-            "For sushi, Barry, the rooftop above Gustavia's harbour, serves Japanese-Peruvian plates, ceviches and sushi from 6 pm. For Italian, L'Isola is the address — authentic cooking and fresh homemade pasta. Its little sister, L'Isoletta, is the place for pizza.",
+            "For sushi, go to Barry Rooftop. It's up above Gustavia harbour, open in the evening, and the menu mixes Japanese and Peruvian: sushi, ceviche, tiradito. Come early for the view while it's still light.",
           ],
-          places: ["barry", "lisola", "lisoletta"],
+          places: ["barry"],
         },
         {
-          h: "Dinner to remember",
+          h: "Italian and pizza",
           p: [
-            "For a fancy dinner, Bonito: French technique with South American flavours, overlooking Gustavia harbour. For a great French dinner, L'Esprit (chef Jean-Claude Dufour) in Saline serves seasonal French cuisine in a tropical garden.",
-            "Tables go fast in season — our concierge books ahead for every stay, just send your wishlist from your guest portal.",
+            "L'Isola in Gustavia is our Italian. The pasta is made in-house and the cooking is the real thing, without fuss. For pizza, head to L'Isoletta, its little sister a few steps away, which is more casual and perfect with kids or after a day at the beach.",
+          ],
+          places: ["lisola", "lisoletta"],
+        },
+        {
+          h: "A special dinner",
+          p: [
+            "When you want to dress up a little, book Bonito. It looks over Gustavia harbour, and the kitchen is French with a lot of South American influence, so expect ceviches and bold flavours.",
+            "For a really good French dinner, L'Esprit at Saline is our pick. Chef Jean-Claude Dufour cooks seasonal French food, and you eat in a tropical garden. It's quieter than Gustavia and feels like a proper night out.",
           ],
           places: ["bonito", "lesprit"],
         },
         {
-          h: "And many more",
+          h: "Plenty more to discover",
           p: [
-            "Two minutes from the villa, Pointe Milou's own address is legendary for sunset cocktails, live music and Mediterranean dinner above the bay — book the first service and watch the sky do its show. For barefoot beach lunches, Shellona (Shell Beach), Gyp Sea and La Guérite set the tone; Nikki Beach in St Jean is the party version. Open the island map to see every restaurant we know, with drive times from the villa.",
+            "Right next door to the villa, the beach club at Hotel Le Christopher in Pointe Milou is lovely for a sunset drink. On St Jean and Shell Beach, Gyp Sea, La Guérite, Shellona and Nikki Beach each have their own crowd, from relaxed to very lively. The island map shows every restaurant we know, with the drive time from the villa.",
           ],
           places: ["christo", "shellona", "gypsea", "la-guerite", "nikki-beach"],
+        },
+        {
+          h: "Booking tips",
+          p: [
+            "From Christmas to April, the popular tables fill up days or even weeks in advance, so it's worth booking your must-dos before you arrive. Send us your wishlist through your guest portal and our concierge will handle the reservations. Also note that in September and October many restaurants close for their own holidays.",
+          ],
         },
       ],
       fr: [
         {
-          h: "Nos coups de cœur — un point de départ, pas une limite",
+          h: "Avant de commencer",
           p: [
-            "Ce sont les tables où nous envoyons nos propres amis. Mais pour sa taille, St Barth a l'une des plus belles scènes gastronomiques des Caraïbes : chaque restaurant de l'île vaut le détour et a sa propre ambiance. Prenez cette liste comme un premier programme, puis explorez.",
+            "Pour une si petite île, on mange remarquablement bien à St Barth, et honnêtement il est difficile d'y faire un mauvais repas. Chaque restaurant a son style et ses habitués. Ce qui suit, ce sont simplement les adresses où nous retournons sans cesse et celles que nous conseillons à nos amis. Prenez-les comme un point de départ, puis laissez-vous tenter par le reste.",
           ],
         },
         {
           h: "Le déjeuner",
           p: [
-            "Ti'Corail est incontournable : une minuscule adresse ouverte uniquement le midi, sur la plage de Grand Cul-de-Sac, avec une carte du jour de produits de la mer et d'épices caribéennes — réservez, il n'y a qu'une poignée de tables. Pour un déjeuner simple et rapide à Gustavia, La Cantina offre la vue sur le port. Pour une ambiance plus brasserie française, Le Repaire, sur le port, est le classique.",
-            "Envie d'avoir les pieds dans le sable ? Le beach club de l'Hôtel Le Toiny offre l'un des plus beaux déjeuners de l'île (voir notre guide des plages).",
+            "Si vous ne devez faire qu'un déjeuner, que ce soit Ti'Corail. C'est une toute petite adresse les pieds dans le sable à Grand Cul-de-Sac, ouverte uniquement le midi, avec une courte carte qui change chaque jour selon la pêche. Il n'y a que quelques tables, pensez à réserver.",
+            "À Gustavia, La Cantina est notre adresse pour un déjeuner simple et rapide. Elle donne sur le port, on profite des bateaux et de la vue. Si vous avez envie d'une vraie brasserie française, Le Repaire, sur le port lui aussi, est ouvert toute la journée dès le petit-déjeuner.",
+            "Et pour un long déjeuner les pieds dans le sable, le beach club de l'Hôtel Le Toiny est difficile à battre (on en parle dans notre guide des plages).",
           ],
           places: ["la-cantina", "le-repaire"],
         },
         {
-          h: "Sushi & italien",
+          h: "Sushi",
           p: [
-            "Pour les sushis, Barry, le rooftop au-dessus du port de Gustavia, sert à partir de 18 h une cuisine japono-péruvienne, ceviches et sushis. Côté italien, L'Isola est l'adresse — cuisine authentique et pâtes fraîches maison. Sa petite sœur, L'Isoletta, est l'endroit pour la pizza.",
+            "Pour les sushis, c'est Barry Rooftop. Il domine le port de Gustavia, ouvre le soir, et la carte mélange Japon et Pérou : sushis, ceviche, tiradito. Venez tôt pour profiter de la vue avant la nuit.",
           ],
-          places: ["barry", "lisola", "lisoletta"],
+          places: ["barry"],
         },
         {
-          h: "Un dîner mémorable",
+          h: "Italien et pizza",
           p: [
-            "Pour un dîner chic, Bonito : technique française et saveurs sud-américaines, face au port de Gustavia. Pour un très bon dîner français, L'Esprit (chef Jean-Claude Dufour) à Saline sert une cuisine française de saison dans un jardin tropical.",
-            "Les tables partent vite en saison — notre conciergerie réserve en amont pour chaque séjour, envoyez simplement vos envies depuis votre espace client.",
+            "L'Isola, à Gustavia, est notre italien. Les pâtes sont faites maison et la cuisine est authentique, sans chichis. Pour une pizza, allez chez L'Isoletta, sa petite sœur à quelques pas, plus décontractée et parfaite avec des enfants ou après la plage.",
+          ],
+          places: ["lisola", "lisoletta"],
+        },
+        {
+          h: "Un dîner d'exception",
+          p: [
+            "Quand vous avez envie de vous habiller un peu, réservez chez Bonito. Le restaurant domine le port de Gustavia, et la cuisine est française avec beaucoup d'influences sud-américaines : ceviches et saveurs franches.",
+            "Pour un très bon dîner français, notre choix est L'Esprit, à Saline. Le chef Jean-Claude Dufour y cuisine des produits de saison, et l'on dîne dans un jardin tropical. Plus calme que Gustavia, c'est une vraie belle soirée.",
           ],
           places: ["bonito", "lesprit"],
         },
         {
-          h: "Et bien d'autres",
+          h: "Bien d'autres adresses à découvrir",
           p: [
-            "À deux minutes de la villa, l'adresse emblématique de Pointe Milou est réputée pour ses cocktails au coucher du soleil, sa musique live et sa cuisine méditerranéenne au-dessus de la baie — réservez le premier service et regardez le ciel faire son spectacle. Pour les déjeuners de plage pieds nus, Shellona (Shell Beach), Gyp Sea et La Guérite donnent le ton ; Nikki Beach à St Jean en est la version festive. Ouvrez la carte de l'île pour voir tous les restaurants que nous connaissons, avec les temps de route depuis la villa.",
+            "Juste à côté de la villa, le beach club de l'Hôtel Le Christopher à Pointe Milou est parfait pour un verre au coucher du soleil. À St Jean et sur Shell Beach, Gyp Sea, La Guérite, Shellona et Nikki Beach ont chacun leur ambiance, de la plus détendue à la plus festive. La carte de l'île recense tous les restaurants que nous connaissons, avec le temps de route depuis la villa.",
           ],
           places: ["christo", "shellona", "gypsea", "la-guerite", "nikki-beach"],
+        },
+        {
+          h: "Nos conseils pour réserver",
+          p: [
+            "De Noël à avril, les tables les plus prisées se remplissent plusieurs jours, voire plusieurs semaines à l'avance : réservez vos incontournables avant d'arriver. Envoyez-nous vos envies depuis votre espace client et notre conciergerie s'occupe des réservations. À noter aussi : en septembre et octobre, beaucoup de restaurants ferment pour leurs propres vacances.",
+          ],
         },
       ],
     },
@@ -265,75 +343,99 @@ export const GUIDES: GuideArticle[] = [
       fr: "Les saisons de St Barth : quand venir",
     },
     description: {
-      en: "Thanksgiving, the festive weeks of Christmas and New Year, mid-season, the shoulder season and summer: an honest month-by-month guide to St Barth's seasons — and when Villa ONLY VIEW books out.",
-      fr: "Thanksgiving, les semaines festives de Noël et du Nouvel An, la mi-saison, l'intersaison et l'été : le guide mois par mois des saisons de St Barth — et des périodes où la Villa ONLY VIEW affiche complet.",
+      en: "When to visit St Barth, season by season: Thanksgiving, Christmas and New Year, mid-season from February to April, the shoulder season in May and June, and summer in July and August.",
+      fr: "Quand venir à St Barth, saison par saison : Thanksgiving, Noël et le Nouvel An, la mi-saison de février à avril, l'intersaison en mai et juin, et l'été en juillet et août.",
     },
     sections: {
       en: [
         {
-          h: "Thanksgiving (late November) — the season opens",
+          h: "The short answer",
           p: [
-            "Thanksgiving week is when St Barth wakes up for winter: restaurants and boutiques have reopened, the trade winds are back, and American families fly in for a long weekend in the sun. It's a lovely, still-relaxed time to come — and the week books early, so plan ahead.",
+            "There's no bad time to come, just different moods. The weather is warm all year. What changes is the wind, the rain, how busy the island is and the rates. Here is how the year goes, from the start of the season in November.",
           ],
         },
         {
-          h: "Festive weeks (Christmas & New Year) — the island at its most glamorous",
+          h: "Thanksgiving (late November)",
           p: [
-            "From just before Christmas to the first days of January, St Barth is at its busiest and most festive: superyachts fill Gustavia harbour, every table is in demand and New Year's Eve ends with fireworks over the port. At the villa, the Christmas week and the New Year week are each sold as 7-night packages and book out up to a year ahead.",
-            "Coming for the holidays? Reserve restaurants early — our concierge starts booking your tables as soon as your stay is confirmed.",
+            "Thanksgiving week is when the island properly reopens after the quiet autumn. Restaurants and shops are back, the trade winds return, and a lot of American families come for the long weekend. It's a lovely time: the season has started but it's still relaxed. The week is popular, so book early.",
           ],
         },
         {
-          h: "Mid-season (February – April) — classic Caribbean winter",
+          h: "Christmas and New Year (the festive weeks)",
           p: [
-            "Dry, breezy, sunny days around 27–29°C: this is St Barth's signature weather. After the holiday rush the island finds its rhythm — perfect beach days, golden sunsets and the sailing season, with the St Barths Bucket superyacht regatta in March and Les Voiles de Saint-Barth in April.",
+            "This is St Barth at its busiest and most glamorous. The big yachts fill Gustavia harbour, the island is full of energy, and New Year's Eve ends with fireworks over the port.",
+            "At the villa, the Christmas week and the New Year week are each rented as a 7-night package and often book a year ahead. If you're coming for the holidays, plan restaurants early too. Our concierge starts booking your tables as soon as your stay is confirmed.",
           ],
         },
         {
-          h: "Shoulder season (May – June) — the connoisseur's pick",
+          h: "Mid-season (February to April)",
           p: [
-            "The island exhales: the sea is warm, the weather is still beautiful, the beaches are quiet and restaurant tables are easy to get. May and June are the insiders' favourite months — the same St Barth, at a gentler pace and softer rates.",
+            "The classic Caribbean winter: dry, sunny, with a steady breeze and days around 27 to 29°C. After the holiday rush the island settles into a nice rhythm. It's also sailing season, with the St Barths Bucket superyacht regatta in March and Les Voiles de Saint-Barth in April, both great to watch from the shore.",
           ],
         },
         {
-          h: "Summer (July – end of August) — warm water, long days",
+          h: "Shoulder season (May and June)",
           p: [
-            "Hot, calm and sunny, with the warmest water of the year and the best rates. Families love it, and August is lively with the locals' village festivals. The hurricane season officially runs from June to November — travel insurance covers it, and the villa's hillside position keeps it breezy.",
-            "From September to mid-November the island is at its quietest: many restaurants and shops close for their own holidays before reopening for Thanksgiving.",
+            "A lot of regulars will tell you this is the best time of year. The sea is warmer, the weather is still beautiful, the beaches are quiet and you can get a table almost anywhere without planning. You get the same St Barth at a slower pace, with softer rates.",
+          ],
+        },
+        {
+          h: "Summer (July to the end of August)",
+          p: [
+            "Hot, calm and sunny, with the warmest water of the year and our best rates. It's a great time for families. August is when the island celebrates: each village has its fête, and the island's own day, the Saint-Barthélemy, is on 24 August.",
+            "Summer is also the start of hurricane season, which officially runs from June to November. Most summers pass without any trouble, but we recommend travel insurance. The villa sits on the hillside and stays nicely ventilated.",
+          ],
+        },
+        {
+          h: "September to mid-November",
+          p: [
+            "This is the island's quiet time. Many restaurants, shops and some hotels close for a few weeks so their teams can take their own holidays, then everything reopens in time for Thanksgiving.",
           ],
         },
       ],
       fr: [
         {
-          h: "Thanksgiving (fin novembre) — l'ouverture de la saison",
+          h: "En résumé",
           p: [
-            "La semaine de Thanksgiving marque le réveil de St Barth pour l'hiver : restaurants et boutiques ont rouvert, les alizés sont de retour et les familles américaines arrivent pour un long week-end au soleil. Une très belle période, encore détendue — et une semaine qui se réserve tôt, anticipez.",
+            "Il n'y a pas de mauvaise période, seulement des ambiances différentes. Il fait chaud toute l'année. Ce qui change, c'est le vent, la pluie, l'affluence et les tarifs. Voici comment se déroule l'année, à partir de l'ouverture de la saison en novembre.",
           ],
         },
         {
-          h: "Les semaines festives (Noël & Nouvel An) — l'île à son plus glamour",
+          h: "Thanksgiving (fin novembre)",
           p: [
-            "De la veille de Noël aux premiers jours de janvier, St Barth vit sa période la plus animée et la plus festive : les superyachts remplissent le port de Gustavia, chaque table est convoitée et la nuit du Nouvel An se termine par un feu d'artifice sur le port. À la villa, la semaine de Noël et celle du Nouvel An se vendent chacune en forfait de 7 nuits et se réservent jusqu'à un an à l'avance.",
-            "Vous venez pour les fêtes ? Réservez vos restaurants tôt — notre conciergerie commence à réserver vos tables dès la confirmation de votre séjour.",
+            "La semaine de Thanksgiving, c'est le vrai retour de l'île après le calme de l'automne. Restaurants et boutiques rouvrent, les alizés reviennent, et beaucoup de familles américaines viennent pour le long week-end. Une très belle période : la saison a commencé mais tout reste détendu. La semaine est demandée, réservez tôt.",
           ],
         },
         {
-          h: "La mi-saison (février – avril) — l'hiver caribéen classique",
+          h: "Noël et le Nouvel An (les semaines festives)",
           p: [
-            "Des journées sèches, ventilées et ensoleillées autour de 27–29 °C : c'est la météo signature de St Barth. Après le rush des fêtes, l'île trouve son rythme — journées de plage parfaites, couchers de soleil dorés et saison de la voile, avec la régate de superyachts St Barths Bucket en mars et Les Voiles de Saint-Barth en avril.",
+            "C'est St Barth dans sa période la plus animée et la plus glamour. Les grands yachts remplissent le port de Gustavia, l'île déborde d'énergie, et la nuit du Nouvel An se termine par un feu d'artifice sur le port.",
+            "À la villa, la semaine de Noël et celle du Nouvel An se louent chacune en forfait de 7 nuits et se réservent souvent un an à l'avance. Si vous venez pour les fêtes, pensez aussi aux restaurants : notre conciergerie commence à réserver vos tables dès la confirmation de votre séjour.",
           ],
         },
         {
-          h: "L'intersaison (mai – juin) — le choix des connaisseurs",
+          h: "La mi-saison (février à avril)",
           p: [
-            "L'île respire : la mer est chaude, la météo toujours belle, les plages tranquilles et les tables faciles à obtenir. Mai et juin sont les mois préférés des habitués — le même St Barth, à un rythme plus doux et à des tarifs plus légers.",
+            "L'hiver caribéen classique : sec, ensoleillé, avec une brise régulière et des journées autour de 27 à 29 °C. Après le rush des fêtes, l'île retrouve un rythme agréable. C'est aussi la saison de la voile, avec la régate de superyachts St Barths Bucket en mars et Les Voiles de Saint-Barth en avril, deux beaux spectacles depuis la côte.",
           ],
         },
         {
-          h: "L'été (juillet – fin août) — eau chaude et longues journées",
+          h: "L'intersaison (mai et juin)",
           p: [
-            "Chaud, calme et ensoleillé, avec l'eau la plus chaude de l'année et les meilleurs tarifs. Les familles adorent, et août vit au rythme des fêtes de quartier de l'île. La saison cyclonique court officiellement de juin à novembre — une assurance voyage la couvre, et la position en colline de la villa la garde ventilée.",
-            "De septembre à mi-novembre, l'île est à son plus calme : beaucoup de restaurants et de boutiques ferment pour leurs propres vacances avant de rouvrir pour Thanksgiving.",
+            "Beaucoup d'habitués vous diront que c'est la meilleure période. La mer est plus chaude, la météo toujours belle, les plages tranquilles, et on trouve une table presque partout sans s'organiser. Le même St Barth, à un rythme plus lent et à des tarifs plus doux.",
+          ],
+        },
+        {
+          h: "L'été (juillet à fin août)",
+          p: [
+            "Chaud, calme et ensoleillé, avec l'eau la plus chaude de l'année et nos meilleurs tarifs. Une très bonne période pour les familles. Août est le mois des fêtes : chaque quartier a la sienne, et la fête de l'île, la Saint-Barthélemy, tombe le 24 août.",
+            "L'été marque aussi le début de la saison cyclonique, qui court officiellement de juin à novembre. La plupart des étés se passent sans souci, mais nous conseillons une assurance voyage. La villa, à flanc de colline, reste bien ventilée.",
+          ],
+        },
+        {
+          h: "De septembre à mi-novembre",
+          p: [
+            "C'est la période calme de l'île. Beaucoup de restaurants, de boutiques et certains hôtels ferment quelques semaines pour que leurs équipes partent à leur tour en vacances, puis tout rouvre à temps pour Thanksgiving.",
           ],
         },
       ],
