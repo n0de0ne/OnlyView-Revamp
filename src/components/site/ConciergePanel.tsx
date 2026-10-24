@@ -7,6 +7,7 @@ import type { Dict } from "@/lib/i18n";
 import type { ConciergeCatalog } from "@/lib/concierge";
 import type { PlannerItem } from "./StayPlanner";
 import { LiveSlots } from "./LiveSlots";
+import { PendingBookingCard } from "./PendingBookingCard";
 
 type Tab = "restaurants" | "boats" | "chef" | "taxis";
 type Target = { type: "restaurant" | "boat" | "chef"; id: number };
@@ -75,11 +76,7 @@ export function ConciergePanel({
     }).catch(() => null);
     const data = res?.ok ? await res.json() : null;
     if (!data?.success) return setState("error");
-    window.dispatchEvent(
-      new CustomEvent<{ reservationId: number; item: PlannerItem }>(EXTRA_ADDED_EVENT, {
-        detail: { reservationId, item: data.item },
-      })
-    );
+    announce(data.item);
     setSent(data.item.label);
     setTarget(null);
     setState("idle");
@@ -132,6 +129,8 @@ export function ConciergePanel({
         <LiveSlots
           reservationId={reservationId}
           placeId={restaurant.id}
+          placeName={restaurant.name}
+          bookPagePath={locale === "fr" ? "/fr/account/book" : "/account/book"}
           bookingUrl={restaurant.bookingUrl}
           platform={restaurant.platform}
           date={form.date}
@@ -180,107 +179,165 @@ export function ConciergePanel({
       />
     ) : null;
 
+  const announce = (item: PlannerItem) =>
+    window.dispatchEvent(
+      new CustomEvent<{ reservationId: number; item: PlannerItem }>(EXTRA_ADDED_EVENT, {
+        detail: { reservationId, item },
+      })
+    );
+
   return (
-    <details className="group mt-5 border-t border-ink/8 pt-5">
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
-        <span>
-          <span className="eyebrow !text-[0.6rem]">{t.title}</span>
-          <span className="mt-1 block text-xs text-ink/55">{t.hint}</span>
-        </span>
-        <span className="text-gold transition group-open:rotate-45" aria-hidden>
-          +
-        </span>
-      </summary>
+    <>
+      <PendingBookingCard reservationId={reservationId} locale={locale} t={t} onAdded={announce} />
+      <details className="group mt-5 border-t border-ink/8 pt-5">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+          <span>
+            <span className="eyebrow !text-[0.6rem]">{t.title}</span>
+            <span className="mt-1 block text-xs text-ink/55">{t.hint}</span>
+          </span>
+          <span className="text-gold transition group-open:rotate-45" aria-hidden>
+            +
+          </span>
+        </summary>
 
-      <div className="mt-5">
-        <div className="flex flex-wrap gap-2" role="tablist">
-          {tabs.map((k) => (
-            <button
-              key={k}
-              type="button"
-              role="tab"
-              aria-selected={tab === k}
-              onClick={() => {
-                setTab(k);
-                setTarget(null);
-                setQ("");
-              }}
-              className={`border px-3 py-1.5 text-xs font-semibold uppercase tracking-widest ${
-                tab === k ? "border-gold bg-gold text-white" : "border-ink/15 text-ink/60"
-              }`}
-            >
-              {t.tabs[k]}
-            </button>
-          ))}
-        </div>
+        <div className="mt-5">
+          <div className="flex flex-wrap gap-2" role="tablist">
+            {tabs.map((k) => (
+              <button
+                key={k}
+                type="button"
+                role="tab"
+                aria-selected={tab === k}
+                onClick={() => {
+                  setTab(k);
+                  setTarget(null);
+                  setQ("");
+                }}
+                className={`border px-3 py-1.5 text-xs font-semibold uppercase tracking-widest ${
+                  tab === k ? "border-gold bg-gold text-white" : "border-ink/15 text-ink/60"
+                }`}
+              >
+                {t.tabs[k]}
+              </button>
+            ))}
+          </div>
 
-        <p className="mt-3 text-xs text-ink/55">{tab === "taxis" ? t.taxisIntro : t.intro}</p>
-        {sent && (
-          <p className="mt-3 text-sm text-st-free" role="status">
-            ✓ {sent} — {t.sent}
-          </p>
-        )}
-        {(tab === "restaurants" || tab === "taxis") && (
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder={t.search}
-            aria-label={t.search}
-            className="mt-3 w-full border border-ink/15 px-3 py-2 text-sm sm:w-64"
-          />
-        )}
+          <p className="mt-3 text-xs text-ink/55">{tab === "taxis" ? t.taxisIntro : t.intro}</p>
+          {sent && (
+            <p className="mt-3 text-sm text-st-free" role="status">
+              ✓ {sent} — {t.sent}
+            </p>
+          )}
+          {(tab === "restaurants" || tab === "taxis") && (
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder={t.search}
+              aria-label={t.search}
+              className="mt-3 w-full border border-ink/15 px-3 py-2 text-sm sm:w-64"
+            />
+          )}
 
-        <ul className="mt-4 max-h-[36rem] space-y-3 overflow-y-auto pr-1" data-lenis-prevent>
-          {tab === "restaurants" &&
-            catalog.restaurants
-              .filter((r) => match(r.name, r.zone, r.cuisine))
-              .map((r) => (
-                <li key={r.id} className={cardClass}>
-                  <div className="flex gap-3">
-                    {thumb(r.imageUrl)}
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-baseline justify-between gap-2">
-                        <span className="font-semibold">{r.name}</span>
-                        {r.priceRange && <span className="text-xs text-ink/45">{"$".repeat(r.priceRange)}</span>}
+          <ul className="mt-4 max-h-[36rem] space-y-3 overflow-y-auto pr-1" data-lenis-prevent>
+            {tab === "restaurants" &&
+              catalog.restaurants
+                .filter((r) => match(r.name, r.zone, r.cuisine))
+                .map((r) => (
+                  <li key={r.id} className={cardClass}>
+                    <div className="flex gap-3">
+                      {thumb(r.imageUrl)}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-baseline justify-between gap-2">
+                          <span className="font-semibold">{r.name}</span>
+                          {r.priceRange && <span className="text-xs text-ink/45">{"$".repeat(r.priceRange)}</span>}
+                        </div>
+                        <div className="text-xs text-ink/55">{[r.zone, r.cuisine].filter(Boolean).join(" · ")}</div>
+                        {r.description && <p className="mt-1 line-clamp-2 text-xs text-ink/60">{r.description}</p>}
                       </div>
-                      <div className="text-xs text-ink/55">{[r.zone, r.cuisine].filter(Boolean).join(" · ")}</div>
-                      {r.description && <p className="mt-1 line-clamp-2 text-xs text-ink/60">{r.description}</p>}
                     </div>
-                  </div>
-                  {isOpen("restaurant", r.id) ? (
-                    requestForm(true, undefined, undefined, r)
-                  ) : r.bookingMode === "none" ? (
-                    <p className="mt-2 text-xs text-ink/50">{t.walkIn}</p>
-                  ) : (
-                    <div className="flex flex-wrap items-center gap-4">
-                      <button type="button" onClick={() => open({ type: "restaurant", id: r.id })} className={actionClass}>
-                        + {t.bookTable}
-                      </button>
-                      {r.bookingMode === "direct" && r.bookingUrl && (
-                        <a href={r.bookingUrl} target="_blank" rel="noopener" className={`${actionClass} !text-ink/50`}>
-                          {t.bookOnline} ↗
-                        </a>
-                      )}
-                    </div>
-                  )}
-                </li>
-              ))}
+                    {isOpen("restaurant", r.id) ? (
+                      requestForm(true, undefined, undefined, r)
+                    ) : r.bookingMode === "none" ? (
+                      <p className="mt-2 text-xs text-ink/50">{t.walkIn}</p>
+                    ) : (
+                      <div className="flex flex-wrap items-center gap-4">
+                        <button type="button" onClick={() => open({ type: "restaurant", id: r.id })} className={actionClass}>
+                          + {t.bookTable}
+                        </button>
+                        {/* restaurants on a known platform book from the form (live times, in-app) */}
+                        {r.bookingMode === "direct" && r.bookingUrl && !r.platform && (
+                          <a href={r.bookingUrl} target="_blank" rel="noopener" className={`${actionClass} !text-ink/50`}>
+                            {t.bookOnline} ↗
+                          </a>
+                        )}
+                      </div>
+                    )}
+                  </li>
+                ))}
 
-          {tab === "boats" &&
-            catalog.boats.map((b) => {
-              const from = b.outings.length ? Math.min(...b.outings.map((o) => o.price)) : null;
-              return (
-                <li key={b.id} className={cardClass}>
+            {tab === "boats" &&
+              catalog.boats.map((b) => {
+                const from = b.outings.length ? Math.min(...b.outings.map((o) => o.price)) : null;
+                return (
+                  <li key={b.id} className={cardClass}>
+                    <div className="flex gap-3">
+                      {thumb(b.imageUrl)}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-baseline justify-between gap-2">
+                          <span className="font-semibold">{b.name}</span>
+                          <span className="text-sm">
+                            {from != null ? (
+                              <>
+                                <span className="text-xs text-ink/45">{t.from} </span>
+                                <span className="font-semibold">{money(from, b.currency)}</span>
+                              </>
+                            ) : (
+                              <span className="text-xs text-ink/55">{t.onQuote}</span>
+                            )}
+                          </span>
+                        </div>
+                        <div className="text-xs text-ink/55">
+                          {[b.type, b.length, fill(t.upTo, b.capacity)].filter(Boolean).join(" · ")}
+                        </div>
+                        {b.description && <p className="mt-1 line-clamp-2 text-xs text-ink/60">{b.description}</p>}
+                        {b.includes && (
+                          <p className="mt-1 text-xs text-ink/50">
+                            <span className="font-semibold">{t.includes} :</span> {b.includes}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    {isOpen("boat", b.id)
+                      ? requestForm(false, b.outings, b.currency)
+                      : b.outings.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => open({ type: "boat", id: b.id }, b.outings[0].key)}
+                            className={actionClass}
+                          >
+                            + {t.bookBoat}
+                          </button>
+                        )}
+                  </li>
+                );
+              })}
+
+            {tab === "chef" &&
+              catalog.chef.map((o, i) => (
+                <li key={o.id} className={cardClass}>
+                  {(i === 0 || catalog.chef[i - 1].category !== o.category) && (
+                    <div className="eyebrow mb-2 !text-[0.6rem]">{t.chefCategories[o.category] ?? o.category}</div>
+                  )}
                   <div className="flex gap-3">
-                    {thumb(b.imageUrl)}
+                    {thumb(o.imageUrl)}
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-baseline justify-between gap-2">
-                        <span className="font-semibold">{b.name}</span>
+                        <span className="font-semibold">{o.name}</span>
                         <span className="text-sm">
-                          {from != null ? (
+                          {o.price != null ? (
                             <>
-                              <span className="text-xs text-ink/45">{t.from} </span>
-                              <span className="font-semibold">{money(from, b.currency)}</span>
+                              <span className="font-semibold">{money(o.price, o.currency)}</span>
+                              <span className="ml-1 text-xs text-ink/45">{t.priceTypes[o.priceType]}</span>
                             </>
                           ) : (
                             <span className="text-xs text-ink/55">{t.onQuote}</span>
@@ -288,111 +345,64 @@ export function ConciergePanel({
                         </span>
                       </div>
                       <div className="text-xs text-ink/55">
-                        {[b.type, b.length, fill(t.upTo, b.capacity)].filter(Boolean).join(" · ")}
+                        {[o.formula, o.duration, fill(t.minGuests, o.minimumGuests)].filter(Boolean).join(" · ")}
                       </div>
-                      {b.description && <p className="mt-1 line-clamp-2 text-xs text-ink/60">{b.description}</p>}
-                      {b.includes && (
-                        <p className="mt-1 text-xs text-ink/50">
-                          <span className="font-semibold">{t.includes} :</span> {b.includes}
+                      {o.description && <p className="mt-1 text-xs text-ink/60">{o.description}</p>}
+                      {o.menu && (
+                        <p className="mt-1 whitespace-pre-line text-xs text-ink/50">
+                          <span className="font-semibold">{t.menu} :</span> {o.menu}
                         </p>
                       )}
                     </div>
                   </div>
-                  {isOpen("boat", b.id)
-                    ? requestForm(false, b.outings, b.currency)
-                    : b.outings.length > 0 && (
-                        <button
-                          type="button"
-                          onClick={() => open({ type: "boat", id: b.id }, b.outings[0].key)}
-                          className={actionClass}
-                        >
-                          + {t.bookBoat}
-                        </button>
-                      )}
-                </li>
-              );
-            })}
-
-          {tab === "chef" &&
-            catalog.chef.map((o, i) => (
-              <li key={o.id} className={cardClass}>
-                {(i === 0 || catalog.chef[i - 1].category !== o.category) && (
-                  <div className="eyebrow mb-2 !text-[0.6rem]">{t.chefCategories[o.category] ?? o.category}</div>
-                )}
-                <div className="flex gap-3">
-                  {thumb(o.imageUrl)}
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-baseline justify-between gap-2">
-                      <span className="font-semibold">{o.name}</span>
-                      <span className="text-sm">
-                        {o.price != null ? (
-                          <>
-                            <span className="font-semibold">{money(o.price, o.currency)}</span>
-                            <span className="ml-1 text-xs text-ink/45">{t.priceTypes[o.priceType]}</span>
-                          </>
-                        ) : (
-                          <span className="text-xs text-ink/55">{t.onQuote}</span>
-                        )}
-                      </span>
-                    </div>
-                    <div className="text-xs text-ink/55">
-                      {[o.formula, o.duration, fill(t.minGuests, o.minimumGuests)].filter(Boolean).join(" · ")}
-                    </div>
-                    {o.description && <p className="mt-1 text-xs text-ink/60">{o.description}</p>}
-                    {o.menu && (
-                      <p className="mt-1 whitespace-pre-line text-xs text-ink/50">
-                        <span className="font-semibold">{t.menu} :</span> {o.menu}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                {isOpen("chef", o.id) ? (
-                  requestForm(true)
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      open({ type: "chef", id: o.id });
-                      setForm((f) => ({ ...f, guests: String(Math.max(stay.guests, o.minimumGuests)) }));
-                    }}
-                    className={actionClass}
-                  >
-                    + {t.bookChef}
-                  </button>
-                )}
-              </li>
-            ))}
-
-          {tab === "taxis" &&
-            catalog.taxis
-              .filter((x) => match(x.name, x.zone))
-              .map((x) => (
-                <li key={x.id} className={`${cardClass} flex flex-wrap items-center justify-between gap-3`}>
-                  <span>
-                    <span className="font-semibold">{x.name}</span>
-                    <span className="block text-xs text-ink/55">
-                      {[x.displayPhone, x.zone].filter(Boolean).join(" · ")}
-                    </span>
-                  </span>
-                  <span className="flex gap-4 text-xs font-semibold uppercase tracking-widest">
-                    <a href={`tel:${x.phone}`} className="text-gold">
-                      {t.call}
-                    </a>
-                    {x.hasWhatsapp && (
-                      <a
-                        href={`https://wa.me/${x.phone.replace(/\D/g, "")}`}
-                        target="_blank"
-                        rel="noopener"
-                        className="text-gold"
-                      >
-                        {t.whatsapp}
-                      </a>
-                    )}
-                  </span>
+                  {isOpen("chef", o.id) ? (
+                    requestForm(true)
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        open({ type: "chef", id: o.id });
+                        setForm((f) => ({ ...f, guests: String(Math.max(stay.guests, o.minimumGuests)) }));
+                      }}
+                      className={actionClass}
+                    >
+                      + {t.bookChef}
+                    </button>
+                  )}
                 </li>
               ))}
-        </ul>
-      </div>
-    </details>
+
+            {tab === "taxis" &&
+              catalog.taxis
+                .filter((x) => match(x.name, x.zone))
+                .map((x) => (
+                  <li key={x.id} className={`${cardClass} flex flex-wrap items-center justify-between gap-3`}>
+                    <span>
+                      <span className="font-semibold">{x.name}</span>
+                      <span className="block text-xs text-ink/55">
+                        {[x.displayPhone, x.zone].filter(Boolean).join(" · ")}
+                      </span>
+                    </span>
+                    <span className="flex gap-4 text-xs font-semibold uppercase tracking-widest">
+                      <a href={`tel:${x.phone}`} className="text-gold">
+                        {t.call}
+                      </a>
+                      {x.hasWhatsapp && (
+                        <a
+                          href={`https://wa.me/${x.phone.replace(/\D/g, "")}`}
+                          target="_blank"
+                          rel="noopener"
+                          className="text-gold"
+                        >
+                          {t.whatsapp}
+                        </a>
+                      )}
+                    </span>
+                  </li>
+                ))}
+          </ul>
+        </div>
+      </details>
+    </>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { Dict } from "@/lib/i18n";
 import {
@@ -8,6 +9,7 @@ import {
   prefilledBookingUrl,
   type PlatformRef,
 } from "@/lib/booking-platforms";
+import { savePendingBooking } from "@/lib/pending-booking";
 
 interface Slot {
   time: string;
@@ -17,12 +19,16 @@ interface Slot {
 
 /**
  * A restaurant's free times for the chosen day, from its online booking
- * system (SevenRooms, Zenchef). Picking one fills the request's time; the
- * guest can also book straight on the platform, pre-filled.
+ * system. Zenchef restaurants are booked without leaving the portal (their
+ * widget, on /account/book); a SevenRooms time opens SevenRooms on that very
+ * slot. Either way, a booking made off-site is remembered so the portal can
+ * ask "Did you book it?" on return.
  */
 export function LiveSlots({
   reservationId,
   placeId,
+  placeName,
+  bookPagePath,
   bookingUrl,
   platform,
   date,
@@ -33,6 +39,9 @@ export function LiveSlots({
 }: {
   reservationId: number;
   placeId: number;
+  placeName: string;
+  /** /account/book in the guest's language */
+  bookPagePath: string;
   bookingUrl: string;
   platform: PlatformRef;
   date: string;
@@ -64,6 +73,24 @@ export function LiveSlots({
 
   const name = PLATFORM_LABELS[platform.platform];
   const link = prefilledBookingUrl(bookingUrl, platform, { date, guests, time });
+  const zenchef = platform.platform === "zenchef";
+  const sevenrooms = platform.platform === "sevenrooms";
+  const remember = (at: string | null) =>
+    savePendingBooking({ reservationId, placeId, name: placeName, date, time: at, guests, platform: platform.platform });
+  const pick = (at: string) => {
+    onPick(at);
+    if (sevenrooms) {
+      // straight to that slot on SevenRooms; the guest fills in their details there
+      remember(at);
+      window.open(prefilledBookingUrl(bookingUrl, platform, { date, guests, time: at }), "_blank", "noopener");
+    }
+  };
+  const inApp = `${bookPagePath}?${new URLSearchParams({
+    r: String(reservationId),
+    p: String(placeId),
+    date,
+    guests: String(guests),
+  })}`;
 
   return (
     <div className="sm:col-span-3">
@@ -83,7 +110,7 @@ export function LiveSlots({
                   <button
                     key={s.time}
                     type="button"
-                    onClick={() => onPick(s.time)}
+                    onClick={() => pick(s.time)}
                     aria-pressed={time === s.time}
                     title={s.note}
                     className={`border px-2.5 py-1 text-xs tabular-nums ${s.bookable ? "" : "border-dashed"} ${
@@ -94,6 +121,7 @@ export function LiveSlots({
                   </button>
                 ))}
               </div>
+              {sevenrooms && <p className="mt-1.5 text-[0.65rem] text-ink/45">{t.slotOpensOn.replace("{p}", name)}</p>}
               {slots.some((s) => !s.bookable) && <p className="mt-1.5 text-[0.65rem] text-ink/45">{t.liveRequestHint}</p>}
               {/* the venue's conditions ("€180 prepayment"), for the picked time or shared by all */}
               {(() => {
@@ -105,14 +133,21 @@ export function LiveSlots({
           )}
         </>
       )}
-      <a
-        href={link}
-        target="_blank"
-        rel="noopener"
-        className="mt-2 inline-block text-xs font-semibold uppercase tracking-widest text-ink/50 hover:text-gold"
-      >
-        {t.bookOn.replace("{p}", name)} ↗
-      </a>
+      {zenchef ? (
+        <Link href={inApp} className="btn-gold mt-3 inline-block !px-5 !py-2.5 text-xs">
+          {t.bookHere}
+        </Link>
+      ) : (
+        <a
+          href={link}
+          target="_blank"
+          rel="noopener"
+          onClick={() => remember(time || null)}
+          className="mt-2 inline-block text-xs font-semibold uppercase tracking-widest text-ink/50 hover:text-gold"
+        >
+          {t.bookOn.replace("{p}", name)} ↗
+        </a>
+      )}
     </div>
   );
 }
