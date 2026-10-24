@@ -211,7 +211,7 @@ export function ConciergePanel({
           />
         )}
 
-        <ul className="mt-4 max-h-[36rem] space-y-3 overflow-y-auto pr-1">
+        <ul className="mt-4 max-h-[36rem] space-y-3 overflow-y-auto pr-1" data-lenis-prevent>
           {tab === "restaurants" &&
             catalog.restaurants
               .filter((r) => match(r.name, r.zone, r.cuisine))
