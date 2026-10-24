@@ -12,6 +12,7 @@ import {
 interface Slot {
   time: string;
   bookable: boolean;
+  note?: string;
 }
 
 /**
@@ -84,6 +85,7 @@ export function LiveSlots({
                     type="button"
                     onClick={() => onPick(s.time)}
                     aria-pressed={time === s.time}
+                    title={s.note}
                     className={`border px-2.5 py-1 text-xs tabular-nums ${s.bookable ? "" : "border-dashed"} ${
                       time === s.time ? "border-gold bg-gold text-white" : "border-ink/20 text-ink/70 hover:border-gold"
                     }`}
@@ -93,6 +95,12 @@ export function LiveSlots({
                 ))}
               </div>
               {slots.some((s) => !s.bookable) && <p className="mt-1.5 text-[0.65rem] text-ink/45">{t.liveRequestHint}</p>}
+              {/* the venue's conditions ("€180 prepayment"), for the picked time or shared by all */}
+              {(() => {
+                const notes = [...new Set(slots.map((s) => s.note).filter(Boolean))];
+                const note = slots.find((s) => s.time === time)?.note ?? (notes.length === 1 ? notes[0] : null);
+                return note ? <p className="mt-1.5 text-xs text-ink/60">ⓘ {note}</p> : null;
+              })()}
             </>
           )}
         </>

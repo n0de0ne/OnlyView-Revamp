@@ -13,6 +13,8 @@ export interface Slot {
   time: string;
   /** false = the platform only takes a request / waitlist for this time */
   bookable: boolean;
+  /** the venue's own short note for this time ("€180 prepayment") */
+  note?: string;
 }
 
 const TTL_MS = 5 * 60 * 1000;
@@ -75,7 +77,11 @@ function tidy(slots: Slot[]): Slot[] {
   const byTime = new Map<string, Slot>();
   for (const s of slots) {
     const prev = byTime.get(s.time);
-    byTime.set(s.time, { time: s.time, bookable: s.bookable || !!prev?.bookable });
+    byTime.set(s.time, {
+      time: s.time,
+      bookable: s.bookable || !!prev?.bookable,
+      ...((s.note ?? prev?.note) ? { note: s.note ?? prev?.note } : {}),
+    });
   }
   return [...byTime.values()].sort((a, b) => a.time.localeCompare(b.time));
 }
@@ -99,9 +105,13 @@ async function sevenrooms(venue: string, date: string, guests: number): Promise<
   for (const t of collect(json, "times") as Array<Record<string, unknown>>) {
     const time = hhmm(t.time_iso) ?? hhmm(t.time);
     if (!time || t.is_closed === true) continue;
+    const note =
+      typeof t.public_time_slot_description === "string" && t.public_time_slot_description.trim()
+        ? t.public_time_slot_description.trim().slice(0, 120)
+        : undefined;
     // "book" = instant booking; "request" = the venue takes a request
-    if (t.type === "book") slots.push({ time, bookable: true });
-    else if (t.type === "request") slots.push({ time, bookable: false });
+    if (t.type === "book") slots.push({ time, bookable: true, note });
+    else if (t.type === "request") slots.push({ time, bookable: false, note });
   }
   return tidy(slots);
 }
@@ -117,8 +127,10 @@ async function zenchef(rid: string, date: string, guests: number): Promise<Slot[
     const time = hhmm(s.name) ?? hhmm(s.slot_name);
     if (!time || s.closed === true || s.marked_as_full === true) continue;
     const pax = s.possible_guests;
-    if (Array.isArray(pax) && pax.length && !pax.includes(guests)) continue;
-    slots.push({ time, bookable: true });
+    const waitlist = s.waitlist_possible_guests;
+    if (Array.isArray(pax) && pax.includes(guests)) slots.push({ time, bookable: true });
+    else if (Array.isArray(waitlist) && waitlist.includes(guests)) slots.push({ time, bookable: false });
+    else if (!Array.isArray(pax)) slots.push({ time, bookable: true });
   }
   return tidy(slots);
 }
