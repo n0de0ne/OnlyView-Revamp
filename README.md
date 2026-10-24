@@ -186,6 +186,16 @@ Read-only on the legacy tables; imports agencies, clients, reservations
 expenses, guestbook reviews and admin accounts (old passwords keep
 working), then backfills loyalty points for paid stays.
 
+It also imports the **concierge catalog** — restaurants (new pins on the
+island map, booking details added to the existing ones), taxis, boat and
+private-chef providers, boats and chef menus — leaving out the legacy test
+rows. To import only that, on a database whose stays are already migrated:
+
+```bash
+docker exec -it onlyview node scripts/migrate-legacy.mjs --concierge --report   # what it would add
+docker exec -it onlyview node scripts/migrate-legacy.mjs --concierge            # import it
+```
+
 **Safe to re-run at any time** to pick up whatever the PHP site has
 recorded since — including rows whose id the new app has meanwhile given
 to something else, which are imported under a fresh id with their

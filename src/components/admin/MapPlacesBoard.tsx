@@ -42,6 +42,14 @@ interface Place {
   walkFromLastWaypoint: boolean;
   website: string | null;
   phone: string | null;
+  cuisineEn: string | null;
+  cuisineFr: string | null;
+  priceRange: number | null;
+  imageUrl: string | null;
+  bookingMode: string | null;
+  bookingUrl: string | null;
+  whatsapp: string | null;
+  email: string | null;
   sortOrder: number;
   isActive: boolean;
 }
@@ -60,9 +68,20 @@ interface Draft {
   walkFromLastWaypoint: boolean;
   website: string;
   phone: string;
+  cuisineEn: string;
+  cuisineFr: string;
+  priceRange: string;
+  imageUrl: string;
+  bookingMode: string;
+  bookingUrl: string;
+  whatsapp: string;
+  email: string;
   sortOrder: string;
   isActive: boolean;
 }
+
+/** the restaurant fields the guest portal's concierge reads */
+const CONCIERGE_TEXT = ["cuisineEn", "cuisineFr", "imageUrl", "bookingUrl", "whatsapp", "email"] as const;
 
 const emptyDraft = (category: MapCategory = "restaurant"): Draft => ({
   category,
@@ -78,6 +97,14 @@ const emptyDraft = (category: MapCategory = "restaurant"): Draft => ({
   walkFromLastWaypoint: false,
   website: "",
   phone: "",
+  cuisineEn: "",
+  cuisineFr: "",
+  priceRange: "",
+  imageUrl: "",
+  bookingMode: "",
+  bookingUrl: "",
+  whatsapp: "",
+  email: "",
   sortOrder: "0",
   isActive: true,
 });
@@ -96,6 +123,14 @@ const toDraft = (p: Place): Draft => ({
   walkFromLastWaypoint: p.walkFromLastWaypoint,
   website: p.website ?? "",
   phone: p.phone ?? "",
+  cuisineEn: p.cuisineEn ?? "",
+  cuisineFr: p.cuisineFr ?? "",
+  priceRange: p.priceRange?.toString() ?? "",
+  imageUrl: p.imageUrl ?? "",
+  bookingMode: p.bookingMode ?? "",
+  bookingUrl: p.bookingUrl ?? "",
+  whatsapp: p.whatsapp ?? "",
+  email: p.email ?? "",
   sortOrder: String(p.sortOrder),
   isActive: p.isActive,
 });
@@ -156,6 +191,9 @@ export function MapPlacesBoard({ villa }: { villa: LatLng }) {
       walkFromLastWaypoint: d.walkFromLastWaypoint && d.waypoints.length > 0,
       website: d.website.trim() || null,
       phone: d.phone.trim() || null,
+      ...Object.fromEntries(CONCIERGE_TEXT.map((k) => [k, d[k].trim() || null])),
+      priceRange: d.priceRange ? parseInt(d.priceRange, 10) : null,
+      bookingMode: d.bookingMode || null,
       sortOrder: parseInt(d.sortOrder, 10) || 0,
       isActive: d.isActive,
     };
@@ -401,6 +439,59 @@ export function MapPlacesBoard({ villa }: { villa: LatLng }) {
                   <input value={editing.draft.phone} onChange={(e) => patch({ phone: e.target.value })} />
                 </div>
               </div>
+              {editing.draft.category === "restaurant" && (
+                <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                  <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    🛎️ Conciergerie — espace client
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="afield">
+                      <label>Réservation</label>
+                      <select value={editing.draft.bookingMode} onChange={(e) => patch({ bookingMode: e.target.value })}>
+                        <option value="">Non proposé</option>
+                        <option value="concierge">Réservé par nous</option>
+                        <option value="direct">Le client réserve en ligne</option>
+                        <option value="none">Sans réservation</option>
+                      </select>
+                    </div>
+                    <div className="afield">
+                      <label>Gamme de prix</label>
+                      <select value={editing.draft.priceRange} onChange={(e) => patch({ priceRange: e.target.value })}>
+                        <option value="">—</option>
+                        {[1, 2, 3, 4].map((n) => (
+                          <option key={n} value={n}>
+                            {"$".repeat(n)}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="afield">
+                      <label>Cuisine (FR)</label>
+                      <input value={editing.draft.cuisineFr} onChange={(e) => patch({ cuisineFr: e.target.value })} />
+                    </div>
+                    <div className="afield">
+                      <label>Cuisine (EN)</label>
+                      <input value={editing.draft.cuisineEn} onChange={(e) => patch({ cuisineEn: e.target.value })} />
+                    </div>
+                    <div className="afield col-span-2">
+                      <label>Lien de réservation en ligne</label>
+                      <input value={editing.draft.bookingUrl} onChange={(e) => patch({ bookingUrl: e.target.value })} placeholder="https://…" />
+                    </div>
+                    <div className="afield">
+                      <label>WhatsApp du restaurant</label>
+                      <input value={editing.draft.whatsapp} onChange={(e) => patch({ whatsapp: e.target.value })} />
+                    </div>
+                    <div className="afield">
+                      <label>E-mail du restaurant</label>
+                      <input value={editing.draft.email} onChange={(e) => patch({ email: e.target.value })} />
+                    </div>
+                    <div className="afield col-span-2">
+                      <label>Photo (URL)</label>
+                      <input value={editing.draft.imageUrl} onChange={(e) => patch({ imageUrl: e.target.value })} placeholder="https://…" />
+                    </div>
+                  </div>
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-3">
                 <div className="afield">
                   <label>Ordre d&apos;affichage</label>

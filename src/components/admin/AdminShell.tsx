@@ -26,6 +26,7 @@ const NAV: Array<{
   { href: "/admin/promotions", label: "Promotions", icon: "🏷️" },
   { href: "/admin/pricing", label: "Tarifs par date", icon: "📆", minRole: "owner" },
   { href: "/admin/extras", label: "Extras", icon: "🍾" },
+  { href: "/admin/concierge", label: "Conciergerie", icon: "🛎️" },
   { href: "/admin/site", label: "Site & contenu", icon: "🖼️" },
   { href: "/admin/map", label: "Carte de l'île", icon: "🗺️" },
   { href: "/admin/settings", label: "Réglages", icon: "⚙️", minRole: "owner" },
