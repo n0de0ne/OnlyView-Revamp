@@ -40,6 +40,9 @@ export type MapCommand =
 export interface RouteState {
   status: "loading" | "ok" | "approx";
   place: MapPlaceDTO;
+  /** where the itinerary starts: the guest's position on the island, else the villa */
+  origin: LatLng;
+  fromMe: boolean;
   distanceM: number;
   durationS: number;
   walkM: number;
@@ -135,7 +138,15 @@ export function LeafletMap({
   const markersRef = useRef<Map<number, { marker: L.Marker; group: L.LayerGroup; place: MapPlaceDTO }>>(new Map());
   const routeLayerRef = useRef<L.LayerGroup | null>(null);
   const routeAbortRef = useRef<AbortController | null>(null);
-  const meRef = useRef<{ marker: L.Marker; circle: L.Circle; watch: number } | null>(null);
+  const meRef = useRef<{
+    marker: L.Marker;
+    circle: L.Circle;
+    watch: number;
+    /** the latest position, once there is one */
+    fix: LatLng | null;
+    /** callers waiting for the first fix */
+    waiting: Array<(v: LatLng | null) => void>;
+  } | null>(null);
   const shownRef = useRef<number | null>(null);
   const cb = useRef({ onRoute, onSelect, onLocate });
   cb.current = { onRoute, onSelect, onLocate };
@@ -318,9 +329,20 @@ export function LeafletMap({
     clearRoute();
     const abort = new AbortController();
     routeAbortRef.current = abort;
-
-    const it = buildItinerary(villa, place);
     const dest: LatLng = [place.lat, place.lng];
+
+    // from where the guest stands when they are on the island, else from the villa
+    const pending = buildItinerary(villa, place);
+    cb.current.onRoute({
+      place, status: "loading", origin: villa, fromMe: false, walkM: 0, distanceM: 0, durationS: 0,
+      navTarget: pending.navTarget, via: pending.via,
+    });
+    const me = await watchMe();
+    if (abort.signal.aborted) return;
+    const fromMe = !!me && haversineM(villa, me) < ON_ISLAND_M;
+    const origin: LatLng = fromMe ? me! : villa;
+
+    const it = buildItinerary(origin, place);
     let walkM = 0;
     for (const v of it.via) layer.addLayer(L.marker(v, { icon: dotIcon(ROUTE_COLOR, 12), zIndexOffset: 500, interactive: false }));
     if (it.walk) {
@@ -331,9 +353,9 @@ export function LeafletMap({
       );
       walkM = haversineM(park, end);
     }
-    const base = { place, walkM, navTarget: it.navTarget, via: it.via };
+    const base = { place, origin, fromMe, walkM, navTarget: it.navTarget, via: it.via };
     cb.current.onRoute({ ...base, status: "loading", distanceM: 0, durationS: 0 });
-    fitVisible(L.latLngBounds([villa, ...it.drive, dest]));
+    fitVisible(L.latLngBounds([origin, ...it.drive, dest]));
 
     const route = await fetchDrivingRoute(it.drive, abort.signal);
     if (abort.signal.aborted) return;
@@ -352,63 +374,82 @@ export function LeafletMap({
     }
   }
 
-  /* ── the guest's own position ── */
-  function locate() {
+  /* ── the guest's own position ──
+   * One watch for the page's life, started on the first request (the locate
+   * button or an itinerary). It resolves with the first fix, or null when
+   * the browser refuses or takes too long. The blue dot shows only on the
+   * island: abroad it would only zoom the map out to the ocean. */
+  function watchMe(): Promise<LatLng | null> {
+    const map = mapRef.current;
+    if (!map || !("geolocation" in navigator)) return Promise.resolve(null);
+    const me = meRef.current;
+    if (me) {
+      if (me.fix) return Promise.resolve(me.fix);
+      return new Promise((resolve) => me.waiting.push(resolve));
+    }
+    return new Promise((resolve) => {
+      const entry: NonNullable<typeof meRef.current> = {
+        marker: L.marker(villa, { icon: meIcon, zIndexOffset: 1100, interactive: false }),
+        circle: L.circle(villa, {
+          radius: 0,
+          color: "#0a84ff",
+          weight: 1,
+          opacity: 0.35,
+          fillColor: "#0a84ff",
+          fillOpacity: 0.1,
+          interactive: false,
+        }),
+        watch: -1,
+        fix: null,
+        waiting: [resolve],
+      };
+      const settle = (v: LatLng | null) => {
+        const w = entry.waiting;
+        entry.waiting = [];
+        for (const r of w) r(v);
+      };
+      const giveUp = setTimeout(() => settle(null), 10_000);
+      entry.watch = navigator.geolocation.watchPosition(
+        (pos) => {
+          const ll: LatLng = [pos.coords.latitude, pos.coords.longitude];
+          entry.fix = ll;
+          entry.marker.setLatLng(ll);
+          entry.circle.setLatLng(ll).setRadius(pos.coords.accuracy);
+          const onIsland = haversineM(villa, ll) < ON_ISLAND_M;
+          if (onIsland && !map.hasLayer(entry.marker)) {
+            entry.circle.addTo(map);
+            entry.marker.addTo(map);
+          }
+          if (!onIsland && map.hasLayer(entry.marker)) {
+            entry.circle.remove();
+            entry.marker.remove();
+          }
+          clearTimeout(giveUp);
+          settle(ll);
+        },
+        () => {
+          clearTimeout(giveUp);
+          navigator.geolocation.clearWatch(entry.watch);
+          if (meRef.current === entry) meRef.current = null;
+          settle(null);
+        },
+        { enableHighAccuracy: true, maximumAge: 15_000, timeout: 15_000 }
+      );
+      meRef.current = entry;
+    });
+  }
+
+  async function locate() {
     const map = mapRef.current;
     if (!map) return;
-    if (!("geolocation" in navigator)) {
-      cb.current.onLocate("denied");
-      return;
+    if (!meRef.current?.fix) cb.current.onLocate("locating");
+    const ll = await watchMe();
+    if (!ll) cb.current.onLocate("denied");
+    else if (haversineM(villa, ll) >= ON_ISLAND_M) cb.current.onLocate("far");
+    else {
+      flyToVisible(ll, Math.max(map.getZoom(), 15));
+      cb.current.onLocate("ok");
     }
-    if (meRef.current) {
-      const ll = meRef.current.marker.getLatLng();
-      if (haversineM(villa, [ll.lat, ll.lng]) < ON_ISLAND_M) flyToVisible(ll, Math.max(map.getZoom(), 15));
-      else cb.current.onLocate("far");
-      return;
-    }
-    cb.current.onLocate("locating");
-    let first = true;
-    const watch = navigator.geolocation.watchPosition(
-      (pos) => {
-        const ll: LatLng = [pos.coords.latitude, pos.coords.longitude];
-        const onIsland = haversineM(villa, ll) < ON_ISLAND_M;
-        if (!meRef.current) {
-          const marker = L.marker(ll, { icon: meIcon, zIndexOffset: 1100, interactive: false });
-          const circle = L.circle(ll, {
-            radius: pos.coords.accuracy,
-            color: "#0a84ff",
-            weight: 1,
-            opacity: 0.35,
-            fillColor: "#0a84ff",
-            fillOpacity: 0.1,
-            interactive: false,
-          });
-          if (onIsland) {
-            marker.addTo(map);
-            circle.addTo(map);
-          }
-          meRef.current = { marker, circle, watch };
-        } else {
-          meRef.current.marker.setLatLng(ll);
-          meRef.current.circle.setLatLng(ll).setRadius(pos.coords.accuracy);
-        }
-        if (first) {
-          first = false;
-          if (onIsland) {
-            flyToVisible(ll, Math.max(map.getZoom(), 15));
-            cb.current.onLocate("ok");
-          } else {
-            cb.current.onLocate("far");
-          }
-        }
-      },
-      () => {
-        navigator.geolocation.clearWatch(watch);
-        meRef.current = null;
-        cb.current.onLocate("denied");
-      },
-      { enableHighAccuracy: true, maximumAge: 15_000, timeout: 15_000 }
-    );
   }
 
   /* ── commands from the page ── */

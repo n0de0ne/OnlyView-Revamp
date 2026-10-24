@@ -419,7 +419,8 @@ export function IslandMap({
         {(() => {
           const it = buildItinerary(villa, place);
           return (
-            <ActionTile href={googleMapsDirectionsUrl(villa, it.navTarget, it.via)} icon={<IconMaps />} label={t.openMaps} />
+            // no origin: Google Maps starts from wherever the phone is
+            <ActionTile href={googleMapsDirectionsUrl(null, it.navTarget, it.via)} icon={<IconMaps />} label={t.openMaps} />
           );
         })()}
         {place.phone && <ActionTile href={`tel:${place.phone.replace(/\s+/g, "")}`} icon={<IconPhone />} label={t.call} />}
@@ -428,6 +429,11 @@ export function IslandMap({
 
       {routeHere && (
         <div className="mt-3 rounded-2xl bg-navy px-4 py-3.5 text-white" role="status" aria-live="polite">
+          {routeHere.status !== "loading" || routeHere.fromMe ? (
+            <p className="mb-1 text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-white/55">
+              {routeHere.fromMe ? `📍 ${t.routeFromYou}` : `🏠 ${t.routeFromVilla}`}
+            </p>
+          ) : null}
           {routeHere.status === "loading" ? (
             <p className="text-sm text-white/75">{t.routing}</p>
           ) : (
@@ -451,7 +457,7 @@ export function IslandMap({
           )}
           <div className="mt-3 flex gap-2">
             <a
-              href={googleMapsDirectionsUrl(villa, routeHere.navTarget, routeHere.via)}
+              href={googleMapsDirectionsUrl(routeHere.fromMe ? null : routeHere.origin, routeHere.navTarget, routeHere.via)}
               target="_blank"
               rel="noopener noreferrer"
               className="tap flex h-9 flex-1 items-center justify-center rounded-full bg-white text-[0.8rem] font-semibold text-navy"

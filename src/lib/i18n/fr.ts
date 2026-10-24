@@ -163,6 +163,8 @@ export const fr: Dict = {
     min: "min",
     route: "Itinéraire",
     routeTo: "Itinéraire depuis la villa",
+    routeFromYou: "Depuis votre position",
+    routeFromVilla: "Depuis la villa",
     routing: "Calcul de l'itinéraire…",
     distance: "Distance",
     duration: "En voiture",
