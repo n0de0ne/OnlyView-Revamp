@@ -461,10 +461,14 @@ export function IslandMap({
       <div
         ref={frameRef}
         data-lenis-prevent
+        // `isolate`: the panels' z-indexes stay inside the frame, so in the
+        // page flow the site's header and tab bar still pass over the map
         className={
           fullscreen
-            ? "fixed inset-0 z-[80] overflow-hidden bg-[#f2efe9]"
-            : "relative h-[80svh] min-h-[540px] scroll-mt-20 overflow-hidden rounded-[26px] bg-[#f2efe9] shadow-[0_24px_60px_-24px_rgba(12,20,27,0.45)] ring-1 ring-ink/10 lg:h-[calc(100svh-8rem)] lg:min-h-[600px]"
+            ? "fixed inset-0 z-[80] isolate overflow-hidden bg-[#f2efe9]"
+            : // below xl the site has a top bar and a bottom tab bar: the frame
+              // fits between them, so the sheet's search never hides under the tabs
+              "relative isolate h-[calc(100svh-8.5rem-env(safe-area-inset-bottom))] min-h-[480px] scroll-mt-16 overflow-hidden rounded-[26px] bg-[#f2efe9] shadow-[0_24px_60px_-24px_rgba(12,20,27,0.45)] ring-1 ring-ink/10 lg:h-[calc(100svh-10rem)] lg:min-h-[560px] lg:scroll-mt-20 xl:h-[calc(100svh-8rem)] xl:scroll-mt-24"
         }
       >
         <div className="absolute inset-0 z-0">
