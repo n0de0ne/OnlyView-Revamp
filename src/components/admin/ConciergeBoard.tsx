@@ -110,7 +110,7 @@ const FIELDS: Record<Exclude<Tab, "restaurants">, Field[]> = {
     { key: "email", label: "E-mail" },
     { key: "website", label: "Site web (URL)" },
     { key: "location", label: "Adresse" },
-    { key: "currency", label: "Devise des prix", type: "select", options: [["USD", "Dollar ($)"], ["EUR", "Euro (€)"]] },
+    { key: "currency", label: "Devise des prix", type: "select", options: [["EUR", "Euro (€)"], ["USD", "Dollar ($)"]] },
     { key: "notes", label: "Notes internes", type: "textarea", wide: true },
     { key: "isActive", label: "Actif (désactivé = ses bateaux / menus sont masqués aux clients)", type: "checkbox", wide: true },
   ],
@@ -120,7 +120,7 @@ const DEFAULTS: Record<Exclude<Tab, "restaurants">, Record<string, unknown>> = {
   boats: { capacity: 10, sortOrder: 0, isActive: true },
   "chef-offers": { category: "dinner", priceType: "per_person", minimumGuests: 4, sortOrder: 0, isActive: true, holidaySurcharge: false },
   taxis: { sortOrder: 0, hasWhatsapp: true, isActive: true },
-  partners: { kind: "boat", currency: "USD", isActive: true },
+  partners: { kind: "boat", currency: "EUR", isActive: true },
 };
 
 const TABS: Array<[Tab, string]> = [
@@ -131,7 +131,7 @@ const TABS: Array<[Tab, string]> = [
   ["partners", "🤝 Prestataires"],
 ];
 
-const money = (n: number, currency = "USD") =>
+const money = (n: number, currency = "EUR") =>
   (currency === "EUR" ? "€" : "$") + Math.round(n).toLocaleString("en-US");
 
 export function ConciergeBoard() {
@@ -267,7 +267,7 @@ function RestaurantsTab() {
 
 function summary(type: Exclude<Tab, "restaurants">, x: Item, partners: Map<number, Partner>) {
   const partner = typeof x.partnerId === "number" ? partners.get(x.partnerId) : undefined;
-  const cur = partner?.currency ?? "USD";
+  const cur = partner?.currency ?? "EUR";
   switch (type) {
     case "boats": {
       const from = [x.priceHalfDay, x.priceFullDay, x.priceSunset, x.priceTransfer].filter(

@@ -166,7 +166,7 @@ export async function getConciergeCatalog(locale: Locale) {
       description: pick(b.descriptionEn, b.descriptionFr),
       includes: pick(b.includesEn, b.includesFr),
       imageUrl: b.imageUrl,
-      currency: b.partner?.currency ?? "USD",
+      currency: b.partner?.currency ?? "EUR",
       outings: BOAT_OUTINGS.filter((o) => b[o.field] != null).map((o) => ({
         key: o.key as BoatOuting,
         price: b[o.field] as number,
@@ -184,7 +184,7 @@ export async function getConciergeCatalog(locale: Locale) {
       minimumGuests: o.minimumGuests,
       duration: o.duration,
       imageUrl: o.imageUrl,
-      currency: o.partner?.currency ?? "USD",
+      currency: o.partner?.currency ?? "EUR",
     })),
     taxis: taxis.map((t) => ({
       id: t.id,

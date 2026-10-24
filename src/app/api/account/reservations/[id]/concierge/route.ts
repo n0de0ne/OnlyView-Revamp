@@ -67,7 +67,7 @@ export async function POST(req: NextRequest, { params }: Ctx) {
     if (price == null) return bad("invalid_input");
     label = `${boat.name} — ${t.outings[outing.key]}`;
     subject = `Boat requested: ${boat.name} (${getDict("en").account.concierge.outings[outing.key]})`;
-    facts.push(`~${money(price, boat.partner?.currency ?? "USD")}`);
+    facts.push(`~${money(price, boat.partner?.currency ?? "EUR")}`);
     if (boat.partner) ownerLines.push(`${boat.partner.name}: ${contactLine(boat.partner)}`);
   } else {
     const offer = await prisma.chefOffer.findUnique({ where: { id: d.id }, include: { partner: true } });
@@ -75,7 +75,7 @@ export async function POST(req: NextRequest, { params }: Ctx) {
     label = `${t.tabs.chef} — ${offer.name}`;
     subject = `Private chef requested: ${offer.name}`;
     if (offer.price != null) {
-      const cur = offer.partner?.currency ?? "USD";
+      const cur = offer.partner?.currency ?? "EUR";
       facts.push(
         offer.priceType === "per_person"
           ? `~${money(offer.price * d.guests, cur)} (${d.guests} × ${money(offer.price, cur)})`

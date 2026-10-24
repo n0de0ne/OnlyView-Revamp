@@ -592,7 +592,7 @@ model ServicePartner {
   notes       String?
   /// the currency of this provider's prices (USD | EUR) — shown as given,
   /// never added to the stay's bill automatically
-  currency    String   @default("USD")
+  currency    String   @default("EUR")
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

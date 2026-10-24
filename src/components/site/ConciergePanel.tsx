@@ -101,7 +101,7 @@ export function ConciergePanel({
     </div>
   );
 
-  const requestForm = (withTime: boolean, outings?: Array<{ key: string; price: number }>, currency = "USD") => (
+  const requestForm = (withTime: boolean, outings?: Array<{ key: string; price: number }>, currency = "EUR") => (
     <div className="mt-3 grid gap-3 border-t border-ink/8 pt-3 sm:grid-cols-3">
       {outings && (
         <div className="field sm:col-span-3">

@@ -222,7 +222,7 @@ export const ServicePartnerInput = z.object({
   website: optUrl,
   location: optText(255),
   notes: optText(2000),
-  currency: z.enum(["USD", "EUR"]).default("USD"),
+  currency: z.enum(["USD", "EUR"]).default("EUR"),
   isActive: z.boolean().default(true),
 });
 
