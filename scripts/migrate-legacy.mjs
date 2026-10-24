@@ -19,6 +19,11 @@
  * payment flags → Payment ledger), contracts, promotions, expenses,
  * guestbook → Testimonial, admin users, and backfills loyalty points for
  * paid stays. Reservation/client ids are preserved.
+ *
+ * Also imports the concierge catalog: restaurants (→ MapPlace, filling in the
+ * booking details of pins that already exist), taxis, boat and chef partners,
+ * boats and chef offers. Test rows are left out. To import only that:
+ *   node scripts/migrate-legacy.mjs --concierge [--report]
  */
 import { PrismaClient } from "@prisma/client";
 
@@ -26,6 +31,8 @@ const prisma = new PrismaClient();
 const FORCE = process.argv.includes("--force");
 /** --report: list what is missing, write nothing */
 const DRY = process.argv.includes("--report") || process.argv.includes("--dry-run");
+/** --concierge: only the concierge catalog (no reservation-count guard — it touches no stays) */
+const CONCIERGE_ONLY = process.argv.includes("--concierge");
 
 /* Legacy id → id in the app schema. Ids are preserved when free; a legacy row
    whose id has since been taken by something created in the app is imported
@@ -119,6 +126,11 @@ async function main() {
   await resolveLegacySchema();
 
   if (DRY) console.log("REPORT MODE — nothing will be written\n");
+  if (CONCIERGE_ONLY) {
+    await importConcierge();
+    printReport();
+    return;
+  }
   const existing = await prisma.reservation.count();
   if (existing > 0 && !FORCE && !DRY) {
     console.error(
@@ -651,6 +663,8 @@ async function main() {
     count("loyalty earn transactions");
   }
 
+  await importConcierge();
+
   /* ── fix sequences after explicit-id inserts ── */
   for (const t of DRY ? [] : ["Client", "Reservation"]) {
     await prisma.$executeRawUnsafe(
@@ -668,9 +682,215 @@ async function main() {
     );
   }
 
-  console.log("\nMigration complete:");
+  printReport();
+}
+
+function printReport() {
+  console.log(DRY ? "\nWould import:" : "\nMigration complete:");
   for (const [k, v] of Object.entries(report)) console.log(`  ${k}: ${v}`);
   if (Object.keys(report).length === 0) console.log("  (nothing to migrate)");
+}
+
+/* ───────────────────────── concierge catalog ─────────────────────────
+   Matched on natural keys (slug, partner kind + name, taxi phone), so a
+   re-run only adds what is new and never overwrites an edit made here. */
+
+const text = (v) => (v == null || String(v).trim() === "" ? null : String(v).trim());
+/** the legacy test fixtures ("Test", "TEST 20FT") */
+const isTest = (name) => /^test\b/i.test(String(name ?? "").trim());
+const RESTAURANT_KINDS = ["restaurant", "beach_club", "lounge", "snack", "nightlife"];
+/** "lat, lng|lat, lng" → the app's "lat,lng|lat,lng" */
+const waypoints = (v) => text(v)?.split("|").map((p) => p.replace(/\s+/g, "")).join("|") ?? null;
+
+async function importConcierge() {
+  /* ── restaurants → map pins ── */
+  for (const r of await legacy("restaurants")) {
+    if (isTest(r.name) || r.latitude == null || r.longitude == null) {
+      count("restaurants skipped (test / no position)");
+      continue;
+    }
+    const bookingUrl = text(r.booking_url);
+    const booking = {
+      cuisineFr: text(r.cuisine_type),
+      cuisineEn: text(r.cuisine_type_en) ?? text(r.cuisine_type),
+      priceRange: num(r.price_range),
+      imageUrl: text(r.image_url),
+      // legacy: concierge = we book; form = the guest fills our request form
+      // (same thing here); direct = the guest books online
+      bookingMode: bool(r.no_reservation)
+        ? "none"
+        : r.booking_mode === "direct" && bookingUrl
+          ? "direct"
+          : "concierge",
+      bookingUrl,
+      whatsapp: text(r.whatsapp),
+      email: text(r.email),
+      phone: text(r.phone),
+    };
+    const place =
+      (await prisma.mapPlace.findUnique({ where: { slug: r.slug } })) ??
+      (await prisma.mapPlace.findFirst({
+        where: { category: "restaurant", name: { equals: r.name, mode: "insensitive" } },
+      }));
+    if (place) {
+      // only fill what is still empty — the pin may have been edited here
+      const fill = Object.fromEntries(
+        Object.entries(booking).filter(([k, v]) => v != null && place[k] == null)
+      );
+      if (Object.keys(fill).length === 0) continue;
+      if (!DRY) await prisma.mapPlace.update({ where: { id: place.id }, data: fill });
+      count("restaurants (booking details added to an existing pin)");
+      continue;
+    }
+    if (!DRY) {
+      await prisma.mapPlace.create({
+        data: {
+          slug: r.slug,
+          category: "restaurant",
+          kind: RESTAURANT_KINDS.includes(r.category) ? r.category : null,
+          name: r.name,
+          zone: text(r.zone),
+          lat: Number(r.latitude),
+          lng: Number(r.longitude),
+          // legacy `description` is the English text
+          descriptionEn: text(r.description_en) ?? text(r.description),
+          descriptionFr: text(r.description_fr),
+          waypoints: waypoints(r.routing_waypoint),
+          isActive: bool(r.is_active),
+          ...booking,
+        },
+      });
+    }
+    count("restaurants (new map pins)");
+  }
+
+  /* ── partners ── */
+  const partnerIds = { boat: new Map(), chef: new Map() };
+  const partners = [
+    ...(await legacy("boat_partners")).map((p) => ({ ...p, kind: "boat" })),
+    ...(await legacy("chef_partners")).map((p) => ({ ...p, kind: "chef" })),
+  ];
+  for (const p of partners) {
+    if (!text(p.name) || isTest(p.name)) {
+      count("partners skipped (test)");
+      continue;
+    }
+    const name = text(p.name);
+    let found = await prisma.servicePartner.findUnique({
+      where: { kind_name: { kind: p.kind, name } },
+    });
+    if (!found) {
+      count(`${p.kind} partners`);
+      if (!DRY) {
+        found = await prisma.servicePartner.create({
+          data: {
+            kind: p.kind,
+            name,
+            contactName: text(p.contact_name),
+            phone: text(p.phone),
+            whatsapp: text(p.whatsapp),
+            email: text(p.email),
+            website: text(p.website),
+            location: text(p.location),
+            notes: text(p.notes),
+            isActive: bool(p.is_active),
+          },
+        });
+      }
+    }
+    if (found) partnerIds[p.kind].set(p.id, found.id);
+  }
+
+  /* ── boats ── */
+  for (const b of await legacy("boats")) {
+    if (isTest(b.name) || isTest(b.partner_name)) {
+      count("boats skipped (test)");
+      continue;
+    }
+    if (await prisma.boat.findUnique({ where: { slug: b.slug } })) continue;
+    count("boats");
+    if (DRY) continue;
+    await prisma.boat.create({
+      data: {
+        slug: b.slug,
+        partnerId: partnerIds.boat.get(b.partner_id) ?? null,
+        name: b.name,
+        boatType: text(b.boat_type),
+        capacity: num(b.capacity) ?? 10,
+        length: text(b.length),
+        descriptionEn: text(b.description),
+        descriptionFr: text(b.description_fr),
+        includesEn: text(b.includes),
+        includesFr: text(b.includes_fr),
+        imageUrl: text(b.image_url),
+        priceHalfDay: num(b.price_half_day),
+        priceFullDay: num(b.price_full_day),
+        priceSunset: num(b.price_sunset),
+        priceCruisingDay: num(b.price_cruising_day),
+        priceTransfer: num(b.price_transfer),
+        transferSbhSxmDay: num(b.transfer_sbh_sxm_day),
+        transferSbhSxmNight: num(b.transfer_sbh_sxm_night),
+        transferSxmSbhDay: num(b.transfer_sxm_sbh_day),
+        transferSxmSbhNight: num(b.transfer_sxm_sbh_night),
+        transferAnguilla: num(b.transfer_anguilla),
+        isActive: bool(b.is_active),
+        sortOrder: num(b.display_order) ?? 0,
+      },
+    });
+  }
+
+  /* ── chef offers ── */
+  for (const o of await legacy("chef_offers")) {
+    if (isTest(o.name)) continue;
+    if (await prisma.chefOffer.findUnique({ where: { slug: o.slug } })) continue;
+    count("chef offers");
+    if (DRY) continue;
+    await prisma.chefOffer.create({
+      data: {
+        slug: o.slug,
+        partnerId: partnerIds.chef.get(o.partner_id) ?? null,
+        name: o.name,
+        category: o.category,
+        formulaName: text(o.formula_name),
+        price: num(o.price_per_person),
+        priceType: o.price_type ?? "per_person",
+        minimumGuests: num(o.minimum_guests) ?? 4,
+        duration: text(o.chef_duration),
+        descriptionEn: text(o.description_en),
+        descriptionFr: text(o.description_fr),
+        menuEn: text(o.menu_details_en),
+        menuFr: text(o.menu_details_fr),
+        notes: text(o.notes),
+        imageUrl: text(o.image_url),
+        webPageUrl: text(o.web_page_url),
+        holidaySurcharge: bool(o.holiday_surcharge),
+        isActive: bool(o.is_active),
+        sortOrder: num(o.display_order) ?? 0,
+      },
+    });
+  }
+
+  /* ── taxis (the legacy table lists every driver twice — keyed on phone) ── */
+  const seenPhones = new Set();
+  for (const t of await legacy("taxis")) {
+    const phone = text(t.phone)?.replace(/[^\d+]/g, "");
+    if (!phone || seenPhones.has(phone)) continue;
+    seenPhones.add(phone);
+    if (await prisma.taxi.findFirst({ where: { phone } })) continue;
+    count("taxis");
+    if (DRY) continue;
+    await prisma.taxi.create({
+      data: {
+        name: t.name,
+        phone,
+        displayPhone: text(t.display_phone),
+        zone: text(t.area),
+        hasWhatsapp: bool(t.has_whatsapp),
+        isActive: bool(t.is_active),
+        sortOrder: num(t.display_order) ?? 0,
+      },
+    });
+  }
 }
 
 main()

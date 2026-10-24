@@ -116,6 +116,15 @@ export const MapPlaceInput = z.object({
   walkFromLastWaypoint: z.boolean().default(false),
   website: z.string().trim().url().max(500).nullable().optional().or(z.literal("").transform(() => null)),
   phone: z.string().trim().max(50).nullable().optional().or(z.literal("").transform(() => null)),
+  /* restaurants — what the guest portal's concierge shows */
+  cuisineEn: z.string().trim().max(100).nullable().optional().or(z.literal("").transform(() => null)),
+  cuisineFr: z.string().trim().max(100).nullable().optional().or(z.literal("").transform(() => null)),
+  priceRange: z.number().int().min(1).max(4).nullable().optional(),
+  imageUrl: z.string().trim().url().max(500).nullable().optional().or(z.literal("").transform(() => null)),
+  bookingMode: z.enum(["concierge", "direct", "none"]).nullable().optional(),
+  bookingUrl: z.string().trim().url().max(500).nullable().optional().or(z.literal("").transform(() => null)),
+  whatsapp: z.string().trim().max(50).nullable().optional().or(z.literal("").transform(() => null)),
+  email: z.string().trim().email().max(200).nullable().optional().or(z.literal("").transform(() => null)),
   sortOrder: z.number().int().min(-100000).max(100000).default(0),
   isActive: z.boolean().default(true),
 });
@@ -194,4 +203,88 @@ export const GuestDetailsInput = z.object({
   children: z.number().int().min(0).max(20).nullable().optional(),
   guestNames: z.string().trim().max(2000).nullable().optional(),
   specialRequests: z.string().trim().max(4000).nullable().optional(),
+});
+
+/* ───────────────────────── concierge ───────────────────────── */
+
+const optText = (max: number) =>
+  z.string().trim().max(max).nullable().optional().or(z.literal("").transform(() => null));
+const optUrl = z.string().trim().url().max(500).nullable().optional().or(z.literal("").transform(() => null));
+const optPrice = z.number().min(0).max(1_000_000).nullable().optional();
+
+export const ServicePartnerInput = z.object({
+  kind: z.enum(["boat", "chef"]),
+  name: z.string().trim().min(1).max(150),
+  contactName: optText(150),
+  phone: optText(50),
+  whatsapp: optText(50),
+  email: z.string().trim().email().max(200).nullable().optional().or(z.literal("").transform(() => null)),
+  website: optUrl,
+  location: optText(255),
+  notes: optText(2000),
+  currency: z.enum(["USD", "EUR"]).default("EUR"),
+  isActive: z.boolean().default(true),
+});
+
+export const TaxiInput = z.object({
+  name: z.string().trim().min(1).max(150),
+  phone: z
+    .string()
+    .trim()
+    .min(4)
+    .max(30)
+    .transform((s) => s.replace(/[^\d+]/g, "")),
+  displayPhone: optText(50),
+  zone: optText(100),
+  hasWhatsapp: z.boolean().default(true),
+  isActive: z.boolean().default(true),
+  sortOrder: z.number().int().min(-10000).max(10000).default(0),
+});
+
+export const BoatInput = z.object({
+  partnerId: z.number().int().positive().nullable().optional(),
+  name: z.string().trim().min(1).max(150),
+  boatType: optText(100),
+  capacity: z.number().int().min(1).max(200).default(10),
+  length: optText(30),
+  descriptionEn: optText(2000),
+  descriptionFr: optText(2000),
+  includesEn: optText(1000),
+  includesFr: optText(1000),
+  imageUrl: optUrl,
+  priceHalfDay: optPrice,
+  priceFullDay: optPrice,
+  priceSunset: optPrice,
+  priceCruisingDay: optPrice,
+  priceTransfer: optPrice,
+  transferSbhSxmDay: optPrice,
+  transferSbhSxmNight: optPrice,
+  transferSxmSbhDay: optPrice,
+  transferSxmSbhNight: optPrice,
+  transferAnguilla: optPrice,
+  isActive: z.boolean().default(true),
+  sortOrder: z.number().int().min(-10000).max(10000).default(0),
+});
+
+export const CHEF_CATEGORIES = ["dinner", "brunch", "buffet", "cocktail", "weekly_chef"] as const;
+
+export const ChefOfferInput = z.object({
+  partnerId: z.number().int().positive().nullable().optional(),
+  name: z.string().trim().min(1).max(150),
+  category: z.enum(CHEF_CATEGORIES),
+  formulaName: optText(150),
+  price: optPrice,
+  priceType: z.enum(["per_person", "per_day", "quote"]).default("per_person"),
+  minimumGuests: z.number().int().min(1).max(500).default(4),
+  duration: optText(100),
+  descriptionEn: optText(2000),
+  descriptionFr: optText(2000),
+  menuEn: optText(4000),
+  menuFr: optText(4000),
+  notes: optText(2000),
+  imageUrl: optUrl,
+  webPageUrl: optUrl,
+  holidaySurcharge: z.boolean().default(false),
+  isActive: z.boolean().default(true),
+  sortOrder: z.number().int().min(-10000).max(10000).default(0),
 });

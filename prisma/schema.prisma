@@ -553,12 +553,135 @@ model MapPlace {
   walkFromLastWaypoint Boolean @default(false)
   website  String?
   phone    String?
+  // restaurants: what the guest portal's concierge shows
+  cuisineEn            String?
+  cuisineFr            String?
+  /// 1–4 ($ → $$$$)
+  priceRange           Int?
+  imageUrl             String?
+  /// concierge (we book the table) | direct (the guest books online at
+  /// bookingUrl) | none (walk-in only). Null = not offered in the portal.
+  bookingMode          String?
+  bookingUrl           String?
+  /// the venue's own contacts, for the owner booking a table
+  whatsapp             String?
+  email                String?
   sortOrder Int     @default(0)
   isActive  Boolean @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([category, isActive])
+}
+
+// ───────────────────────────────────────────────────────────────── Concierge
+
+/// A provider the concierge books with: a boat charter company or a private
+/// chef. Ported from the legacy boat_partners + chef_partners tables.
+model ServicePartner {
+  id          Int      @id @default(autoincrement())
+  /// boat | chef
+  kind        String
+  name        String
+  contactName String?
+  phone       String?
+  whatsapp    String?
+  email       String?
+  website     String?
+  location    String?
+  notes       String?
+  /// the currency of this provider's prices (USD | EUR) — shown as given,
+  /// never added to the stay's bill automatically
+  currency    String   @default("EUR")
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  boats      Boat[]
+  chefOffers ChefOffer[]
+
+  @@unique([kind, name])
+}
+
+/// Island taxi drivers the guest portal lists (call / WhatsApp).
+model Taxi {
+  id           Int      @id @default(autoincrement())
+  name         String
+  /// dialable, international format
+  phone        String
+  /// as shown to guests ("06 90 …")
+  displayPhone String?
+  zone         String?
+  hasWhatsapp  Boolean  @default(true)
+  isActive     Boolean  @default(true)
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+/// A boat guests can ask the concierge to charter. Prices are indicative,
+/// in the partner's currency; empty = not offered for that outing.
+model Boat {
+  id                  Int             @id @default(autoincrement())
+  slug                String          @unique
+  partnerId           Int?
+  partner             ServicePartner? @relation(fields: [partnerId], references: [id], onDelete: SetNull)
+  name                String
+  boatType            String?
+  capacity            Int             @default(10)
+  /// as displayed ("55'")
+  length              String?
+  descriptionEn       String?
+  descriptionFr       String?
+  includesEn          String?
+  includesFr          String?
+  imageUrl            String?
+  priceHalfDay        Float?
+  priceFullDay        Float?
+  priceSunset         Float?
+  priceCruisingDay    Float?
+  priceTransfer       Float?
+  transferSbhSxmDay   Float?
+  transferSbhSxmNight Float?
+  transferSxmSbhDay   Float?
+  transferSxmSbhNight Float?
+  transferAnguilla    Float?
+  isActive            Boolean         @default(true)
+  sortOrder           Int             @default(0)
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+}
+
+/// A private-chef formula (dinner menu, brunch, buffet, weekly service…).
+model ChefOffer {
+  id               Int             @id @default(autoincrement())
+  slug             String          @unique
+  partnerId        Int?
+  partner          ServicePartner? @relation(fields: [partnerId], references: [id], onDelete: SetNull)
+  name             String
+  /// dinner | brunch | buffet | cocktail | weekly_chef
+  category         String
+  formulaName      String?
+  /// indicative, in the partner's currency; null = on quote
+  price            Float?
+  /// per_person | per_day | quote
+  priceType        String          @default("per_person")
+  minimumGuests    Int             @default(4)
+  /// "3h included", "staff not included"…
+  duration         String?
+  descriptionEn    String?
+  descriptionFr    String?
+  menuEn           String?
+  menuFr           String?
+  /// internal, never shown to guests
+  notes            String?
+  imageUrl         String?
+  webPageUrl       String?
+  holidaySurcharge Boolean         @default(false)
+  isActive         Boolean         @default(true)
+  sortOrder        Int             @default(0)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
 }
 
 model Setting {

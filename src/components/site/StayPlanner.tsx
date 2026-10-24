@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Dict } from "@/lib/i18n";
+import { EXTRA_ADDED_EVENT } from "./ConciergePanel";
 
 export interface PlannerDetails {
   arrivalFlight: string | null;
@@ -70,6 +71,16 @@ export function StayPlanner({
   const [picking, setPicking] = useState<number | null>(null);
   const [req, setReq] = useState({ quantity: "1", serviceDate: "", notes: "" });
   const [reqError, setReqError] = useState(false);
+
+  // a request sent from the concierge panel joins the list
+  useEffect(() => {
+    const onAdded = (e: Event) => {
+      const { reservationId: rid, item } = (e as CustomEvent<{ reservationId: number; item: PlannerItem }>).detail;
+      if (rid === reservationId) setItems((list) => [...list, item]);
+    };
+    window.addEventListener(EXTRA_ADDED_EVENT, onAdded);
+    return () => window.removeEventListener(EXTRA_ADDED_EVENT, onAdded);
+  }, [reservationId]);
 
   const num = (v: string) => (v.trim() === "" ? null : Math.max(0, parseInt(v, 10) || 0));
 

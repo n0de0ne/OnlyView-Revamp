@@ -10,7 +10,9 @@ import { isLoyaltyEnabled } from "@/lib/features";
 import { PageHero } from "@/components/site/PageHero";
 import { GuestLoginForm } from "@/components/site/GuestLoginForm";
 import { StayPlanner } from "@/components/site/StayPlanner";
+import { ConciergePanel } from "@/components/site/ConciergePanel";
 import { confirmedExtrasTotal } from "@/lib/extras";
+import { getConciergeCatalog } from "@/lib/concierge";
 
 export const dynamic = "force-dynamic";
 
@@ -104,6 +106,7 @@ export default async function AccountPage({
     price: x.price,
     unit: x.unit,
   }));
+  const concierge = upcoming.length ? await getConciergeCatalog(locale) : null;
   const points = client.loyalty?.points ?? 0;
   const lifetime = client.loyalty?.lifetimePoints ?? 0;
   const tier = tierFor(lifetime);
@@ -208,6 +211,22 @@ export default async function AccountPage({
             }))}
           />
         )}
+        {concierge &&
+          ["option", "confirmed"].includes(r.status) &&
+          !r.isArchived &&
+          toISODate(r.endDate) >= today && (
+            <ConciergePanel
+              reservationId={r.id}
+              locale={locale}
+              t={t.account.concierge}
+              catalog={concierge}
+              stay={{
+                start: toISODate(r.startDate) > today ? toISODate(r.startDate) : today,
+                end: toISODate(r.endDate),
+                guests: r.guests,
+              }}
+            />
+          )}
       </div>
     );
   };
