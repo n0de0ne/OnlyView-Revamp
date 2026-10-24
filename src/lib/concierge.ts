@@ -3,6 +3,7 @@ import type { z } from "zod";
 import { prisma } from "./db";
 import { BoatInput, ChefOfferInput, ServicePartnerInput, TaxiInput } from "./admin-schemas";
 import type { Locale } from "./i18n";
+import { detectPlatform } from "./booking-platforms";
 
 /* ───────────────────────── admin catalog ───────────────────────── */
 
@@ -156,6 +157,8 @@ export async function getConciergeCatalog(locale: Locale) {
       imageUrl: r.imageUrl,
       bookingMode: r.bookingMode as "concierge" | "direct" | "none",
       bookingUrl: r.bookingUrl,
+      /** the online booking system behind bookingUrl, if one we know */
+      platform: detectPlatform(r.bookingUrl),
     })),
     boats: boats.map((b) => ({
       id: b.id,

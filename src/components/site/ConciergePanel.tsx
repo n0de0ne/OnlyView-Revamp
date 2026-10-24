@@ -6,6 +6,7 @@ import { useState } from "react";
 import type { Dict } from "@/lib/i18n";
 import type { ConciergeCatalog } from "@/lib/concierge";
 import type { PlannerItem } from "./StayPlanner";
+import { LiveSlots } from "./LiveSlots";
 
 type Tab = "restaurants" | "boats" | "chef" | "taxis";
 type Target = { type: "restaurant" | "boat" | "chef"; id: number };
@@ -101,7 +102,12 @@ export function ConciergePanel({
     </div>
   );
 
-  const requestForm = (withTime: boolean, outings?: Array<{ key: string; price: number }>, currency = "EUR") => (
+  const requestForm = (
+    withTime: boolean,
+    outings?: Array<{ key: string; price: number }>,
+    currency = "EUR",
+    restaurant?: ConciergeCatalog["restaurants"][number]
+  ) => (
     <div className="mt-3 grid gap-3 border-t border-ink/8 pt-3 sm:grid-cols-3">
       {outings && (
         <div className="field sm:col-span-3">
@@ -122,6 +128,19 @@ export function ConciergePanel({
       {field("date", t.date, { type: "date", min: stay.start, max: stay.end, required: true })}
       {withTime && field("time", t.time, { type: "time", step: 900 })}
       {field("guests", t.guests, { type: "number", min: 1, max: 100, inputMode: "numeric" })}
+      {restaurant?.platform && restaurant.bookingUrl && form.date && (
+        <LiveSlots
+          reservationId={reservationId}
+          placeId={restaurant.id}
+          bookingUrl={restaurant.bookingUrl}
+          platform={restaurant.platform}
+          date={form.date}
+          guests={Math.max(1, parseInt(form.guests, 10) || 1)}
+          time={form.time}
+          onPick={(time) => setForm((f) => ({ ...f, time }))}
+          t={t}
+        />
+      )}
       <div className={`field ${withTime ? "sm:col-span-3" : ""}`}>
         <label htmlFor={`cg-notes-${reservationId}`}>{t.note}</label>
         <input
@@ -229,7 +248,7 @@ export function ConciergePanel({
                     </div>
                   </div>
                   {isOpen("restaurant", r.id) ? (
-                    requestForm(true)
+                    requestForm(true, undefined, undefined, r)
                   ) : r.bookingMode === "none" ? (
                     <p className="mt-2 text-xs text-ink/50">{t.walkIn}</p>
                   ) : (
