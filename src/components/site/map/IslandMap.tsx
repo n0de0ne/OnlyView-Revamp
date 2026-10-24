@@ -79,6 +79,15 @@ export function IslandMap({
     setCommand({ ...c, nonce: ++nonce.current } as MapCommand);
   }, []);
 
+  /** phone, in the page flow: bring the whole frame on screen (between the
+   *  site's top bar and tab bar) so the sheet is never cut off at the bottom */
+  const frameIntoView = () => {
+    const el = frameRef.current;
+    if (!el || fullscreen || window.innerWidth >= 1024) return;
+    const r = el.getBoundingClientRect();
+    if (r.top < 48 || r.bottom > window.innerHeight - 56) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   const catLabel = (c: MapCategory) => (fr ? CATEGORY_META[c].fr : CATEGORY_META[c].en);
   const byCategory = useMemo(() => {
     const m = new Map<MapCategory, MapPlaceDTO[]>();
@@ -216,6 +225,7 @@ export function IslandMap({
     if (!el) return;
     const start = (e: TouchEvent) => {
       if (stateRef.current.desktop) return;
+      frameIntoViewRef.current();
       const y = e.touches[0].clientY;
       g.current = {
         y0: y,
@@ -293,6 +303,8 @@ export function IslandMap({
       el.removeEventListener("touchcancel", end);
     };
   }, []);
+  const frameIntoViewRef = useRef(frameIntoView);
+  frameIntoViewRef.current = frameIntoView;
   const detentPxRef = useRef(detentPx);
   detentPxRef.current = detentPx;
 
@@ -341,7 +353,11 @@ export function IslandMap({
         type="search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        onFocus={() => !desktop && setDetent("full")}
+        onFocus={() => {
+          if (desktop) return;
+          frameIntoView();
+          setDetent("full");
+        }}
         placeholder={t.search}
         aria-label={t.search}
         className="h-11 w-full rounded-xl bg-ink/[0.06] pl-10 pr-14 text-base text-ink outline-none transition placeholder:text-ink/40 focus:bg-ink/[0.08] focus:ring-2 focus:ring-navy/20 [&::-webkit-search-cancel-button]:hidden"
