@@ -79,6 +79,15 @@ export function IslandMap({
     setCommand({ ...c, nonce: ++nonce.current } as MapCommand);
   }, []);
 
+  /** phone, in the page flow: bring the whole frame on screen (between the
+   *  site's top bar and tab bar) so the sheet is never cut off at the bottom */
+  const frameIntoView = () => {
+    const el = frameRef.current;
+    if (!el || fullscreen || window.innerWidth >= 1024) return;
+    const r = el.getBoundingClientRect();
+    if (r.top < 48 || r.bottom > window.innerHeight - 56) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   const catLabel = (c: MapCategory) => (fr ? CATEGORY_META[c].fr : CATEGORY_META[c].en);
   const byCategory = useMemo(() => {
     const m = new Map<MapCategory, MapPlaceDTO[]>();
@@ -216,6 +225,7 @@ export function IslandMap({
     if (!el) return;
     const start = (e: TouchEvent) => {
       if (stateRef.current.desktop) return;
+      frameIntoViewRef.current();
       const y = e.touches[0].clientY;
       g.current = {
         y0: y,
@@ -293,6 +303,8 @@ export function IslandMap({
       el.removeEventListener("touchcancel", end);
     };
   }, []);
+  const frameIntoViewRef = useRef(frameIntoView);
+  frameIntoViewRef.current = frameIntoView;
   const detentPxRef = useRef(detentPx);
   detentPxRef.current = detentPx;
 
@@ -341,7 +353,11 @@ export function IslandMap({
         type="search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        onFocus={() => !desktop && setDetent("full")}
+        onFocus={() => {
+          if (desktop) return;
+          frameIntoView();
+          setDetent("full");
+        }}
         placeholder={t.search}
         aria-label={t.search}
         className="h-11 w-full rounded-xl bg-ink/[0.06] pl-10 pr-14 text-base text-ink outline-none transition placeholder:text-ink/40 focus:bg-ink/[0.08] focus:ring-2 focus:ring-navy/20 [&::-webkit-search-cancel-button]:hidden"
@@ -461,10 +477,14 @@ export function IslandMap({
       <div
         ref={frameRef}
         data-lenis-prevent
+        // `isolate`: the panels' z-indexes stay inside the frame, so in the
+        // page flow the site's header and tab bar still pass over the map
         className={
           fullscreen
-            ? "fixed inset-0 z-[80] overflow-hidden bg-[#f2efe9]"
-            : "relative h-[80svh] min-h-[540px] scroll-mt-20 overflow-hidden rounded-[26px] bg-[#f2efe9] shadow-[0_24px_60px_-24px_rgba(12,20,27,0.45)] ring-1 ring-ink/10 lg:h-[calc(100svh-8rem)] lg:min-h-[600px]"
+            ? "fixed inset-0 z-[80] isolate overflow-hidden bg-[#f2efe9]"
+            : // below xl the site has a top bar and a bottom tab bar: the frame
+              // fits between them, so the sheet's search never hides under the tabs
+              "relative isolate h-[calc(100svh-8.5rem-env(safe-area-inset-bottom))] min-h-[480px] scroll-mt-16 overflow-hidden rounded-[26px] bg-[#f2efe9] shadow-[0_24px_60px_-24px_rgba(12,20,27,0.45)] ring-1 ring-ink/10 lg:h-[calc(100svh-10rem)] lg:min-h-[560px] lg:scroll-mt-20 xl:h-[calc(100svh-8rem)] xl:scroll-mt-24"
         }
       >
         <div className="absolute inset-0 z-0">
