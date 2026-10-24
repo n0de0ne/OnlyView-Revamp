@@ -2,11 +2,18 @@
 
 import { useState } from "react";
 import { getDict, type Locale } from "@/lib/i18n";
+import { track } from "./Analytics";
 
 export function ContactForm({ locale }: { locale: Locale }) {
   const t = getDict(locale);
   const [state, setState] = useState<"idle" | "sending" | "done" | "error">("idle");
   const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [started, setStarted] = useState(false);
+  const onStart = () => {
+    if (started) return;
+    setStarted(true);
+    track("contact_form_start");
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,6 +25,7 @@ export function ContactForm({ locale }: { locale: Locale }) {
         body: JSON.stringify(form),
       });
       setState(res.ok ? "done" : "error");
+      if (res.ok) track("contact_submit");
     } catch {
       setState("error");
     }
@@ -32,7 +40,7 @@ export function ContactForm({ locale }: { locale: Locale }) {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-4">
+    <form onSubmit={submit} onFocus={onStart} className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="field">
           <label htmlFor="c-name">{t.contact.name} *</label>

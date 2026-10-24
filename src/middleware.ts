@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
+import { logCrawlerHit } from "@/lib/analytics/crawlers";
 
 /**
  * - Public site: EN lives at `/…`, FR at `/fr/…`. Internally both render
  *   through the `[locale]` segment, so `/x` is rewritten to `/en/x`.
  * - `/admin/*` requires the admin session cookie (full validation happens
  *   server-side; this is the fast redirect).
+ * - Search-engine and AI crawlers are logged for Admin → Analytique (runs on
+ *   the Node runtime for database access).
  */
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  logCrawlerHit(pathname, req.headers.get("user-agent"));
 
   // Admin gate
   if (pathname.startsWith("/admin")) {
@@ -49,5 +53,6 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
+  runtime: "nodejs",
   matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };

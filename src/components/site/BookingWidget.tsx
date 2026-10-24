@@ -5,6 +5,7 @@ import { getDict, tpl, type Locale } from "@/lib/i18n";
 import { usd } from "@/lib/money";
 import { maxGuestsFor } from "@/lib/site-facts";
 import { AvailabilityCalendar, type BookedRange } from "./AvailabilityCalendar";
+import { track } from "./Analytics";
 
 interface QuoteResponse {
   success: boolean;
@@ -58,6 +59,12 @@ export function BookingWidget({
 
   const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
   const [submitState, setSubmitState] = useState<"idle" | "sending" | "done" | "error">("idle");
+  const formStarted = useRef(false);
+  const onFormStart = () => {
+    if (formStarted.current) return;
+    formStarted.current = true;
+    track("booking_form_start", { start: range.start, end: range.end, bedrooms });
+  };
 
   const fetchQuote = useCallback(async () => {
     if (!range.start || !range.end) {
@@ -78,6 +85,15 @@ export function BookingWidget({
       });
       const data = (await res.json()) as QuoteResponse;
       setQuote(res.ok && data.success ? data : null);
+      if (res.ok && data.success) {
+        track("quote_view", {
+          start: range.start,
+          nights: data.quote.nights,
+          bedrooms,
+          available: data.available,
+          total: Math.round(data.quote.totalTTC),
+        });
+      }
     } catch {
       setQuote(null);
     } finally {
@@ -164,6 +180,7 @@ export function BookingWidget({
         }),
       });
       setSubmitState(res.ok ? "done" : "error");
+      if (res.ok) track("booking_request", { start: range.start, end: range.end, bedrooms, guests });
     } catch {
       setSubmitState("error");
     }
@@ -468,7 +485,7 @@ export function BookingWidget({
         </div>
 
         {/* Request form */}
-        <form onSubmit={submit} className="border border-ink/10 bg-white p-5 md:p-8">
+        <form onSubmit={submit} onFocus={onFormStart} className="border border-ink/10 bg-white p-5 md:p-8">
           <h2 className="mb-5 font-display text-2xl">{t.booking.formTitle}</h2>
           {/* the hero drops this line on a phone; it reassures best right here */}
           <p className="-mt-2 mb-5 text-sm leading-relaxed text-ink/65 lg:hidden">{t.booking.intro}</p>
