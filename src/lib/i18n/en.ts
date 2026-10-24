@@ -242,6 +242,9 @@ export const en = {
     prev: "Previous",
     next: "Next",
     of: "of",
+    share: "Share",
+    copied: "Link copied",
+    photos: "photos",
   },
   tour: {
     label: "Virtual tour",

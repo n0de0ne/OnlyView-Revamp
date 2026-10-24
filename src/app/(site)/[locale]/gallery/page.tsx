@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getDict, isLocale, type Locale } from "@/lib/i18n";
 import { breadcrumbJsonLd, imageGalleryJsonLd, jsonLd, pageMetadata } from "@/lib/seo";
 import { getPhotos, PHOTO_CATEGORIES } from "@/lib/photos";
-import { GalleryGrid } from "@/components/site/GalleryGrid";
+import { GalleryGrid } from "@/components/site/gallery/GalleryGrid";
 import { PageHero } from "@/components/site/PageHero";
 
 export const revalidate = 300;
@@ -68,6 +68,9 @@ export default async function GalleryPage({
             prev: t.gallery.prev,
             next: t.gallery.next,
             of: t.gallery.of,
+            share: t.gallery.share,
+            copied: t.gallery.copied,
+            photos: t.gallery.photos,
           }}
         />
       </section>

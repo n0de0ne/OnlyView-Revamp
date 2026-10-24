@@ -243,6 +243,9 @@ export const fr: Dict = {
     prev: "Précédent",
     next: "Suivant",
     of: "sur",
+    share: "Partager",
+    copied: "Lien copié",
+    photos: "photos",
   },
   tour: {
     label: "Visite virtuelle",
