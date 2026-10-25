@@ -5,6 +5,7 @@ import type { SerializedReservation } from "@/lib/reservations";
 import type { SerializedReservationExtra } from "@/lib/extras";
 import { api, Card, ConfirmButton, fmtDate, fmtUSD, Modal, StatusBadge, useToast } from "./ui";
 import { UNIT_LABELS, type CatalogExtra } from "./ExtrasBoard";
+import { confirmedExtrasTotal, moneyIn } from "@/lib/extras";
 import { ConciergeRequestList } from "./ConciergeRequestList";
 
 type Details = SerializedReservation["guestDetails"];
@@ -69,7 +70,7 @@ export function ReservationStayPanel({
   }, []);
 
   useEffect(() => {
-    onExtrasTotal(items.filter((i) => i.status === "confirmed").reduce((s, i) => s + i.amount, 0));
+    onExtrasTotal(confirmedExtrasTotal(items));
   }, [items, onExtrasTotal]);
 
   const saveDetails = async () => {
@@ -143,7 +144,9 @@ export function ReservationStayPanel({
 
   const extras = items.filter((i) => i.kind !== "concierge");
   const concierge = items.filter((i) => i.kind === "concierge");
-  const confirmedTotal = extras.filter((i) => i.status === "confirmed").reduce((s, i) => s + i.amount, 0);
+  const confirmedTotal = confirmedExtrasTotal(extras);
+  const lineCurrency = catalog.find((x) => x.id === line.extraId)?.currency ?? "USD";
+  const providerLines = extras.filter((i) => i.paidToProvider && i.status !== "cancelled");
   const field = (k: keyof typeof d, label: string, placeholder?: string) => (
     <div className="afield">
       <label>{label}</label>
@@ -253,9 +256,14 @@ export function ReservationStayPanel({
                       )}
                     </td>
                     <td className="px-3 py-2 text-right text-slate-500">
-                      {i.quantity} × {fmtUSD(i.unitPrice)}
+                      {i.quantity} × {moneyIn(i.unitPrice, i.currency)}
                     </td>
-                    <td className="px-3 py-2 text-right font-semibold">{fmtUSD(i.amount)}</td>
+                    <td className="px-3 py-2 text-right font-semibold">
+                      {moneyIn(i.amount, i.currency)}
+                      {i.paidToProvider && (
+                        <div className="text-[0.6rem] font-normal text-slate-400">payé au prestataire</div>
+                      )}
+                    </td>
                     <td className="px-3 py-2">
                       <select
                         value={i.status}
@@ -298,6 +306,12 @@ export function ReservationStayPanel({
             ou « Annulé ».
           </p>
         )}
+        {providerLines.length > 0 && (
+          <p className="mt-2 text-[0.7rem] text-slate-500">
+            Les lignes « payé au prestataire » (St Barth Provider…) sont réglées par le client au prestataire :
+            réservez-les auprès de lui, elles ne s&apos;ajoutent pas au solde.
+          </p>
+        )}
         <p className="mt-2 text-[0.7rem] text-slate-400">
           Les extras confirmés s&apos;ajoutent au solde à encaisser ; enregistrez leur règlement en paiement
           « Extra ».
@@ -312,7 +326,8 @@ export function ReservationStayPanel({
               <option value="">— ligne libre —</option>
               {catalog.map((x) => (
                 <option key={x.id} value={x.id}>
-                  {x.nameFr} · {x.price > 0 ? fmtUSD(x.price) : "sur devis"} {UNIT_LABELS[x.unit] ?? ""}
+                  {x.nameFr} · {x.price > 0 ? moneyIn(x.price, x.currency) : "sur devis"} {UNIT_LABELS[x.unit] ?? ""}
+                  {x.partnerName ? ` · ${x.partnerName}` : ""}
                 </option>
               ))}
             </select>
@@ -332,7 +347,7 @@ export function ReservationStayPanel({
             />
           </div>
           <div className="afield">
-            <label>Prix unitaire ($)</label>
+            <label>Prix unitaire ({lineCurrency === "EUR" ? "€" : "$"})</label>
             <input
               type="number"
               min="0"
@@ -356,7 +371,7 @@ export function ReservationStayPanel({
         </div>
         <div className="mt-4 flex items-center justify-between">
           <span className="text-sm text-slate-500">
-            = {fmtUSD((parseFloat(line.quantity) || 0) * (parseFloat(line.unitPrice) || 0))}
+            = {moneyIn((parseFloat(line.quantity) || 0) * (parseFloat(line.unitPrice) || 0), lineCurrency)}
           </span>
           <button onClick={addLine} disabled={!line.label.trim()} className="abtn-primary">
             Ajouter

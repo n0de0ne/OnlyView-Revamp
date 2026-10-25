@@ -183,6 +183,11 @@ export const ExtraInput = z.object({
   isActive: z.boolean().default(true),
   guestBookable: z.boolean().default(true),
   sortOrder: z.number().int().min(-10000).max(10000).default(0),
+  /** supplied by a rental company: priced in its currency, paid to it */
+  partnerId: z.number().int().positive().nullable().optional(),
+  categoryEn: z.string().trim().max(80).nullable().optional(),
+  categoryFr: z.string().trim().max(80).nullable().optional(),
+  imageUrl: z.string().trim().url().max(1000).nullable().optional().or(z.literal("").transform(() => null)),
 });
 
 export const ReservationExtraInput = z.object({
@@ -232,7 +237,7 @@ const optUrl = z.string().trim().url().max(500).nullable().optional().or(z.liter
 const optPrice = z.number().min(0).max(1_000_000).nullable().optional();
 
 export const ServicePartnerInput = z.object({
-  kind: z.enum(["boat", "chef"]),
+  kind: z.enum(["boat", "chef", "extras"]),
   name: z.string().trim().min(1).max(150),
   contactName: optText(150),
   phone: optText(50),

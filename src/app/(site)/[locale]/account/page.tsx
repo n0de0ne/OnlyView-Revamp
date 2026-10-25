@@ -104,6 +104,7 @@ export default async function AccountPage({
     await prisma.extra.findMany({
       where: { isActive: true, guestBookable: true },
       orderBy: [{ sortOrder: "asc" }, { nameEn: "asc" }],
+      include: { partner: true },
     })
   ).map((x) => ({
     id: x.id,
@@ -111,6 +112,11 @@ export default async function AccountPage({
     description: (locale === "fr" ? x.descriptionFr : x.descriptionEn) ?? null,
     price: x.price,
     unit: x.unit,
+    category: (locale === "fr" ? x.categoryFr : x.categoryEn) ?? null,
+    imageUrl: x.imageUrl,
+    // a rental company's item: its own currency, paid to it
+    currency: x.partner ? x.partner.currency : "USD",
+    provider: x.partner?.name ?? null,
   }));
   const concierge = upcoming.length ? await getConciergeCatalog(locale) : null;
   // table requests sent before they were linked to their place: find it by name
@@ -297,6 +303,8 @@ export default async function AccountPage({
               label: i.label,
               quantity: i.quantity,
               amount: i.amount,
+              currency: i.currency,
+              paidToProvider: i.paidToProvider,
               status: i.status,
               serviceDate: i.serviceDate ? toISODate(i.serviceDate) : null,
               requestedByGuest: i.requestedByGuest,

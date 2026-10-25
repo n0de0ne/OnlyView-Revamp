@@ -631,6 +631,10 @@ export const fr: Dict = {
     withdraw: "Retirer",
     directions: "Itinéraire",
     extraStatuses: { requested: "Demandé", confirmed: "Confirmé", cancelled: "Indisponible" } as Record<string, string>,
+    days: "Nombre de jours",
+    perDay: "par jour",
+    providerNote: "Le matériel est fourni par {name} : prix par jour, en euros, réglés directement au prestataire. Nous confirmons la disponibilité et la livraison pour vous.",
+    extrasOther: "Autres",
     units: { stay: "par séjour", night: "par nuit", person: "par personne", unit: "l'unité" } as Record<string, string>,
     dateChange: {
       title: "Changement de dates",

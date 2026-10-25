@@ -633,6 +633,10 @@ export const en = {
     withdraw: "Withdraw",
     directions: "Directions",
     extraStatuses: { requested: "Requested", confirmed: "Confirmed", cancelled: "Unavailable" } as Record<string, string>,
+    days: "Number of days",
+    perDay: "per day",
+    providerNote: "Rental equipment is supplied by {name}: prices per day, in euros, paid directly to them. We confirm availability and delivery for you.",
+    extrasOther: "Other",
     units: { stay: "per stay", night: "per night", person: "per person", unit: "each" } as Record<string, string>,
     dateChange: {
       title: "Change of dates",

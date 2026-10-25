@@ -103,7 +103,7 @@ const FIELDS: Record<Exclude<Tab, "restaurants">, Field[]> = {
   ],
   partners: [
     { key: "name", label: "Nom", required: true },
-    { key: "kind", label: "Activité", type: "select", options: [["boat", "Bateaux"], ["chef", "Chef à domicile"]] },
+    { key: "kind", label: "Activité", type: "select", options: [["boat", "Bateaux"], ["chef", "Chef à domicile"], ["extras", "Location de matériel (extras)"]] },
     { key: "contactName", label: "Contact" },
     { key: "phone", label: "Téléphone" },
     { key: "whatsapp", label: "WhatsApp" },
@@ -297,10 +297,17 @@ function summary(type: Exclude<Tab, "restaurants">, x: Item, partners: Map<numbe
         warn: null,
       };
     case "partners": {
-      const c = x._count as { boats: number; chefOffers: number } | undefined;
+      const c = x._count as { boats: number; chefOffers: number; extras?: number } | undefined;
       return {
-        sub: [x.kind === "boat" ? "Bateaux" : "Chef", x.phone, x.email].filter(Boolean).join(" · "),
-        right: x.kind === "boat" ? `${c?.boats ?? 0} bateaux` : `${c?.chefOffers ?? 0} formules`,
+        sub: [x.kind === "boat" ? "Bateaux" : x.kind === "extras" ? "Location de matériel" : "Chef", x.phone, x.email]
+          .filter(Boolean)
+          .join(" · "),
+        right:
+          x.kind === "boat"
+            ? `${c?.boats ?? 0} bateaux`
+            : x.kind === "extras"
+              ? `${c?.extras ?? 0} extras`
+              : `${c?.chefOffers ?? 0} formules`,
         warn: null,
       };
     }

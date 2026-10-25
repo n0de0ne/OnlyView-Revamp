@@ -67,29 +67,29 @@ model AuditLog {
 // ─────────────────────────────────────────────────────────────────── Clients
 
 model Client {
-  id             Int       @id @default(autoincrement())
+  id              Int      @id @default(autoincrement())
   /// id of the row this was imported from in the legacy PHP schema
-  legacyId       Int?
-  firstname      String
-  lastname       String
-  email          String?   @unique
-  phone          String?
-  country        String?
-  language       String    @default("en")
-  address        String?
-  city           String?
-  postalCode     String?
-  notes          String?
+  legacyId        Int?
+  firstname       String
+  lastname        String
+  email           String?  @unique
+  phone           String?
+  country         String?
+  language        String   @default("en")
+  address         String?
+  city            String?
+  postalCode      String?
+  notes           String?
   /// standing discount granted to this client, in %
   discountPercent Float    @default(0)
-  discountReason String?
-  isVip          Boolean   @default(false)
-  blacklisted    Boolean   @default(false)
+  discountReason  String?
+  isVip           Boolean  @default(false)
+  blacklisted     Boolean  @default(false)
   blacklistReason String?
-  tags           String?
-  source         String    @default("direct")
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  tags            String?
+  source          String   @default("direct")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   reservations Reservation[]
   loyalty      LoyaltyAccount?
@@ -100,13 +100,13 @@ model Client {
 
 /// Passwordless login for the guest portal (magic links)
 model ClientAuthToken {
-  id        Int      @id @default(autoincrement())
-  tokenHash String   @unique
+  id        Int       @id @default(autoincrement())
+  tokenHash String    @unique
   clientId  Int
-  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  client    Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
   expiresAt DateTime
   usedAt    DateTime?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 }
 
 // ────────────────────────────────────────────────────────────────── Agencies
@@ -129,11 +129,11 @@ model Agency {
 // ────────────────────────────────────────────────────────────── Reservations
 
 model Reservation {
-  id     Int    @id @default(autoincrement())
+  id       Int    @id @default(autoincrement())
   /// id of the row this was imported from in the legacy PHP schema
   legacyId Int?
   /// option | confirmed | pending | cancelled | blocked
-  status String @default("option")
+  status   String @default("option")
 
   startDate DateTime
   endDate   DateTime
@@ -148,36 +148,36 @@ model Reservation {
   bedrooms Int @default(4)
   guests   Int @default(8)
 
-  agencyId  Int?
-  agency    Agency? @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+  agencyId         Int?
+  agency           Agency? @relation(fields: [agencyId], references: [id], onDelete: SetNull)
   /// commission % charged by the agency on this reservation (copied at creation)
-  agencyFeePercent Float @default(0)
+  agencyFeePercent Float   @default(0)
 
   // ── Pricing options (ported from the PHP admin) ──
   /// per-stay override of the weekly rate (friend rate on mixed-season stays)
-  customWeeklyRate Float?
+  customWeeklyRate   Float?
   /// manual final price HT — overrides every calculation when set
   finalPriceOverride Float?
   /// computed price HT at last save (source of truth for reports)
-  priceHT   Float @default(0)
-  taxAmount Float @default(0)
-  priceTTC  Float @default(0)
-  discountPercent Float   @default(0)
+  priceHT            Float   @default(0)
+  taxAmount          Float   @default(0)
+  priceTTC           Float   @default(0)
+  discountPercent    Float   @default(0)
   /// "offer 1 bedroom": bill n-1 bedrooms (4→3, 3→2)
-  offerOneRoom Boolean @default(false)
-  freeNights   Int     @default(0)
+  offerOneRoom       Boolean @default(false)
+  freeNights         Int     @default(0)
   /// offer the 5% tourist tax
-  noTax        Boolean @default(false)
-  promoCode    String?
+  noTax              Boolean @default(false)
+  promoCode          String?
 
   // ── Option handling ──
   optionExpires DateTime?
 
   // ── Payments ──
   /// expected deposit (defaults to 30% of TTC for direct bookings)
-  depositAmount   Float   @default(0)
-  depositReceived Boolean @default(false)
-  balanceReceived Boolean @default(false)
+  depositAmount   Float     @default(0)
+  depositReceived Boolean   @default(false)
+  balanceReceived Boolean   @default(false)
   payments        Payment[]
 
   // ── Stay details ──
@@ -204,8 +204,8 @@ model Reservation {
   // ── Guest communication ──
   /// booking confirmation email sent to the client (opt-in when confirming)
   confirmationEmailSent Boolean @default(false)
-  portalToken     String?   @unique
-  portalEmailSent Boolean   @default(false)
+  portalToken           String? @unique
+  portalEmailSent       Boolean @default(false)
 
   // ── Lifecycle ──
   isArchived Boolean   @default(false)
@@ -213,13 +213,13 @@ model Reservation {
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 
-  periods            ReservationPeriod[]
-  contracts          Contract[]
+  periods             ReservationPeriod[]
+  contracts           Contract[]
   loyaltyTransactions LoyaltyTransaction[]
-  bookingRequest     BookingRequest?
-  extras             ReservationExtra[]
-  reminders          ReminderLog[]
-  dateChanges        DateChange[]
+  bookingRequest      BookingRequest?
+  extras              ReservationExtra[]
+  reminders           ReminderLog[]
+  dateChanges         DateChange[]
 
   @@index([startDate, endDate])
   @@index([status])
@@ -265,21 +265,29 @@ model Payment {
 
 /// Catalog of services offered on top of the rental (chef, car, boat…).
 model Extra {
-  id            Int      @id @default(autoincrement())
+  id            Int             @id @default(autoincrement())
   nameEn        String
   nameFr        String
   descriptionEn String?
   descriptionFr String?
-  /// USD, per unit below
-  price         Float    @default(0)
+  /// per unit below, in USD — or in the provider's currency when a
+  /// provider supplies it (then paid to them, never added to the stay's bill)
+  price         Float           @default(0)
   /// stay | night | person | unit
-  unit          String   @default("stay")
-  isActive      Boolean  @default(true)
+  unit          String          @default("stay")
+  /// the rental company that supplies it (kind "extras"), e.g. St Barth Provider
+  partnerId     Int?
+  partner       ServicePartner? @relation(fields: [partnerId], references: [id], onDelete: SetNull)
+  /// groups the guest catalog (Baby, Pool, Beach…)
+  categoryEn    String?
+  categoryFr    String?
+  imageUrl      String?
+  isActive      Boolean         @default(true)
   /// guests can request it from their portal
-  guestBookable Boolean  @default(true)
-  sortOrder     Int      @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  guestBookable Boolean         @default(true)
+  sortOrder     Int             @default(0)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
 
   items ReservationExtra[]
 }
@@ -295,8 +303,12 @@ model ReservationExtra {
   label            String
   quantity         Float       @default(1)
   unitPrice        Float       @default(0)
-  /// quantity × unitPrice, USD
+  /// quantity × unitPrice, in `currency`
   amount           Float       @default(0)
+  currency         String      @default("USD")
+  /// supplied and billed by a provider (St Barth Provider…): shown to the
+  /// guest but never added to what they owe the villa
+  paidToProvider   Boolean     @default(false)
   /// requested | confirmed | declined (concierge only) | cancelled
   status           String      @default("requested")
   /// day the service is wanted, when it matters
@@ -412,28 +424,28 @@ model RatePeriod {
 
 /// Inquiry submitted from the public booking module.
 model BookingRequest {
-  id        Int      @id @default(autoincrement())
-  startDate DateTime
-  endDate   DateTime
-  bedrooms  Int      @default(4)
-  guests    Int      @default(8)
-  name      String
-  email     String
-  phone     String?
-  message   String?
-  language  String   @default("en")
+  id                 Int          @id @default(autoincrement())
+  startDate          DateTime
+  endDate            DateTime
+  bedrooms           Int          @default(4)
+  guests             Int          @default(8)
+  name               String
+  email              String
+  phone              String?
+  message            String?
+  language           String       @default("en")
   /// quote shown to the guest at submission time (JSON snapshot)
-  quoteJson String?
-  promoCode String?
+  quoteJson          String?
+  promoCode          String?
   /// new | answered | converted | declined
-  status    String   @default("new")
-  adminNotes String?
-  reservationId Int?         @unique
-  reservation   Reservation? @relation(fields: [reservationId], references: [id], onDelete: SetNull)
+  status             String       @default("new")
+  adminNotes         String?
+  reservationId      Int?         @unique
+  reservation        Reservation? @relation(fields: [reservationId], references: [id], onDelete: SetNull)
   /// the site visit the request was sent from (Analytique → attribution)
   analyticsSessionId String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
 
   @@index([status])
   @@index([createdAt])
@@ -442,35 +454,35 @@ model BookingRequest {
 // ───────────────────────────────────────────────────────────────── Contracts
 
 model Contract {
-  id            Int         @id @default(autoincrement())
-  reservationId Int
-  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
-  token         String      @unique
+  id              Int         @id @default(autoincrement())
+  reservationId   Int
+  reservation     Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  token           String      @unique
   /// pending | signed | expired | void
-  status        String      @default("pending")
-  language      String      @default("en")
-  clientName    String
-  clientEmail   String?
-  totalPrice    Float
-  depositAmount Float
+  status          String      @default("pending")
+  language        String      @default("en")
+  clientName      String
+  clientEmail     String?
+  totalPrice      Float
+  depositAmount   Float
   /// contract | amendment (replaces an earlier agreement after a change of dates)
-  kind          String      @default("contract")
+  kind            String      @default("contract")
   /// contract body snapshot (HTML) at generation time
-  bodyHtml      String
+  bodyHtml        String
   /// JSON snapshot of the terms the contract was issued with (dates, price,
   /// amounts received, released dates) — the PDF is rebuilt from it, so a
   /// later change to the stay never rewrites an agreement already issued
-  termsJson     String?
-  signatureData String? // data-URL PNG drawn by the client
-  signedAt      DateTime?
-  signerIp      String?
+  termsJson       String?
+  signatureData   String? // data-URL PNG drawn by the client
+  signedAt        DateTime?
+  signerIp        String?
   signerUserAgent String?
-  pdfPath       String?
-  viewCount     Int       @default(0)
-  firstViewedAt DateTime?
-  lastViewedAt  DateTime?
-  expiresAt     DateTime?
-  createdAt     DateTime  @default(now())
+  pdfPath         String?
+  viewCount       Int         @default(0)
+  firstViewedAt   DateTime?
+  lastViewedAt    DateTime?
+  expiresAt       DateTime?
+  createdAt       DateTime    @default(now())
 
   @@index([reservationId])
   @@index([status])
@@ -479,30 +491,30 @@ model Contract {
 // ─────────────────────────────────────────────────────────────────── Loyalty
 
 model LoyaltyAccount {
-  id        Int      @id @default(autoincrement())
-  clientId  Int      @unique
-  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  points    Int      @default(0)
+  id             Int      @id @default(autoincrement())
+  clientId       Int      @unique
+  client         Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  points         Int      @default(0)
   /// lifetime earned points (never decreases — drives tier)
-  lifetimePoints Int @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  lifetimePoints Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   transactions LoyaltyTransaction[]
 }
 
 model LoyaltyTransaction {
-  id        Int            @id @default(autoincrement())
-  accountId Int
-  account   LoyaltyAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  id            Int            @id @default(autoincrement())
+  accountId     Int
+  account       LoyaltyAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
   /// earn | redeem | adjust | expire
-  kind      String
-  points    Int
-  reason    String?
+  kind          String
+  points        Int
+  reason        String?
   reservationId Int?
-  reservation   Reservation? @relation(fields: [reservationId], references: [id], onDelete: SetNull)
-  createdBy String?
-  createdAt DateTime @default(now())
+  reservation   Reservation?   @relation(fields: [reservationId], references: [id], onDelete: SetNull)
+  createdBy     String?
+  createdAt     DateTime       @default(now())
 
   @@index([accountId])
 }
@@ -510,29 +522,29 @@ model LoyaltyTransaction {
 // ──────────────────────────────────────────────────────────────── Promotions
 
 model Promotion {
-  id            Int       @id @default(autoincrement())
-  name          String
-  description   String?
+  id              Int       @id @default(autoincrement())
+  name            String
+  description     String?
   /// percent | fixed | free_nights
-  discountType  String    @default("percent")
-  discountValue Float     @default(0)
-  minNights     Int?
-  maxNights     Int?
-  validFrom     DateTime?
-  validUntil    DateTime?
-  stayStartFrom  DateTime?
-  stayStartUntil DateTime?
+  discountType    String    @default("percent")
+  discountValue   Float     @default(0)
+  minNights       Int?
+  maxNights       Int?
+  validFrom       DateTime?
+  validUntil      DateTime?
+  stayStartFrom   DateTime?
+  stayStartUntil  DateTime?
   mustIncludeDate DateTime?
-  promoCode     String?
-  isActive      Boolean   @default(true)
-  priority      Int       @default(0)
-  firstTimeOnly Boolean   @default(false)
-  showOnWebsite Boolean   @default(false)
-  maxUses       Int?
-  usedCount     Int       @default(0)
-  combinable    Boolean   @default(false)
-  notes         String?
-  createdAt     DateTime  @default(now())
+  promoCode       String?
+  isActive        Boolean   @default(true)
+  priority        Int       @default(0)
+  firstTimeOnly   Boolean   @default(false)
+  showOnWebsite   Boolean   @default(false)
+  maxUses         Int?
+  usedCount       Int       @default(0)
+  combinable      Boolean   @default(false)
+  notes           String?
+  createdAt       DateTime  @default(now())
 }
 
 // ────────────────────────────────────────────────────────────────── Expenses
@@ -575,47 +587,47 @@ model Photo {
 }
 
 model Testimonial {
-  id         Int      @id @default(autoincrement())
+  id         Int       @id @default(autoincrement())
   name       String
   country    String?
-  rating     Int      @default(5)
+  rating     Int       @default(5)
   message    String
-  language   String   @default("en")
-  isApproved Boolean  @default(false)
-  isFeatured Boolean  @default(false)
+  language   String    @default("en")
+  isApproved Boolean   @default(false)
+  isFeatured Boolean   @default(false)
   stayDate   DateTime?
-  createdAt  DateTime @default(now())
+  createdAt  DateTime  @default(now())
 }
 
 /// A pin on the public island map (/map): beaches, restaurants, shops…
 /// Ported from the legacy PHP map.php + restaurants table.
 model MapPlace {
-  id       Int     @id @default(autoincrement())
-  slug     String  @unique
+  id                   Int                @id @default(autoincrement())
+  slug                 String             @unique
   /// beach | restaurant | supermarket | bakery | pharmacy | transport | sport
-  category String
+  category             String
   /// icon variant inside the category — restaurants: restaurant | beach_club |
   /// lounge | snack | nightlife; transport: gas | airport | ferry | info;
   /// sport: gym | court. Empty = the category's default icon.
-  kind     String?
-  name     String
+  kind                 String?
+  name                 String
   /// the village / area, shown next to the name (Gustavia, Saint-Jean…)
-  zone     String?
-  lat      Float
-  lng      Float
-  descriptionEn String?
-  descriptionFr String?
+  zone                 String?
+  lat                  Float
+  lng                  Float
+  descriptionEn        String?
+  descriptionFr        String?
   /// approximate drive time from the villa, in minutes
-  driveMinutes Int?
+  driveMinutes         Int?
   /// via-points the driving route must pass through, in order, as
   /// "lat,lng|lat,lng" — St Barth's one-way lanes and hidden turn-offs make
   /// the router's shortest path wrong for some places
-  waypoints String?
+  waypoints            String?
   /// the last via-point is where you park; the rest of the way is on foot
   /// (drawn as a dashed walking line)
-  walkFromLastWaypoint Boolean @default(false)
-  website  String?
-  phone    String?
+  walkFromLastWaypoint Boolean            @default(false)
+  website              String?
+  phone                String?
   // restaurants: what the guest portal's concierge shows
   cuisineEn            String?
   cuisineFr            String?
@@ -630,10 +642,10 @@ model MapPlace {
   whatsapp             String?
   email                String?
   reservationExtras    ReservationExtra[]
-  sortOrder Int     @default(0)
-  isActive  Boolean @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  sortOrder            Int                @default(0)
+  isActive             Boolean            @default(true)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
 
   @@index([category, isActive])
 }
@@ -644,7 +656,7 @@ model MapPlace {
 /// chef. Ported from the legacy boat_partners + chef_partners tables.
 model ServicePartner {
   id          Int      @id @default(autoincrement())
-  /// boat | chef
+  /// boat | chef | extras (equipment rental)
   kind        String
   name        String
   contactName String?
@@ -663,6 +675,7 @@ model ServicePartner {
 
   boats      Boat[]
   chefOffers ChefOffer[]
+  extras     Extra[]
 
   @@unique([kind, name])
 }
@@ -798,43 +811,43 @@ model AnalyticsVisitor {
 /// One visit: a visitor's pages until 30 minutes of inactivity, or until
 /// they come back through another campaign/source.
 model AnalyticsSession {
-  id           String   @id
-  visitorId    String
-  isNewVisitor Boolean  @default(true)
-  startedAt    DateTime @default(now())
-  lastSeenAt   DateTime @default(now())
-  pageviews    Int      @default(0)
+  id               String   @id
+  visitorId        String
+  isNewVisitor     Boolean  @default(true)
+  startedAt        DateTime @default(now())
+  lastSeenAt       DateTime @default(now())
+  pageviews        Int      @default(0)
   /// time the page was actually visible and in use, summed over the pages
-  engagedSec   Int      @default(0)
-  entryPath    String
-  exitPath     String
-  referrer     String?
-  referrerHost String?
+  engagedSec       Int      @default(0)
+  entryPath        String
+  exitPath         String
+  referrer         String?
+  referrerHost     String?
   /// search | ai | social | agency | email | paid | referral | direct
-  channel      String   @default("direct")
+  channel          String   @default("direct")
   /// google, chatgpt, wimco, instagram…
-  source       String?
-  utmSource    String?
-  utmMedium    String?
-  utmCampaign  String?
-  utmTerm      String?
-  utmContent   String?
+  source           String?
+  utmSource        String?
+  utmMedium        String?
+  utmCampaign      String?
+  utmTerm          String?
+  utmContent       String?
   /// gclid | msclkid | fbclid…
-  clickIdType  String?
-  locale       String?
-  language     String?
-  country      String?
-  region       String?
-  city         String?
+  clickIdType      String?
+  locale           String?
+  language         String?
+  country          String?
+  region           String?
+  city             String?
   /// mobile | tablet | desktop
-  device       String?
-  browser      String?
-  os           String?
-  screenWidth  Int?
+  device           String?
+  browser          String?
+  os               String?
+  screenWidth      Int?
   /// a booking request was sent during this visit
-  converted    Boolean  @default(false)
+  converted        Boolean  @default(false)
   bookingRequestId Int?
-  legacy       Boolean  @default(false)
+  legacy           Boolean  @default(false)
 
   @@index([startedAt])
   @@index([visitorId])

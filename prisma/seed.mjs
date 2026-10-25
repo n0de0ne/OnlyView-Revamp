@@ -573,9 +573,698 @@ async function backfillConciergeRequests() {
   if (rows.length) console.log(`Moved ${rows.length} concierge request(s) out of extras`);
 }
 
+/**
+ * Extras = St Barth Provider's rental catalog (stbarthprovider.com/catalog-1,
+ * prices read on 2026-10-25, EUR per day; 0 = on request). One-time import,
+ * remembered in a setting (like the map batches), so everything stays
+ * editable in Admin → Extras / Conciergerie afterwards. Guests see the euro
+ * prices; the provider bills them, nothing is added to the villa's balance.
+ */
+const SB_PROVIDER_EXTRAS = [
+  {
+    "categoryEn": "Baby",
+    "categoryFr": "Bébé",
+    "nameEn": "Wooden Crib",
+    "nameFr": "Lit en bois",
+    "price": 50,
+    "descriptionEn": "Delivered with mattress & sheets",
+    "descriptionFr": "Livré avec matelas et draps"
+  },
+  {
+    "categoryEn": "Baby",
+    "categoryFr": "Bébé",
+    "nameEn": "Pack N' Play Crib",
+    "nameFr": "Lit parapluie",
+    "price": 35,
+    "descriptionEn": "Delivered with mattress & sheets",
+    "descriptionFr": "Livré avec matelas et draps"
+  },
+  {
+    "categoryEn": "Baby",
+    "categoryFr": "Bébé",
+    "nameEn": "Wooden Playpen + Mat",
+    "nameFr": "Parc en bois + tapis",
+    "price": 35,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Baby",
+    "categoryFr": "Bébé",
+    "nameEn": "High Chair",
+    "nameFr": "Chaise haute",
+    "price": 20,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Baby",
+    "categoryFr": "Bébé",
+    "nameEn": "Booster Seat",
+    "nameFr": "Rehausseur",
+    "price": 15,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Baby",
+    "categoryFr": "Bébé",
+    "nameEn": "Changing Mat",
+    "nameFr": "Matelas à langer",
+    "price": 15,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Baby",
+    "categoryFr": "Bébé",
+    "nameEn": "Bathtub",
+    "nameFr": "Baignoire bébé",
+    "price": 10,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Baby",
+    "categoryFr": "Bébé",
+    "nameEn": "Bouncer",
+    "nameFr": "Transat bébé",
+    "price": 15,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Baby",
+    "categoryFr": "Bébé",
+    "nameEn": "Bottle Warmer",
+    "nameFr": "Chauffe-biberon",
+    "price": 10,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Baby",
+    "categoryFr": "Bébé",
+    "nameEn": "Videophone",
+    "nameFr": "Babyphone vidéo",
+    "price": 10,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Baby",
+    "categoryFr": "Bébé",
+    "nameEn": "Pair of Bedrails",
+    "nameFr": "Paire de barrières de lit",
+    "price": 15,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Baby",
+    "categoryFr": "Bébé",
+    "nameEn": "Basic Stroller",
+    "nameFr": "Poussette",
+    "price": 20,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Baby",
+    "categoryFr": "Bébé",
+    "nameEn": "Toy Basket & Play Mat",
+    "nameFr": "Panier de jouets + tapis d'éveil",
+    "price": 25,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Baby",
+    "categoryFr": "Bébé",
+    "nameEn": "Baby Pool",
+    "nameFr": "Piscine bébé",
+    "price": 10,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Baby",
+    "categoryFr": "Bébé",
+    "nameEn": "UV Tent",
+    "nameFr": "Tente anti-UV",
+    "price": 10,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Baby",
+    "categoryFr": "Bébé",
+    "nameEn": "Baby Float",
+    "nameFr": "Bouée bébé",
+    "price": 8,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Baby",
+    "categoryFr": "Bébé",
+    "nameEn": "Beach Bucket Set",
+    "nameFr": "Kit de plage (seau, pelle…)",
+    "price": 8,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Baby",
+    "categoryFr": "Bébé",
+    "nameEn": "Kids Life Vest",
+    "nameFr": "Gilet de sauvetage enfant",
+    "price": 15,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Baby",
+    "categoryFr": "Bébé",
+    "nameEn": "Pool Security Fence",
+    "nameFr": "Barrière de sécurité piscine",
+    "price": 0,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Sleep",
+    "categoryFr": "Couchage",
+    "nameEn": "Bedspring + Mattress",
+    "nameFr": "Sommier + matelas",
+    "price": 190,
+    "descriptionEn": "Sheets for 1 week, pillow and duvet included",
+    "descriptionFr": "Draps pour 1 semaine, oreiller et couette inclus"
+  },
+  {
+    "categoryEn": "Sleep",
+    "categoryFr": "Couchage",
+    "nameEn": "Rollaway Comfort+",
+    "nameFr": "Lit d'appoint Confort+",
+    "price": 130,
+    "descriptionEn": "Sheets for 1 week, pillow and duvet included",
+    "descriptionFr": "Draps pour 1 semaine, oreiller et couette inclus"
+  },
+  {
+    "categoryEn": "Sleep",
+    "categoryFr": "Couchage",
+    "nameEn": "Rollaway Bed",
+    "nameFr": "Lit d'appoint",
+    "price": 90,
+    "descriptionEn": "Sheets for 1 week, pillow and duvet included",
+    "descriptionFr": "Draps pour 1 semaine, oreiller et couette inclus"
+  },
+  {
+    "categoryEn": "Sleep",
+    "categoryFr": "Couchage",
+    "nameEn": "Queen Air Bed",
+    "nameFr": "Matelas gonflable 2 places",
+    "price": 100,
+    "descriptionEn": "Sheets for 1 week, pillow and duvet included",
+    "descriptionFr": "Draps pour 1 semaine, oreiller et couette inclus"
+  },
+  {
+    "categoryEn": "Sleep",
+    "categoryFr": "Couchage",
+    "nameEn": "Twin Air Bed",
+    "nameFr": "Matelas gonflable 1 place",
+    "price": 75,
+    "descriptionEn": "Sheets for 1 week, pillow and duvet included",
+    "descriptionFr": "Draps pour 1 semaine, oreiller et couette inclus"
+  },
+  {
+    "categoryEn": "Sleep",
+    "categoryFr": "Couchage",
+    "nameEn": "Mattress Topper (twin or queen)",
+    "nameFr": "Surmatelas (1 ou 2 places)",
+    "price": 25,
+    "descriptionEn": "From €25 (twin) to €35 (queen) per day",
+    "descriptionFr": "De 25 € (1 place) à 35 € (2 places) par jour"
+  },
+  {
+    "categoryEn": "Pool",
+    "categoryFr": "Piscine",
+    "nameEn": "Pool Slide",
+    "nameFr": "Toboggan de piscine",
+    "price": 60,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Pool",
+    "categoryFr": "Piscine",
+    "nameEn": "Water Trampoline",
+    "nameFr": "Trampoline aquatique",
+    "price": 50,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Pool",
+    "categoryFr": "Piscine",
+    "nameEn": "Kids Gliss Party",
+    "nameFr": "Gliss Party enfants",
+    "price": 60,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Pool",
+    "categoryFr": "Piscine",
+    "nameEn": "XXL Float",
+    "nameFr": "Bouée XXL",
+    "price": 45,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Pool",
+    "categoryFr": "Piscine",
+    "nameEn": "Gold & Glitter Float",
+    "nameFr": "Bouée Gold & Glitter",
+    "price": 30,
+    "descriptionEn": "From €30 to €45 per day depending on the model",
+    "descriptionFr": "De 30 € à 45 € par jour selon le modèle"
+  },
+  {
+    "categoryEn": "Pool",
+    "categoryFr": "Piscine",
+    "nameEn": "Giant Wheel Roller",
+    "nameFr": "Roue géante",
+    "price": 40,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Pool",
+    "categoryFr": "Piscine",
+    "nameEn": "Pool Waterpolo Goal",
+    "nameFr": "But de water-polo",
+    "price": 40,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Pool",
+    "categoryFr": "Piscine",
+    "nameEn": "Giant Floating Carpet",
+    "nameFr": "Tapis flottant géant",
+    "price": 35,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Pool",
+    "categoryFr": "Piscine",
+    "nameEn": "Lie-On Float",
+    "nameFr": "Matelas flottant",
+    "price": 30,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Pool",
+    "categoryFr": "Piscine",
+    "nameEn": "Pool Basketball Hoop",
+    "nameFr": "Panier de basket flottant",
+    "price": 30,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Pool",
+    "categoryFr": "Piscine",
+    "nameEn": "Pool Volleyball Net",
+    "nameFr": "Filet de volley de piscine",
+    "price": 30,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Pool",
+    "categoryFr": "Piscine",
+    "nameEn": "2 Rafts + 2 Noodles",
+    "nameFr": "2 matelas + 2 frites",
+    "price": 25,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Pool",
+    "categoryFr": "Piscine",
+    "nameEn": "Floating Bar",
+    "nameFr": "Bar flottant",
+    "price": 15,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Pool",
+    "categoryFr": "Piscine",
+    "nameEn": "Foam Pool Float",
+    "nameFr": "Matelas mousse",
+    "price": 15,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Beach",
+    "categoryFr": "Plage",
+    "nameEn": "Beach Cabana + Blanket",
+    "nameFr": "Cabane de plage + plaid",
+    "price": 40,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Beach",
+    "categoryFr": "Plage",
+    "nameEn": "2 Big Chairs + Umbrella",
+    "nameFr": "2 grandes chaises + parasol",
+    "price": 25,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Beach",
+    "categoryFr": "Plage",
+    "nameEn": "2 Small Chairs + Umbrella",
+    "nameFr": "2 petites chaises + parasol",
+    "price": 20,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Beach",
+    "categoryFr": "Plage",
+    "nameEn": "Medium Cooler",
+    "nameFr": "Glacière moyenne",
+    "price": 15,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Beach",
+    "categoryFr": "Plage",
+    "nameEn": "Giant Island Hammock",
+    "nameFr": "Hamac flottant géant",
+    "price": 60,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Beach",
+    "categoryFr": "Plage",
+    "nameEn": "Adult Snorkel Kit",
+    "nameFr": "Kit de snorkeling adulte",
+    "price": 20,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Beach",
+    "categoryFr": "Plage",
+    "nameEn": "Kid Snorkel Kit",
+    "nameFr": "Kit de snorkeling enfant",
+    "price": 15,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Beach",
+    "categoryFr": "Plage",
+    "nameEn": "Bodyboard",
+    "nameFr": "Bodyboard",
+    "price": 25,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Beach",
+    "categoryFr": "Plage",
+    "nameEn": "Solid Paddle Board",
+    "nameFr": "Paddle rigide",
+    "price": 0,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Beach",
+    "categoryFr": "Plage",
+    "nameEn": "Waterpark",
+    "nameFr": "Parc aquatique gonflable",
+    "price": 0,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Packages",
+    "categoryFr": "Packs",
+    "nameEn": "Baby Time",
+    "nameFr": "Pack Baby Time",
+    "price": 50,
+    "descriptionEn": "1 crib, 1 high chair, 1 bathtub",
+    "descriptionFr": "1 lit, 1 chaise haute, 1 baignoire"
+  },
+  {
+    "categoryEn": "Packages",
+    "categoryFr": "Packs",
+    "nameEn": "Baby Playtime",
+    "nameFr": "Pack Baby Playtime",
+    "price": 60,
+    "descriptionEn": "1 wooden playpen, mat, 1 toy basket, 1 tunnel",
+    "descriptionFr": "1 parc en bois, tapis, 1 panier de jouets, 1 tunnel"
+  },
+  {
+    "categoryEn": "Packages",
+    "categoryFr": "Packs",
+    "nameEn": "Baby Beach Time",
+    "nameFr": "Pack Baby Beach Time",
+    "price": 30,
+    "descriptionEn": "1 UV tent, 1 baby pool, 1 beach bucket set, 1 baby float, 1 sand-free beach mat",
+    "descriptionFr": "1 tente anti-UV, 1 piscine bébé, 1 kit de plage, 1 bouée bébé, 1 tapis anti-sable"
+  },
+  {
+    "categoryEn": "Packages",
+    "categoryFr": "Packs",
+    "nameEn": "Fun Pool Time",
+    "nameFr": "Pack Fun Pool Time",
+    "price": 45,
+    "descriptionEn": "1 ring float, 2 pool rafts, 2 noodles, 1 animal floater",
+    "descriptionFr": "1 bouée, 2 matelas, 2 frites, 1 bouée animal"
+  },
+  {
+    "categoryEn": "Packages",
+    "categoryFr": "Packs",
+    "nameEn": "Beach Time",
+    "nameFr": "Pack Beach Time",
+    "price": 35,
+    "descriptionEn": "2 big chairs, 1 umbrella, 1 small cooler, 1 waterproof speaker",
+    "descriptionFr": "2 grandes chaises, 1 parasol, 1 petite glacière, 1 enceinte étanche"
+  },
+  {
+    "categoryEn": "Packages",
+    "categoryFr": "Packs",
+    "nameEn": "Fitness Time",
+    "nameFr": "Pack Fitness Time",
+    "price": 30,
+    "descriptionEn": "1 mat, 2 weights, 2 ankle weights, 1 jumping rope, 1 elastic band, 1 TRX",
+    "descriptionFr": "1 tapis, 2 haltères, 2 lests de cheville, 1 corde à sauter, 1 élastique, 1 TRX"
+  },
+  {
+    "categoryEn": "Packages",
+    "categoryFr": "Packs",
+    "nameEn": "Beach Set Up for the Day",
+    "nameFr": "Installation plage pour la journée",
+    "price": 0,
+    "descriptionEn": "Beach cabana, table, beach chairs, blanket, cooler",
+    "descriptionFr": "Cabane de plage, table, chaises, plaid, glacière"
+  },
+  {
+    "categoryEn": "Fitness",
+    "categoryFr": "Sport",
+    "nameEn": "Adjustable Dumbbells",
+    "nameFr": "Haltères réglables",
+    "price": 35,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Fitness",
+    "categoryFr": "Sport",
+    "nameEn": "Peloton Bike",
+    "nameFr": "Vélo Peloton",
+    "price": 0,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Fitness",
+    "categoryFr": "Sport",
+    "nameEn": "Treadmill",
+    "nameFr": "Tapis de course",
+    "price": 0,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Fitness",
+    "categoryFr": "Sport",
+    "nameEn": "Reformer Pilates",
+    "nameFr": "Reformer Pilates",
+    "price": 0,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Fitness",
+    "categoryFr": "Sport",
+    "nameEn": "Ice Bath Tub",
+    "nameFr": "Bain de glace",
+    "price": 0,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Fitness",
+    "categoryFr": "Sport",
+    "nameEn": "Compression Boots",
+    "nameFr": "Bottes de compression",
+    "price": 0,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Party",
+    "categoryFr": "Fête",
+    "nameEn": "Mirror Booth",
+    "nameFr": "Photobooth miroir",
+    "price": 0,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Party",
+    "categoryFr": "Fête",
+    "nameEn": "Classic Booth",
+    "nameFr": "Photobooth classique",
+    "price": 0,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Party",
+    "categoryFr": "Fête",
+    "nameEn": "Karaoke Box",
+    "nameFr": "Karaoké",
+    "price": 0,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Others",
+    "categoryFr": "Divers",
+    "nameEn": "PlayStation 5",
+    "nameFr": "PlayStation 5",
+    "price": 45,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Others",
+    "categoryFr": "Divers",
+    "nameEn": "Clothes Rack + Hangers",
+    "nameFr": "Portant + cintres",
+    "price": 35,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Others",
+    "categoryFr": "Divers",
+    "nameEn": "Mirror",
+    "nameFr": "Miroir sur pied",
+    "price": 35,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Others",
+    "categoryFr": "Divers",
+    "nameEn": "Steamer",
+    "nameFr": "Défroisseur vapeur",
+    "price": 30,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Others",
+    "categoryFr": "Divers",
+    "nameEn": "Handsteamer",
+    "nameFr": "Défroisseur à main",
+    "price": 20,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Others",
+    "categoryFr": "Divers",
+    "nameEn": "Yoga Mat",
+    "nameFr": "Tapis de yoga",
+    "price": 10,
+    "descriptionEn": null,
+    "descriptionFr": null
+  },
+  {
+    "categoryEn": "Others",
+    "categoryFr": "Divers",
+    "nameEn": "Tables & Chairs",
+    "nameFr": "Tables et chaises",
+    "price": 0,
+    "descriptionEn": null,
+    "descriptionFr": null
+  }
+];
+
+async function seedStBarthProviderExtras() {
+  const key = "extras_batch_sb_provider_2026_10";
+  if (await prisma.setting.findUnique({ where: { key } })) return;
+  const partner = await prisma.servicePartner.upsert({
+    where: { kind_name: { kind: "extras", name: "St Barth Provider" } },
+    update: {},
+    create: {
+      kind: "extras",
+      name: "St Barth Provider",
+      phone: "+590 690 76 47 58",
+      email: "reservation@stbarthprovider.com",
+      website: "https://www.stbarthprovider.com",
+      notes: "Location de matériel (bébé, couchage, piscine, plage, sport, fête). Prix en € par jour.",
+      currency: "EUR",
+    },
+  });
+  await prisma.extra.createMany({
+    data: SB_PROVIDER_EXTRAS.map((x, i) => ({
+      ...x,
+      unit: "night",
+      partnerId: partner.id,
+      isActive: true,
+      guestBookable: true,
+      sortOrder: 100 + i,
+    })),
+  });
+  await prisma.setting.create({ data: { key, value: new Date().toISOString() } });
+  console.log(`Imported ${SB_PROVIDER_EXTRAS.length} St Barth Provider extras`);
+}
+
 async function main() {
   await seedBase();
   await backfillConciergeRequests();
+  await seedStBarthProviderExtras();
   if (process.env.SEED_DEMO === "1") {
     await seedDemo();
   }

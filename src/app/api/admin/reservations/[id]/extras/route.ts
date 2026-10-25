@@ -2,7 +2,7 @@ import { prisma } from "@/lib/db";
 import { adminRoute, jsonError, jsonOk } from "@/lib/admin-api";
 import { ReservationExtraInput, dateOrNull } from "@/lib/admin-schemas";
 import { audit } from "@/lib/audit";
-import { lineAmount, serializeReservationExtra } from "@/lib/extras";
+import { lineAmount, providerTerms, serializeReservationExtra } from "@/lib/extras";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +15,10 @@ export const POST = adminRoute<Ctx>("manager", async (req, { params }, user) => 
   const parsed = ReservationExtraInput.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return jsonError("invalid_input: " + parsed.error.issues[0]?.message);
   const d = parsed.data;
+  // a catalog item from a rental company keeps its currency and is paid to it
+  const from = d.extraId
+    ? await prisma.extra.findUnique({ where: { id: d.extraId }, include: { partner: true } })
+    : null;
   const item = await prisma.reservationExtra.create({
     data: {
       reservationId,
@@ -26,6 +30,7 @@ export const POST = adminRoute<Ctx>("manager", async (req, { params }, user) => 
       status: d.status,
       serviceDate: dateOrNull(d.serviceDate),
       notes: d.notes ?? null,
+      ...providerTerms(from ?? {}),
     },
   });
   await audit({
