@@ -51,8 +51,8 @@ const nextConfig: NextConfig = {
       ["/activities", "/guide"],
       ["/st-barth-guide", "/guide"],
       ["/st-barth-seasons", "/guide/seasons"],
-      ["/st-barth-events", "/guide/seasons"],
-      ["/pointe-milou", "/location"],
+      ["/st-barth-events", "/guide/events"],
+      ["/pointe-milou", "/pointe-milou"],
       ["/villa-use-cases", "/villa"],
       ["/villa-vs-hotel", "/why-book-direct"],
       ["/honeymoon-st-barth", "/villa"],
@@ -106,6 +106,10 @@ const nextConfig: NextConfig = {
         destination: "https://onlyviewstbarth.com/:path*",
         permanent: true,
       },
+      // the neighbourhood page moved from /location to its old-site URL,
+      // /pointe-milou — the one that carries the query
+      { source: "/location", destination: "/pointe-milou", permanent: true },
+      { source: "/fr/location", destination: "/fr/pointe-milou", permanent: true },
       // before the generic ?lang=fr rule, which would otherwise swallow them
       ...contractRedirects,
       ...guestRedirects,

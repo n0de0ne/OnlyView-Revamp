@@ -39,20 +39,48 @@ pretending to be a hotel.
   `ImageGallery`, `ItemList`, `ContactPage`, `BreadcrumbList` everywhere.
 - **Plain-text facts** on the home and villa pages (`KeyFacts`): the same
   facts as the JSON-LD, in visible text, because answer engines quote text.
-- **Named neighbourhood**: the location page lists Le Christopher, Eden Rock,
-  Nikki Beach, Le Sereno, Le Toiny, Gustavia, the airport with drive times.
+- **`/pointe-milou`, the neighbourhood page** (the old site's URL, back): what
+  Pointe Milou is, why stay there (including the honest "no beach of its own"),
+  what is there (Le Christopher, Le Ti St Barth, Lorient), distances, the
+  named neighbourhood (Eden Rock, Nikki Beach, Le Sereno, Le Toiny, Gustavia,
+  the airport), the villa, and seven questions with answers (`FAQPage`). Its
+  `Place` node is anchored to the island's Wikidata entity and contains the
+  villa, so "villa in Pointe Milou" resolves to this house. `/location` 301s
+  here.
+- **`/map` in words**: the island village by village with drive times from the
+  villa, six questions about the island (`FAQPage`), on top of the directory and
+  the `TouristDestination` graph — the text a "St Barth map" query needs.
+- **Guide hub with the island in brief** (eleven facts: where, size, how to get
+  there, airport, language, money, time, power, driving, weather, our base) and
+  six dated, signed articles with official sources linked (airlines, ferries,
+  regatta and festival organisers, the tourism committee): getting here,
+  beaches, restaurants, seasons, practical info, events month by month.
+- **Titles that carry the queries**: "Villa ONLY VIEW St Barth (St Barts) — Luxury
+  Villa Rental in Pointe Milou", "4-Bedroom Villa in St Barth…", "St Barth Villa
+  Rental Rates & Seasons", "St Barth Map: Beaches, Villages & Restaurants",
+  "Pointe Milou, St Barth — Guide & Villa to Rent".
 - **Direct-vs-agency comparison table** on /why-book-direct — the page for
   "book St Barth villa direct" and the "vs agency" questions.
 - **17 FAQ entries** phrased the way people ask ("Where exactly is…", "How much
   per week…", "How far from Eden Rock…", "Is it rented by the owner…").
-- **`/llms.txt`**: a one-page factual brief for AI crawlers (llmstxt.org).
-- **robots.txt** explicitly welcomes 21 crawlers by name (GPTBot,
+- **`/llms.txt`**: a one-page factual brief for AI crawlers (llmstxt.org), and
+  **`/llms-full.txt`**: the whole site as one markdown file — facts, the
+  Pointe Milou page, the guides, the map directory, the FAQ, the live rate
+  table, the reviews — so one fetch is enough to recommend the villa accurately.
+- **IndexNow**: Réglages → *Référencement* has one button that resubmits every
+  page to Bing (which feeds Copilot and ChatGPT search); approving a review
+  pings on its own. The key is generated once and served at
+  `/indexnow-key.txt`. Google ignores IndexNow — Search Console is its channel.
+- **robots.txt** explicitly welcomes 27 crawlers by name (GPTBot,
   OAI-SearchBot, ClaudeBot, PerplexityBot, Google-Extended, Applebot,
-  Bingbot, Amazonbot, Meta, CCBot…), keeps `/admin`, `/api`, `/account`,
-  `/contracts` private.
-- **Sitemap** with one entry per language, hreflang alternates, real
-  `lastmod`, and image entries for the photo-led pages.
-- **Redirects**: every legacy `.php` URL, `www` → apex, `/en/*` → `/*`.
+  Bingbot, Amazonbot, Meta, Mistral, CCBot…), keeps `/admin`, `/api`,
+  `/account`, `/contracts` private.
+- **Sitemap** with one entry per language, hreflang alternates, per-page
+  `lastmod` (the latest approved review for `/` and `/reviews`, each guide's
+  own revision date, today for `/booking`), and image entries for the
+  photo-led pages.
+- **Redirects**: every legacy `.php` URL, `www` → apex, `/en/*` → `/*`,
+  `/location` → `/pointe-milou`, `/st-barth-events` → `/guide/events`.
 - **Reviews page rendered per request**, so a fresh deploy never serves the
   empty build-time snapshot to a crawler.
 - **Search Console / Bing tokens** are settings (Réglages → Contact), picked
@@ -68,10 +96,12 @@ BASE_URL=https://onlyviewstbarth.com node scripts/seo-audit.mjs
 
 1. **Google Business Profile** — create/claim "Villa ONLY VIEW" as a *Vacation
    home rental* at the exact pin (`https://maps.app.goo.gl/9eV7KhFcF9AJdWeLA`),
-   website = the site, phone = +590 690 39 90 47, photos from the gallery,
-   and answer the Q&A. This is the single biggest lever for "villa Pointe
-   Milou" and the map pack. Paste the profile URL into Réglages →
-   *Fiche Google Business* so it enters the structured data as `sameAs`.
+   website = the site, phone = +590 690 39 90 47, photos from the gallery
+   (add a bathroom photo: Google's vacation-rental spec asks for one),
+   "Pointe Milou" in the description, and answer the Q&A. This is the single
+   biggest lever for "villa Pointe Milou" and the map pack. Paste the profile
+   URL into Réglages → *Fiche Google Business* so it enters the structured
+   data as `sameAs`. Do the same on **Bing Places** (Copilot reads it).
 2. **Google Search Console + Bing Webmaster Tools** — verify the domain
    (paste the tokens in Réglages; they appear in `<head>` within the hour),
    submit `https://onlyviewstbarth.com/sitemap.xml`, and check *Pages* →
@@ -114,4 +144,9 @@ BASE_URL=https://onlyviewstbarth.com node scripts/seo-audit.mjs
 - `site:onlyviewstbarth.com` on Google and Bing → both languages indexed,
   no `/en/` or `?` URLs.
 - Rich results test (search.google.com/test/rich-results) on `/`, `/faq`,
-  `/reviews`, `/guide/best-beaches` → no errors.
+  `/reviews`, `/pointe-milou`, `/map`, `/guide/best-beaches` → no errors.
+- Réglages → *Référencement*: the last IndexNow submission shows "reçu (HTTP
+  200/202)". Bing Webmaster Tools → *IndexNow* lists the submitted URLs.
+- Ask the engines the neighbourhood questions: "villa in Pointe Milou St
+  Barth", "is there a beach in Pointe Milou", "where is Pointe Milou" — the
+  site should be quoted, not an agency's category page.

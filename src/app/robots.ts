@@ -2,27 +2,47 @@ import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/seo";
 
 const PRIVATE = ["/admin", "/api/", "/account", "/contracts/"];
+
+/**
+ * The crawlers that feed search and AI answers, welcomed by name. The site
+ * *is* the marketing: being read, indexed and quoted is the point, so every
+ * search-engine, answer-engine and training crawler gets the same open door
+ * (and the same closed one on the private areas).
+ */
 const AI_BOTS = [
+  // OpenAI: training, ChatGPT search index, on-demand fetches
   "GPTBot",
   "OAI-SearchBot",
   "ChatGPT-User",
+  // Anthropic
   "ClaudeBot",
   "Claude-User",
   "Claude-SearchBot",
   "anthropic-ai",
+  // Perplexity
   "PerplexityBot",
   "Perplexity-User",
-  "Google-Extended",
+  // Google (search, AI Overviews / Gemini grounding, Vertex)
   "Googlebot",
+  "Googlebot-Image",
+  "Google-Extended",
+  "Google-CloudVertexBot",
+  // Microsoft Bing → Copilot, ChatGPT search
   "Bingbot",
+  // Apple (Siri, Spotlight, Apple Intelligence)
   "Applebot",
   "Applebot-Extended",
+  // the others that answer questions
   "DuckAssistBot",
   "YouBot",
   "Amazonbot",
   "Meta-ExternalAgent",
+  "Meta-ExternalFetcher",
+  "MistralAI-User",
   "cohere-ai",
   "CCBot",
+  "PetalBot",
+  "YandexBot",
 ];
 
 export default function robots(): MetadataRoute.Robots {
@@ -33,8 +53,6 @@ export default function robots(): MetadataRoute.Robots {
         allow: "/",
         disallow: PRIVATE,
       },
-      // GEO: the AI crawlers and answer engines, welcomed by name — the site
-      // *is* the marketing, and being quoted is the point.
       ...AI_BOTS.map((userAgent) => ({ userAgent, allow: "/", disallow: PRIVATE })),
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,

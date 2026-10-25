@@ -13,18 +13,51 @@ export interface GuideSection {
   flightSearch?: boolean;
 }
 
+export interface GuideLink {
+  label: { en: string; fr: string };
+  url: string;
+}
+
 export interface GuideArticle {
   slug: string;
   category: string;
   title: { en: string; fr: string };
   description: { en: string; fr: string };
+  /** first published / last materially revised — datePublished, dateModified, sitemap lastmod */
+  published: string;
+  updated: string;
+  /** the <title> and meta description: shorter than the H1 and the intro,
+      which engines cut at about 60 and 160 characters */
+  meta: { title: { en: string; fr: string }; description: { en: string; fr: string } };
   sections: { en: GuideSection[]; fr: GuideSection[] };
+  /** official sources behind the article (airlines, organisers, the tourism
+      office): answer engines weigh cited pages, readers get the timetable */
+  links?: GuideLink[];
 }
+
+const TOURISM_OFFICE: GuideLink = {
+  label: { en: "Saint-Barthélemy Tourism Committee (official)", fr: "Comité du Tourisme de Saint-Barthélemy (officiel)" },
+  url: "https://www.saintbarth-tourisme.com",
+};
 
 export const GUIDES: GuideArticle[] = [
   {
     slug: "getting-here",
     category: "practical",
+    published: "2025-11-01",
+    updated: "2026-10-25",
+    meta: {
+      title: { en: "Getting to St Barth: SXM or SJU Flights, Ferry, Transfers", fr: "Venir à St Barth : vols via SXM ou SJU, ferry, transferts" },
+      description: { en: "How to reach St Barth via St Maarten (SXM) or San Juan (SJU), the short flight into SBH, the ferry, transfers, and the 10-minute drive to Villa ONLY VIEW.", fr: "Comment rejoindre St Barth via St Maarten (SXM) ou San Juan (SJU), le vol jusqu'à SBH, le ferry, les transferts et les 10 minutes de route jusqu'à la villa." },
+    },
+    links: [
+      { label: { en: "Winair (St Maarten ↔ St Barth)", fr: "Winair (St Maarten ↔ St Barth)" }, url: "https://www.winair.sx" },
+      { label: { en: "St Barth Commuter (scheduled flights and charters)", fr: "St Barth Commuter (vols réguliers et charters)" }, url: "https://www.stbarthcommuter.com" },
+      { label: { en: "Tradewind Aviation (San Juan ↔ St Barth)", fr: "Tradewind Aviation (San Juan ↔ St Barth)" }, url: "https://www.flytradewind.com" },
+      { label: { en: "Great Bay Express ferry (Philipsburg ↔ Gustavia)", fr: "Ferry Great Bay Express (Philipsburg ↔ Gustavia)" }, url: "https://www.greatbayexpress.com" },
+      { label: { en: "Voyager ferry (Marigot ↔ Gustavia)", fr: "Ferry Voyager (Marigot ↔ Gustavia)" }, url: "https://www.voy12.com" },
+      TOURISM_OFFICE,
+    ],
     title: {
       en: "Getting to St Barth (and to the villa)",
       fr: "Venir à St Barth (et jusqu'à la villa)",
@@ -113,6 +146,13 @@ export const GUIDES: GuideArticle[] = [
   {
     slug: "best-beaches",
     category: "island",
+    published: "2025-11-01",
+    updated: "2026-10-25",
+    meta: {
+      title: { en: "The Best Beaches of St Barth, from Pointe Milou", fr: "Les plus belles plages de St Barth, depuis Pointe Milou" },
+      description: { en: "Our favourite St Barth beaches and the drive time from Villa ONLY VIEW: Lorient, St Jean, Grand Cul-de-Sac, Gouverneur, Saline, Toiny, Colombier, Flamands.", fr: "Nos plages préférées à St Barth et le temps de route depuis la Villa ONLY VIEW : Lorient, St Jean, Grand Cul-de-Sac, Gouverneur, Saline, Toiny, Colombier." },
+    },
+    links: [TOURISM_OFFICE],
     title: {
       en: "The best beaches of St Barth, from Pointe Milou",
       fr: "Plages de St Barth, vues de Pointe Milou",
@@ -221,6 +261,12 @@ export const GUIDES: GuideArticle[] = [
   {
     slug: "best-restaurants",
     category: "island",
+    published: "2025-11-01",
+    updated: "2026-10-25",
+    meta: {
+      title: { en: "Where to Eat in St Barth: Our Top Restaurant Picks", fr: "Où manger à St Barth : nos restaurants coups de cœur" },
+      description: { en: "The St Barth restaurants we recommend to friends: Ti'Corail, La Cantina, Le Repaire, Barry Rooftop, L'Isola, L'Isoletta, Bonito, L'Esprit, plus booking tips.", fr: "Les restaurants de St Barth que nous conseillons à nos amis : Ti'Corail, La Cantina, Le Repaire, Barry Rooftop, L'Isola, L'Isoletta, Bonito, L'Esprit." },
+    },
     title: {
       en: "Where to eat in St Barth: our top picks",
       fr: "Où manger à St Barth : nos coups de cœur",
@@ -339,6 +385,13 @@ export const GUIDES: GuideArticle[] = [
   {
     slug: "seasons",
     category: "practical",
+    published: "2025-11-01",
+    updated: "2026-10-25",
+    meta: {
+      title: { en: "St Barth Seasons: When to Come, Month by Month", fr: "Les saisons de St Barth : quand venir, mois par mois" },
+      description: { en: "When to visit St Barth, season by season: Thanksgiving, Christmas and New Year, February to April, the May–June shoulder season, summer, and the quiet autumn.", fr: "Quand venir à St Barth, saison par saison : Thanksgiving, Noël et Nouvel An, février à avril, l'intersaison de mai-juin, l'été et l'automne calme." },
+    },
+    links: [TOURISM_OFFICE],
     title: {
       en: "St Barth seasons: when to come",
       fr: "Les saisons de St Barth : quand venir",
@@ -437,6 +490,314 @@ export const GUIDES: GuideArticle[] = [
           h: "De septembre à mi-novembre",
           p: [
             "C'est la période calme de l'île. Beaucoup de restaurants, de boutiques et certains hôtels ferment quelques semaines pour que leurs équipes partent à leur tour en vacances, puis tout rouvre à temps pour Thanksgiving.",
+          ],
+        },
+      ],
+    },
+  },
+  {
+    slug: "practical-info",
+    category: "practical",
+    published: "2026-10-25",
+    updated: "2026-10-25",
+    meta: {
+      title: { en: "St Barth Practical Guide: Money, Driving, Power, Health", fr: "St Barth pratique : argent, voiture, électricité, santé" },
+      description: { en: "The practical side of St Barth from villa owners: entry rules, euros and dollars, tipping, renting a car, plugs and voltage, tap water, pharmacies, Sundays.", fr: "Le côté pratique de St Barth par des propriétaires : formalités, euros et dollars, pourboires, voiture, prises et voltage, eau du robinet, pharmacies." },
+    },
+    links: [
+      TOURISM_OFFICE,
+      { label: { en: "France-Visas (entry requirements for France and Saint-Barthélemy)", fr: "France-Visas (conditions d'entrée en France et à Saint-Barthélemy)" }, url: "https://france-visas.gouv.fr" },
+    ],
+    title: {
+      en: "St Barth practical guide: money, language, driving, power, water, health",
+      fr: "St Barth pratique : argent, langue, voiture, électricité, eau, santé",
+    },
+    description: {
+      en: "The practical side of a St Barth holiday, from villa owners: entry rules, euros and dollars, tipping, renting a car, plugs and voltage, tap water, pharmacies and the hospital, Sundays, and what to pack.",
+      fr: "Le côté pratique d'un séjour à St Barth, par des propriétaires de villa : formalités d'entrée, euros et dollars, pourboires, voiture de location, prises et voltage, eau du robinet, pharmacies et hôpital, dimanches, et quoi emporter.",
+    },
+    sections: {
+      en: [
+        {
+          h: "Before you fly",
+          p: [
+            "St Barth is France, so the entry rules are France's. EU citizens travel with an identity card; visitors from the United States, Canada and the United Kingdom need a passport and no visa for stays under 90 days. If you do need a visa for France, make sure it explicitly covers Saint-Barthélemy, which sits outside the Schengen area. Rules change, so check the official France-Visas site before you book.",
+            "Travel insurance is a good idea in any season and essential between June and November, when a storm can disrupt flights. Pack light: the planes into St Barth are small, bags occasionally follow on the next flight, and nobody dresses up here anyway. A swimsuit and your medicines go in the hand luggage.",
+            "Bring a plug adapter if your devices are American or British, reef-safe sunscreen, and insect repellent for the evenings after rain.",
+          ],
+        },
+        {
+          h: "Money",
+          p: [
+            "The currency is the euro. US dollars are accepted in most restaurants and shops, usually at a round rate that is not in your favour, so paying in euros or by card is simpler. Visa and Mastercard work everywhere, American Express less often. Keep some cash for the bakery and for taxis.",
+            "There is no VAT in St Barth, which is why the watches, jewellery and fashion in Gustavia cost less than in Paris, and why the shopping bags on the ferry are so big.",
+          ],
+        },
+        {
+          h: "Language and manners",
+          p: [
+            "French is the language, and English is spoken in every restaurant, shop and hotel. Say bonjour when you walk in, the way you would in France; it changes the welcome.",
+            "Service is included in restaurant bills, as everywhere in France. Rounding up or leaving 5 to 10% after a good meal is appreciated but not expected. Taxi drivers and the housekeeping team are happy with a tip, and nobody will be offended without one.",
+          ],
+        },
+        {
+          h: "Driving and getting around",
+          p: [
+            "Rent a small car. The island has one main road and a lot of steep, narrow lanes; a Mini Moke or a small SUV is easier to park than anything bigger, and parking in Gustavia at dinner time takes patience. You drive on the right, and your home driving licence is fine for a holiday.",
+            "Taxis exist but are few and do not cruise: book them ahead for dinner returns, or ask us, we have the drivers' numbers. There is no ride-hailing app. Gas stations close on Sundays, so fill up on Saturday.",
+            "We can have a rental car waiting at the villa for your arrival. Tell us your flight and the size of car you like.",
+          ],
+          places: ["gas-station-lorient", "gas-station-st-jean"],
+        },
+        {
+          h: "Time, power, water, phone",
+          p: [
+            "St Barth is on UTC−4 all year, with no daylight saving. That is one hour ahead of New York in winter and the same time in summer; Paris is five hours ahead in winter, six in summer.",
+            "Electricity is 220–230 volts with European two-pin plugs (types C and E). American devices need an adapter and, for hairdryers and the like, dual voltage.",
+            "Tap water comes from the island's desalination plant and is safe to drink; many people prefer bottled water for the taste. The villa has 5 Gbps fibre Wi-Fi, faster than most offices.",
+            "Phone numbers are French (+590). Your operator's roaming rules apply, so check them before you land, or simply use the villa's Wi-Fi.",
+          ],
+        },
+        {
+          h: "Shopping and food",
+          p: [
+            "The supermarkets are in Lorient (5 minutes from the villa), St Jean and Gustavia, and the bakeries open early. Many shops close at lunchtime, on Sunday afternoons and on French public holidays; the villa's housekeeping doesn't run on Sundays and holidays either.",
+            "If you want the fridge full when you land, tell us before you arrive and we will point you to the right shops. Our concierge can also arrange a private chef for one evening or for the whole week.",
+          ],
+          places: ["u-express-lorient", "monoprix-st-jean", "super-u"],
+        },
+        {
+          h: "Health and safety",
+          p: [
+            "St Barth has a hospital in Gustavia (Hôpital de Bruyn) for emergencies, doctors in town, and pharmacies in Gustavia and St Jean. The emergency numbers are 15 (medical) and 112.",
+            "The sun is strong all year, the sea can have currents on the Atlantic side and at Saline and Gouverneur after a swell, and mosquitoes come out at dusk. Our pool is not fenced, so small children need an adult nearby, as everywhere on the island.",
+          ],
+          places: ["pharmacie-de-gustavia", "pharmacie-de-st-jean"],
+        },
+        {
+          h: "What nobody tells you",
+          p: [
+            "The airport closes at sunset, so a late connection in St Maarten means a night there or the ferry. Restaurants book up weeks ahead between Christmas and March; send us your wishlist and we will reserve. September and October are the quiet months, when many places close for their own holidays. And bring less than you think: you will live in a swimsuit.",
+          ],
+        },
+      ],
+      fr: [
+        {
+          h: "Avant de partir",
+          p: [
+            "St Barth, c'est la France : les formalités d'entrée sont celles de la France. Les citoyens de l'UE voyagent avec une carte d'identité ; les visiteurs des États-Unis, du Canada et du Royaume-Uni ont besoin d'un passeport et d'aucun visa pour moins de 90 jours. Si vous avez besoin d'un visa pour la France, vérifiez qu'il couvre bien Saint-Barthélemy, qui est hors espace Schengen. Les règles changent : consultez le site officiel France-Visas avant de réserver.",
+            "Une assurance voyage est une bonne idée en toute saison et indispensable de juin à novembre, quand une tempête peut perturber les vols. Voyagez léger : les avions vers St Barth sont petits, les bagages suivent parfois sur le vol d'après, et personne ne s'habille ici de toute façon. Un maillot et vos médicaments vont en cabine.",
+            "Prévoyez un adaptateur si vos appareils sont américains ou britanniques, une crème solaire respectueuse des coraux, et un anti-moustiques pour les soirées après la pluie.",
+          ],
+        },
+        {
+          h: "L'argent",
+          p: [
+            "La monnaie est l'euro. Les dollars américains sont acceptés dans la plupart des restaurants et des boutiques, souvent à un taux arrondi qui n'est pas en votre faveur : payer en euros ou par carte est plus simple. Visa et Mastercard passent partout, American Express moins souvent. Gardez un peu de liquide pour la boulangerie et les taxis.",
+            "Il n'y a pas de TVA à St Barth : c'est pour cela que les montres, les bijoux et la mode coûtent moins cher à Gustavia qu'à Paris, et que les sacs sont si gros sur le ferry du retour.",
+          ],
+        },
+        {
+          h: "La langue et les usages",
+          p: [
+            "On parle français, et l'anglais est compris dans tous les restaurants, boutiques et hôtels. Dites bonjour en entrant, comme en France : cela change l'accueil.",
+            "Le service est compris dans l'addition, comme partout en France. Arrondir ou laisser 5 à 10 % après un bon repas fait plaisir mais n'est pas attendu. Les chauffeurs de taxi et l'équipe de ménage apprécient un pourboire, et personne ne se vexera sans.",
+          ],
+        },
+        {
+          h: "Conduire et se déplacer",
+          p: [
+            "Louez une petite voiture. L'île a une route principale et beaucoup de petites routes raides et étroites ; une Mini Moke ou un petit SUV se gare plus facilement que n'importe quoi de plus grand, et se garer à Gustavia à l'heure du dîner demande de la patience. On roule à droite, et votre permis habituel suffit pour des vacances.",
+            "Il y a des taxis, mais peu, et ils ne circulent pas à vide : réservez-les à l'avance pour les retours de dîner, ou demandez-nous, nous avons les numéros des chauffeurs. Il n'y a pas d'application de VTC. Les stations-service ferment le dimanche : faites le plein le samedi.",
+            "Nous pouvons faire livrer une voiture de location à la villa pour votre arrivée. Indiquez-nous votre vol et la taille de voiture qui vous convient.",
+          ],
+          places: ["gas-station-lorient", "gas-station-st-jean"],
+        },
+        {
+          h: "Heure, électricité, eau, téléphone",
+          p: [
+            "St Barth est à UTC−4 toute l'année, sans changement d'heure. Cela fait 5 heures de moins que Paris en hiver et 6 en été ; une heure de plus que New York en hiver, la même heure en été.",
+            "L'électricité est en 220–230 volts avec des prises européennes (types C et E). Les appareils américains ont besoin d'un adaptateur et, pour les sèche-cheveux et autres, d'un double voltage.",
+            "L'eau du robinet vient de l'usine de dessalement de l'île et se boit sans risque ; beaucoup préfèrent l'eau en bouteille pour le goût. La villa a la fibre à 5 Gbps, plus rapide que la plupart des bureaux.",
+            "Les numéros de téléphone sont français (+590). Les règles d'itinérance de votre opérateur s'appliquent : vérifiez-les avant d'atterrir, ou utilisez simplement le Wi-Fi de la villa.",
+          ],
+        },
+        {
+          h: "Courses et cuisine",
+          p: [
+            "Les supermarchés sont à Lorient (5 minutes de la villa), à St Jean et à Gustavia, et les boulangeries ouvrent tôt. Beaucoup de commerces ferment à l'heure du déjeuner, le dimanche après-midi et les jours fériés ; le ménage de la villa ne se fait pas non plus les dimanches et jours fériés.",
+            "Si vous voulez trouver le frigo plein en arrivant, dites-le-nous avant votre départ et nous vous indiquerons les bonnes adresses. Notre conciergerie peut aussi organiser un chef à domicile pour un soir ou pour toute la semaine.",
+          ],
+          places: ["u-express-lorient", "monoprix-st-jean", "super-u"],
+        },
+        {
+          h: "Santé et sécurité",
+          p: [
+            "St Barth a un hôpital à Gustavia (l'hôpital de Bruyn) pour les urgences, des médecins en ville, et des pharmacies à Gustavia et à St Jean. Les numéros d'urgence sont le 15 (SAMU) et le 112.",
+            "Le soleil est fort toute l'année, la mer peut avoir des courants côté Atlantique et à Saline ou Gouverneur après une houle, et les moustiques sortent à la tombée du jour. Notre piscine n'est pas clôturée : les petits ont besoin d'un adulte à côté, comme partout sur l'île.",
+          ],
+          places: ["pharmacie-de-gustavia", "pharmacie-de-st-jean"],
+        },
+        {
+          h: "Ce que personne ne vous dit",
+          p: [
+            "L'aéroport ferme au coucher du soleil : une correspondance tardive à St Maarten, c'est une nuit sur place ou le ferry. Les restaurants se réservent des semaines à l'avance entre Noël et mars ; envoyez-nous vos envies et nous réservons. Septembre et octobre sont les mois calmes, quand beaucoup d'adresses ferment pour leurs propres vacances. Et emportez moins que prévu : vous vivrez en maillot.",
+          ],
+        },
+      ],
+    },
+  },
+  {
+    slug: "events",
+    category: "island",
+    published: "2026-10-25",
+    updated: "2026-10-25",
+    meta: {
+      title: { en: "St Barth Events & Festivals, Month by Month", fr: "Les événements de St Barth, mois par mois" },
+      description: { en: "St Barth through the year: the Music Festival in January, Carnival, the Bucket regatta in March, Les Voiles in April, summer fêtes, the Gourmet Festival in November.", fr: "St Barth au fil de l'année : le Music Festival en janvier, le Carnaval, la Bucket en mars, Les Voiles en avril, les fêtes de l'été, le Gourmet Festival en novembre." },
+    },
+    links: [
+      TOURISM_OFFICE,
+      { label: { en: "St Barths Bucket Regatta (March)", fr: "St Barths Bucket Regatta (mars)" }, url: "https://www.bucketregatta.com" },
+      { label: { en: "Saint-Barth Gourmet Festival (November)", fr: "Saint-Barth Gourmet Festival (novembre)" }, url: "https://www.saintbarthgourmetfestival.com" },
+      { label: { en: "St Barth Cata Cup (November)", fr: "St Barth Cata Cup (novembre)" }, url: "https://www.stbarthcatacup.com" },
+    ],
+    title: {
+      en: "St Barth events and festivals, month by month",
+      fr: "Les événements de St Barth, mois par mois",
+    },
+    description: {
+      en: "What happens in St Barth through the year: the Music Festival in January, Carnival, the Bucket superyacht regatta in March, Les Voiles de Saint-Barth in April, the summer village fêtes, the Gourmet Festival and the Cata Cup in November, New Year's Eve in Gustavia.",
+      fr: "Ce qui se passe à St Barth au fil de l'année : le Music Festival en janvier, le Carnaval, la régate de superyachts Bucket en mars, Les Voiles de Saint-Barth en avril, les fêtes des villages l'été, le Gourmet Festival et la Cata Cup en novembre, le Nouvel An à Gustavia.",
+    },
+    sections: {
+      en: [
+        {
+          h: "Why it matters when you book",
+          p: [
+            "A few weeks each year the island fills up, the restaurants book out and the harbour turns into a show. They are wonderful to see, and worth knowing about, either to be here for them or to avoid them. Dates move a little from one year to the next, so check the organisers' sites before you fix your flights.",
+          ],
+        },
+        {
+          h: "January: the Music Festival",
+          p: [
+            "The St Barts Music Festival brings classical musicians, jazz players and dancers to the island for about two weeks in January, with concerts in the churches of Gustavia and Lorient and a few open-air evenings. Low-key, excellent, and the island is at its prettiest once the holiday crowd has left.",
+          ],
+        },
+        {
+          h: "February and March: Carnival",
+          p: [
+            "Carnival builds up through February with parades in Gustavia and ends on Mardi Gras and Ash Wednesday, when Vaval, the carnival king, is burned on Shell Beach. Loud, local and great fun with children.",
+          ],
+          places: ["shell-beach"],
+        },
+        {
+          h: "March: the Bucket Regatta",
+          p: [
+            "For four days in mid-March the world's largest sailing yachts race around the island and fill Gustavia harbour. If you don't sail, the best seats are the terraces above Gustavia and the hills along the course; from Pointe Milou you watch them pass offshore.",
+          ],
+        },
+        {
+          h: "April: Les Voiles de Saint-Barth",
+          p: [
+            "A week of racing for a hundred or so yachts, from the big maxis to local boats, with parties in the harbour every evening. Late April also brings the St Barth Film Festival, a few days of Caribbean cinema in Gustavia.",
+          ],
+        },
+        {
+          h: "May and June: the quiet pleasures",
+          p: [
+            "No big events, which is exactly the point: warmer sea, calm island, easy tables. Every other spring, the Transat Paprec, a two-handed sailing race from Concarneau in Brittany, finishes in Gustavia, and the harbour fills with small, fast boats and their tired crews.",
+          ],
+        },
+        {
+          h: "July and August: the fêtes",
+          p: [
+            "Bastille Day on 14 July is celebrated in Gustavia with fireworks. Then the villages take turns through August, each with its own fête of music, food and boat races: the island's own day, the Fête de la Saint-Barthélemy, is on 24 August with a regatta and fireworks over Gustavia harbour, and Corossol follows with the Fête de Saint-Louis on the 25th.",
+          ],
+          places: ["corossol-beach"],
+        },
+        {
+          h: "September and October: the pause",
+          p: [
+            "Nothing on the calendar. Many restaurants and some hotels close for a few weeks so their teams can take their own holidays, and the island reopens for Thanksgiving.",
+          ],
+        },
+        {
+          h: "November: Gourmet Festival, Cata Cup, Thanksgiving",
+          p: [
+            "In the first half of November the Saint-Barth Gourmet Festival pairs visiting Michelin-starred chefs with the island's restaurants for a week of special menus; book those dinners early. The St Barth Cata Cup, a beach-catamaran regatta launched from St Jean, follows in the second half of the month. Thanksgiving week is when the season really starts.",
+          ],
+          places: ["st-jean-beach-restaurants-side"],
+        },
+        {
+          h: "December: Christmas and New Year",
+          p: [
+            "Gustavia puts up its Christmas village, the harbour fills with the biggest yachts of the year, and on 31 December the New Year's Eve regatta sails around the island in the afternoon before the fireworks over the harbour at midnight. At the villa these two weeks are rented as 7-night packages and book out up to a year ahead.",
+          ],
+        },
+      ],
+      fr: [
+        {
+          h: "Pourquoi cela compte quand vous réservez",
+          p: [
+            "Quelques semaines par an, l'île se remplit, les restaurants affichent complet et le port devient un spectacle. C'est magnifique à voir, et bon à savoir, pour être là ou pour l'éviter. Les dates bougent un peu d'une année à l'autre : vérifiez les sites des organisateurs avant de fixer vos vols.",
+          ],
+        },
+        {
+          h: "Janvier : le Music Festival",
+          p: [
+            "Le St Barts Music Festival fait venir musiciens classiques, jazzmen et danseurs sur l'île pendant deux semaines environ en janvier, avec des concerts dans les églises de Gustavia et de Lorient et quelques soirées en plein air. Discret, excellent, et l'île est à son plus beau une fois la foule des fêtes repartie.",
+          ],
+        },
+        {
+          h: "Février et mars : le Carnaval",
+          p: [
+            "Le Carnaval monte en puissance tout février avec des défilés à Gustavia et se termine le Mardi gras et le mercredi des Cendres, quand Vaval, le roi du carnaval, est brûlé sur Shell Beach. Bruyant, local et très amusant avec des enfants.",
+          ],
+          places: ["shell-beach"],
+        },
+        {
+          h: "Mars : la Bucket Regatta",
+          p: [
+            "Pendant quatre jours à la mi-mars, les plus grands voiliers du monde font le tour de l'île et remplissent le port de Gustavia. Si vous ne naviguez pas, les meilleures places sont les terrasses au-dessus de Gustavia et les collines le long du parcours ; depuis Pointe Milou, on les regarde passer au large.",
+          ],
+        },
+        {
+          h: "Avril : Les Voiles de Saint-Barth",
+          p: [
+            "Une semaine de régates pour une centaine de voiliers, des grands maxis aux bateaux locaux, avec des soirées sur le port chaque soir. Fin avril, le St Barth Film Festival propose aussi quelques jours de cinéma caribéen à Gustavia.",
+          ],
+        },
+        {
+          h: "Mai et juin : les plaisirs tranquilles",
+          p: [
+            "Pas de grand événement, et c'est justement l'intérêt : mer plus chaude, île calme, tables faciles. Un printemps sur deux, la Transat Paprec, course en double au départ de Concarneau, arrive à Gustavia, et le port se remplit de petits bateaux rapides et d'équipages fatigués.",
+          ],
+        },
+        {
+          h: "Juillet et août : les fêtes",
+          p: [
+            "Le 14 juillet se fête à Gustavia avec un feu d'artifice. Puis les villages se relaient tout le mois d'août, chacun avec sa fête, sa musique, ses repas et ses courses de bateaux : la fête de l'île, la Saint-Barthélemy, tombe le 24 août avec une régate et un feu d'artifice sur le port de Gustavia, et Corossol enchaîne avec la fête de la Saint-Louis le 25.",
+          ],
+          places: ["corossol-beach"],
+        },
+        {
+          h: "Septembre et octobre : la pause",
+          p: [
+            "Rien au calendrier. Beaucoup de restaurants et certains hôtels ferment quelques semaines pour que leurs équipes partent à leur tour en vacances, et l'île rouvre pour Thanksgiving.",
+          ],
+        },
+        {
+          h: "Novembre : Gourmet Festival, Cata Cup, Thanksgiving",
+          p: [
+            "Dans la première moitié de novembre, le Saint-Barth Gourmet Festival associe des chefs étoilés invités aux restaurants de l'île pour une semaine de menus spéciaux ; réservez ces dîners tôt. La St Barth Cata Cup, régate de catamarans de sport lancée depuis St Jean, suit dans la seconde moitié du mois. La semaine de Thanksgiving marque le vrai début de la saison.",
+          ],
+          places: ["st-jean-beach-restaurants-side"],
+        },
+        {
+          h: "Décembre : Noël et le Nouvel An",
+          p: [
+            "Gustavia installe son village de Noël, le port se remplit des plus grands yachts de l'année, et le 31 décembre la régate du Nouvel An fait le tour de l'île l'après-midi avant le feu d'artifice sur le port à minuit. À la villa, ces deux semaines se louent en forfaits de 7 nuits et se réservent jusqu'à un an à l'avance.",
           ],
         },
       ],

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import type { Locale } from "./i18n";
-import { CONTENT_UPDATED, OWNER_EMAIL, OWNER_PHONE, VILLA, VILLA_MAP_URL } from "./site-facts";
+import { CONTENT_UPDATED, ISLAND, OWNER_EMAIL, OWNER_PHONE, POINTE_MILOU, VILLA, VILLA_MAP_URL } from "./site-facts";
 
 /**
  * The site's public address, used for every absolute link the server hands
@@ -181,6 +181,8 @@ export function vacationRentalJsonLd(opts: {
   reviewCount?: number;
   priceRange?: string;
   sameAs?: string[];
+  /** a few approved guest reviews, inlined as `review` (review snippets) */
+  reviews?: Array<{ name: string; rating: number; message: string; date?: string }>;
 }) {
   const fr = opts.locale === "fr";
   return {
@@ -202,6 +204,9 @@ export function vacationRentalJsonLd(opts: {
     longitude: VILLA.lng,
     geo: ORG.geo,
     hasMap: ORG.hasMap,
+    // the neighbourhood as an entity of its own (see pointeMilouJsonLd), so
+    // "villa in Pointe Milou" resolves to this house
+    containedInPlace: { "@id": `${SITE_URL}/#pointe-milou` },
     telephone: ORG.telephone,
     email: ORG.email,
     brand: { "@type": "Brand", "@id": `${SITE_URL}/#org`, name: VILLA.name },
@@ -257,6 +262,51 @@ export function vacationRentalJsonLd(opts: {
           },
         }
       : {}),
+    ...(opts.reviews?.length
+      ? {
+          review: opts.reviews.map((r) => ({
+            "@type": "Review",
+            author: { "@type": "Person", name: r.name },
+            reviewRating: { "@type": "Rating", ratingValue: r.rating, bestRating: 5 },
+            reviewBody: r.message,
+            ...(r.date ? { datePublished: r.date } : {}),
+          })),
+        }
+      : {}),
+  };
+}
+
+/**
+ * Pointe Milou as a Place: the neighbourhood people search for, with its
+ * coordinates, the island it belongs to (anchored to Wikidata/Wikipedia so
+ * engines resolve the right Saint-Barthélemy) and the villa inside it.
+ */
+export function pointeMilouJsonLd(locale: Locale, description: string) {
+  const fr = locale === "fr";
+  return {
+    "@context": "https://schema.org",
+    "@type": "Place",
+    "@id": `${SITE_URL}/#pointe-milou`,
+    name: POINTE_MILOU.name,
+    alternateName: [`${POINTE_MILOU.name}, ${ISLAND.name}`, `${POINTE_MILOU.name}, St Barth`, `${POINTE_MILOU.name}, St Barts`],
+    description,
+    url: localeUrl(locale, "/pointe-milou"),
+    geo: { "@type": "GeoCoordinates", latitude: POINTE_MILOU.lat, longitude: POINTE_MILOU.lng },
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: ISLAND.name,
+      postalCode: VILLA.postalCode,
+      addressCountry: ISLAND.country,
+    },
+    containedInPlace: {
+      "@type": "AdministrativeArea",
+      name: ISLAND.name,
+      alternateName: [...ISLAND.aliases],
+      sameAs: [ISLAND.wikidata, ISLAND.wikipedia],
+    },
+    containsPlace: { "@id": `${SITE_URL}/#villa` },
+    hasMap: localeUrl(locale, "/map"),
+    touristType: fr ? ["Villas de luxe", "Couchers de soleil", "Séjour au calme"] : ["Luxury villas", "Sunsets", "Quiet stays"],
   };
 }
 
@@ -319,6 +369,10 @@ export function webPageJsonLd(opts: {
   name: string;
   description: string;
   type?: "WebPage" | "ContactPage" | "CollectionPage" | "AboutPage" | "ImageGallery";
+  /** the page's subject when it is not the villa itself (a Place, a guide) */
+  about?: { "@id": string };
+  datePublished?: string;
+  dateModified?: string;
 }) {
   return {
     "@context": "https://schema.org",
@@ -329,8 +383,9 @@ export function webPageJsonLd(opts: {
     description: opts.description,
     inLanguage: opts.locale === "fr" ? "fr-FR" : "en-US",
     isPartOf: { "@id": `${SITE_URL}/#website` },
-    about: { "@id": `${SITE_URL}/#villa` },
-    dateModified: CONTENT_UPDATED,
+    about: opts.about ?? { "@id": `${SITE_URL}/#villa` },
+    ...(opts.datePublished ? { datePublished: opts.datePublished } : {}),
+    dateModified: opts.dateModified ?? CONTENT_UPDATED,
   };
 }
 
