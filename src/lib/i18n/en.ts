@@ -187,6 +187,38 @@ export const en = {
         "The honest part: you drive to the beach. Lorient is 5 minutes away, Marigot and St Jean 8. All beaches in St Barth are public, and most guests go to a different one each day anyway.",
       ],
     ] as Array<[string, string]>,
+    packageLabel: "Close to everything",
+    packageTitle: "Quiet up here, and everything a few minutes down the road",
+    packageIntro:
+      "That is really why Pointe Milou is so popular. You sleep in the calm, and the island is right there when you want it.",
+    package: [
+      [
+        "Shops and bakeries",
+        "The U Express L'Oasis in Lorient has just been renovated and enlarged, and there is a new Monoprix. For the morning bread and croissants, La Petite Colombe and Choisy are just down the road.",
+      ],
+      [
+        "The great hotels",
+        "Le Toiny, Le Sereno, Le Barthélemy and the brand-new Airelles are all around the point. Their bars, spas and restaurants are open to you too.",
+      ],
+      [
+        "Where we eat",
+        "L'Esprit, Grain de Sel and Tamarin are our regulars, along with the hotel tables. You go out for dinner and you are home in ten minutes.",
+      ],
+      [
+        "A beach a day",
+        "Lorient, Marigot, Grand Cul-de-Sac, Saline. Each one has its own mood, and none of them is far.",
+      ],
+      [
+        "Gustavia and the party",
+        "Gustavia is 15 to 20 minutes away, Nikki Beach about 10. Near enough for a big night out, far enough that the music never reaches the terrace.",
+      ],
+      [
+        "A neighbourhood you can walk",
+        "Pointe Milou is quiet, with hardly any traffic: a morning walk, a stroll at sunset. And from November to 15 April no construction work is allowed, so the whole season is peaceful.",
+      ],
+    ] as Array<[string, string]>,
+    packageOutro:
+      "Quiet, central, with the best of the island a few minutes away. That is the package, and it is why guests come back to Pointe Milou year after year.",
     whatsTitle: "What is in Pointe Milou",
     whats: [
       [

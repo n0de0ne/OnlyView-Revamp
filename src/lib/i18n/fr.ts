@@ -186,6 +186,38 @@ export const fr: Dict = {
         "La partie honnête : on va à la plage en voiture. Lorient est à 5 minutes, Marigot et St Jean à 8. Toutes les plages de St Barth sont publiques, et la plupart de nos hôtes en changent chaque jour de toute façon.",
       ],
     ] as Array<[string, string]>,
+    packageLabel: "Tout près de tout",
+    packageTitle: "Le calme en haut, et tout le reste à quelques minutes",
+    packageIntro:
+      "C'est vraiment pour ça que Pointe Milou est si recherché. On dort au calme, et l'île est là dès qu'on en a envie.",
+    package: [
+      [
+        "Commerces et boulangeries",
+        "Le U Express L'Oasis de Lorient vient d'être rénové et agrandi, et il y a un nouveau Monoprix. Pour le pain et les croissants du matin, La Petite Colombe et Choisy sont juste en bas de la route.",
+      ],
+      [
+        "Les grands hôtels",
+        "Le Toiny, Le Sereno, Le Barthélemy et les tout nouveaux Airelles sont tout autour de la pointe. Leurs bars, leurs spas et leurs restaurants vous sont ouverts aussi.",
+      ],
+      [
+        "Là où nous mangeons",
+        "L'Esprit, Grain de Sel et Tamarin sont nos habitudes, avec les tables des hôtels. On sort dîner et on est rentré en dix minutes.",
+      ],
+      [
+        "Une plage par jour",
+        "Lorient, Marigot, Grand Cul-de-Sac, Saline. Chacune a son ambiance, et aucune n'est loin.",
+      ],
+      [
+        "Gustavia et la fête",
+        "Gustavia est à 15-20 minutes, le Nikki Beach à une dizaine. Assez près pour une grande soirée, assez loin pour que la musique n'arrive jamais jusqu'à la terrasse.",
+      ],
+      [
+        "Un quartier où l'on marche",
+        "Pointe Milou est calme, presque sans circulation : une marche le matin, une balade au coucher du soleil. Et de novembre au 15 avril, aucun chantier n'est autorisé, donc toute la saison reste paisible.",
+      ],
+    ] as Array<[string, string]>,
+    packageOutro:
+      "Le calme, le centre de l'île, et le meilleur de St Barth à quelques minutes. C'est ça le package, et c'est pour ça que nos clients reviennent à Pointe Milou année après année.",
     whatsTitle: "Ce qu'il y a à Pointe Milou",
     whats: [
       [
