@@ -442,7 +442,7 @@ html.lenis body {
   background: #f4f1ea;
 }
 /* the no-WebGL fallback: OSM raster, softened toward the vector style */
-.island-map .map-osm-fallback {
+.map-osm-fallback {
   filter: saturate(0.62) brightness(1.06) contrast(0.92);
 }
 .island-map .leaflet-control-attribution {

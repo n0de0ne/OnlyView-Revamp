@@ -430,9 +430,21 @@ export function IslandMap({
       {routeHere && (
         <div className="mt-3 rounded-2xl bg-navy px-4 py-3.5 text-white" role="status" aria-live="polite">
           {routeHere.status !== "loading" || routeHere.fromMe ? (
-            <p className="mb-1 text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-white/55">
-              {routeHere.fromMe ? `📍 ${t.routeFromYou}` : `🏠 ${t.routeFromVilla}`}
-            </p>
+            <div className="mb-1 flex items-center justify-between gap-3">
+              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-white/55">
+                {routeHere.fromMe ? `📍 ${t.routeFromYou}` : `🏠 ${t.routeFromVilla}`}
+              </p>
+              {/* switch the start: the guest's position ⇄ the villa */}
+              {(routeHere.fromMe || routeHere.canFromMe) && routeHere.status !== "loading" && (
+                <button
+                  type="button"
+                  onClick={() => send({ type: "route", id: routeHere.place.id, ...(routeHere.fromMe ? { from: "villa" } : {}) })}
+                  className="tap shrink-0 rounded-full bg-white/15 px-2.5 py-1 text-[0.7rem] font-semibold text-white hover:bg-white/25"
+                >
+                  {routeHere.fromMe ? `🏠 ${t.routeFromVilla}` : `📍 ${t.routeFromYou}`}
+                </button>
+              )}
+            </div>
           ) : null}
           {routeHere.status === "loading" ? (
             <p className="text-sm text-white/75">{t.routing}</p>
