@@ -180,7 +180,14 @@ export function BookingWidget({
         }),
       });
       setSubmitState(res.ok ? "done" : "error");
-      if (res.ok) track("booking_request", { start: range.start, end: range.end, bedrooms, guests });
+      if (res.ok)
+        track("booking_request", {
+          start: range.start,
+          end: range.end,
+          bedrooms,
+          guests,
+          ...(quote?.available ? { value: Math.round(quote.quote.totalTTC), currency: "USD" } : {}),
+        });
     } catch {
       setSubmitState("error");
     }

@@ -105,6 +105,24 @@ const GROUPS: Array<{
     ],
   },
   {
+    title: "Google Analytics & Google Ads",
+    fields: [
+      [
+        "google_analytics_id",
+        "Google Analytics 4 — ID de mesure",
+        "G-XXXXXXXXXX (Analytics → Admin → Flux de données → Web). Vide = rien de Google sur le site. Renseigné, un bandeau de consentement apparaît : Google ne se charge que pour les visiteurs qui acceptent. Vos propres visites (connecté au back-office) ne comptent pas.",
+      ],
+      [
+        "google_ads_id",
+        "Google Ads — ID de conversion (facultatif)",
+        "AW-XXXXXXXXX. Inutile si vous importez les conversions depuis Google Analytics dans Google Ads ; utile pour les audiences de remarketing et des conversions plus précises.",
+      ],
+      ["google_ads_label_booking", "Libellé de conversion Ads : demande de réservation", "La partie après « / » dans send_to (AW-…/libellé)"],
+      ["google_ads_label_contract", "Libellé de conversion Ads : contrat signé"],
+      ["google_ads_label_contact", "Libellé de conversion Ads : message de contact"],
+    ],
+  },
+  {
     title: "Analyse de rentabilité",
     fields: [
       ["cost_cleaning_per_day_eur", "Ménage (€/jour)"],

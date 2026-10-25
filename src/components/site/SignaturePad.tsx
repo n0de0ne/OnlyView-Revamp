@@ -2,19 +2,24 @@
 
 import { useEffect, useRef, useState } from "react";
 import { getDict, type Locale } from "@/lib/i18n";
+import { track } from "./Analytics";
 
 /**
  * Canvas signature capture + signing form. Posts the drawn signature
  * (PNG data-URL) with the typed name to the sign endpoint.
+ * `conversionValue` (first contracts only, not amendments) reports the
+ * signature as a booking to Google Analytics / Ads before the page reloads.
  */
 export function SignaturePad({
   token,
   locale,
   expectedName,
+  conversionValue,
 }: {
   token: string;
   locale: Locale;
   expectedName: string;
+  conversionValue?: number;
 }) {
   const t = getDict(locale);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -96,6 +101,7 @@ export function SignaturePad({
       });
       if (res.ok) {
         setState("done");
+        if (conversionValue != null) await track("contract_signed", { value: Math.round(conversionValue), currency: "USD" });
         window.location.reload();
       } else {
         setState("error");

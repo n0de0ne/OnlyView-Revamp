@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getDict, localePath, type Locale } from "@/lib/i18n";
+import { CookieSettingsLink } from "./GoogleTags";
 
 export function SiteFooter({ locale }: { locale: Locale }) {
   const t = getDict(locale);
@@ -85,6 +86,7 @@ export function SiteFooter({ locale }: { locale: Locale }) {
             <Link href={localePath(locale, "/privacy")} className="inline-block py-3 hover:text-gold">
               {t.footer.privacy}
             </Link>
+            <CookieSettingsLink label="Cookies" className="inline-block py-3 hover:text-gold" />
             <Link href="/admin" className="inline-block py-3 hover:text-gold">
               {t.footer.admin}
             </Link>

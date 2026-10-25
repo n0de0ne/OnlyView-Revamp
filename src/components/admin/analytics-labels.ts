@@ -18,6 +18,7 @@ const EVENTS: Record<string, string> = {
   quote_view: "Devis affiché",
   booking_form_start: "Demande commencée",
   booking_request: "Demande envoyée",
+  contract_signed: "Contrat signé",
   contact_form_start: "Formulaire contact commencé",
   contact_submit: "Message de contact envoyé",
   click_whatsapp: "Clic WhatsApp",
