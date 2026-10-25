@@ -8,9 +8,12 @@ export const dynamic = "force-dynamic";
 
 type Ctx = { params: Promise<{ id: string }> };
 
+// by route (group included), not URL: the middleware rewrites `/map` to
+// `/en/map`, so revalidatePath("/map") matched no page and English stayed stale.
+// The guides show live pins too ("On the map").
 const revalidateMap = () => {
-  revalidatePath("/map");
-  revalidatePath("/fr/map");
+  revalidatePath("/(site)/[locale]/map", "page");
+  revalidatePath("/(site)/[locale]/guide/[slug]", "page");
 };
 
 export const PUT = adminRoute<Ctx>("manager", async (req, { params }, user) => {
