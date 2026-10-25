@@ -10,6 +10,15 @@ import {
   type MapPlaceDTO,
 } from "@/components/site/map/map-meta";
 
+/** URL slug of a place name, as the admin generates it on create. */
+export const slugify = (s: string) =>
+  s
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "place";
+
 type Row = {
   id: number;
   slug: string;

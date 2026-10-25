@@ -7,9 +7,7 @@ import { CONTENT_UPDATED } from "@/lib/site-facts";
 import { GUIDES, getGuide } from "@/data/guides";
 import { PageHero } from "@/components/site/PageHero";
 import { FlightSearch } from "@/components/site/FlightSearch";
-import mapPlaces from "@/data/map-places.json";
-
-const PLACE_NAMES = new Map(mapPlaces.map((p) => [p.slug, p.name]));
+import { getMapPlaces, slugify } from "@/lib/map-places";
 
 export const revalidate = 3600;
 
@@ -47,6 +45,14 @@ export default async function GuidePage({
   const fr = locale === "fr";
   const guide = getGuide(slug);
   if (!guide) notFound();
+
+  // live pins, so places added in Admin → Carte get their chip too; a guide
+  // reference matches a pin's slug or its (renamed) name
+  const pins = new Map<string, { slug: string; name: string }>();
+  for (const p of await getMapPlaces(locale)) {
+    pins.set(slugify(p.name), p);
+    pins.set(p.slug, p);
+  }
 
   const title = fr ? guide.title.fr : guide.title.en;
   const sections = fr ? guide.sections.fr : guide.sections.en;
@@ -100,14 +106,15 @@ export default async function GuidePage({
                   {fr ? "Sur la carte" : "On the map"}
                 </span>
                 {s.places
-                  .filter((slug) => PLACE_NAMES.has(slug))
-                  .map((slug) => (
+                  .map((ref) => pins.get(ref))
+                  .filter((p) => p !== undefined)
+                  .map((p) => (
                     <Link
-                      key={slug}
-                      href={`${localePath(locale, "/map")}#${slug}`}
+                      key={p.slug}
+                      href={`${localePath(locale, "/map")}#${p.slug}`}
                       className="rounded-full border border-ink/15 px-3 py-1 text-ink/80 transition hover:border-gold hover:text-ink"
                     >
-                      📍 {PLACE_NAMES.get(slug)}
+                      📍 {p.name}
                     </Link>
                   ))}
               </p>

@@ -6,7 +6,8 @@
 export interface GuideSection {
   h: string;
   p: string[];
-  /** map-places.json slugs shown under the section, each linking to /map#slug */
+  /** map pins (slug, or slugified name for pins added in the admin) shown
+      under the section, each linking to /map#slug; unknown ones are skipped */
   places?: string[];
   /** render the Google Flights search form after this section */
   flightSearch?: boolean;
@@ -141,7 +142,7 @@ export const GUIDES: GuideArticle[] = [
           p: [
             "Seven minutes from the villa, Grand Cul-de-Sac is a shallow lagoon protected by the reef. It's the place for kitesurfing, paddleboarding and kayaking, and you'll often see turtles feeding near the shore. It's also where you'll find Ti'Corail, one of our favourite lunches on the island.",
           ],
-          places: ["grand-cul-de-sac"],
+          places: ["grand-cul-de-sac", "ti-corail"],
         },
         {
           h: "The wild south: Gouverneur and Saline",
@@ -157,7 +158,7 @@ export const GUIDES: GuideArticle[] = [
             "Toiny, on the Atlantic side, is a different St Barth: rocky, windy, with big waves rolling in and hardly anyone around. It's beautiful for a walk along the coast or for photos, but the sea is rough, so it's not a swimming beach.",
             "Below the cliffs, the Hotel Le Toiny has its own beach club, and it's one of the nicest lunches on the island. You eat in the shade by the sand, there's a pool, and the menu is mostly grilled fish and fresh salads. Reservations are essential, and our concierge can make one for you.",
           ],
-          places: ["toiny-beach"],
+          places: ["toiny-beach", "le-toiny-beach-club"],
         },
         {
           h: "Worth the trip: Colombier, Flamands and Shell Beach",
@@ -188,7 +189,7 @@ export const GUIDES: GuideArticle[] = [
           p: [
             "À 7 minutes de la villa, Grand Cul-de-Sac est un lagon peu profond protégé par la barrière de corail. C'est l'endroit pour le kitesurf, le paddle et le kayak, et on y voit souvent des tortues près du bord. C'est aussi là que se trouve Ti'Corail, l'un de nos déjeuners préférés de l'île.",
           ],
-          places: ["grand-cul-de-sac"],
+          places: ["grand-cul-de-sac", "ti-corail"],
         },
         {
           h: "Le sud sauvage : Gouverneur et Saline",
@@ -204,7 +205,7 @@ export const GUIDES: GuideArticle[] = [
             "Toiny, côté Atlantique, c'est un autre St Barth : des rochers, du vent, de grosses vagues et presque personne. Magnifique pour marcher le long de la côte ou faire des photos, mais la mer y est forte, ce n'est pas une plage de baignade.",
             "En contrebas des falaises, l'Hôtel Le Toiny a son propre beach club, et c'est l'un des plus beaux déjeuners de l'île. On mange à l'ombre au bord du sable, il y a une piscine, et la carte fait la part belle au poisson grillé et aux salades. Réservation indispensable, notre conciergerie peut s'en charger.",
           ],
-          places: ["toiny-beach"],
+          places: ["toiny-beach", "le-toiny-beach-club"],
         },
         {
           h: "Valent le déplacement : Colombier, Flamands et Shell Beach",
@@ -243,7 +244,7 @@ export const GUIDES: GuideArticle[] = [
             "In Gustavia, La Cantina is our go-to for something quick and easy. It sits on the harbour, so you get the boats and the view with your lunch. If you're in the mood for a proper French brasserie, Le Repaire, also on the harbour, is open all day from breakfast onwards.",
             "And for a long lunch with your feet in the sand, the beach club at the Hotel Le Toiny is hard to beat (more on that in our beaches guide).",
           ],
-          places: ["la-cantina", "le-repaire"],
+          places: ["ti-corail", "la-cantina", "le-repaire", "le-toiny-beach-club"],
         },
         {
           h: "Sushi",
@@ -295,7 +296,7 @@ export const GUIDES: GuideArticle[] = [
             "À Gustavia, La Cantina est notre adresse pour un déjeuner simple et rapide. Elle donne sur le port, on profite des bateaux et de la vue. Si vous avez envie d'une vraie brasserie française, Le Repaire, sur le port lui aussi, est ouvert toute la journée dès le petit-déjeuner.",
             "Et pour un long déjeuner les pieds dans le sable, le beach club de l'Hôtel Le Toiny est difficile à battre (on en parle dans notre guide des plages).",
           ],
-          places: ["la-cantina", "le-repaire"],
+          places: ["ti-corail", "la-cantina", "le-repaire", "le-toiny-beach-club"],
         },
         {
           h: "Sushi",
