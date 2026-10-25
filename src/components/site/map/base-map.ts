@@ -18,12 +18,16 @@ function hasWebGL() {
 
 /** adds the base map; the map needs explicit min/max zoom (no raster layer sets them) */
 export async function addBaseMap(map: L.Map): Promise<"vector" | "raster"> {
+  // the map can be removed while MapLibre loads (closed editor, React strict mode)
+  let removed = false;
+  map.once("unload", () => (removed = true));
   if (hasWebGL()) {
     try {
       const [{ islandStyle, MAP_ATTRIBUTION }] = await Promise.all([
         import("./map-style"),
         import("@maplibre/maplibre-gl-leaflet"),
       ]);
+      if (removed) return "vector";
       L.maplibreGL({ style: islandStyle, attributionControl: false, maxZoom: 19 }).addTo(map);
       map.attributionControl?.addAttribution(MAP_ATTRIBUTION);
       return "vector";

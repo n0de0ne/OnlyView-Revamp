@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { adminRoute, jsonError, jsonOk } from "@/lib/admin-api";
+import { adminRoute, jsonError, jsonOk, jsonInvalid } from "@/lib/admin-api";
 import { ExpenseInput, dateOrNull } from "@/lib/admin-schemas";
 import { audit } from "@/lib/audit";
 import { toISODate, fromISODate, seasonRange } from "@/lib/dates";
@@ -28,7 +28,7 @@ export const GET = adminRoute("owner", async (req) => {
 
 export const POST = adminRoute("owner", async (req, _ctx, user) => {
   const parsed = ExpenseInput.safeParse(await req.json().catch(() => null));
-  if (!parsed.success) return jsonError("invalid_input");
+  if (!parsed.success) return jsonInvalid(parsed.error);
   const d = parsed.data;
   const expense = await prisma.expense.create({
     data: {

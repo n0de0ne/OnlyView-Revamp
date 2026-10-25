@@ -34,6 +34,12 @@ export function jsonError(error: string, status = 400) {
   return NextResponse.json({ success: false, error }, { status });
 }
 
+/** 400 invalid_input, naming the offending fields so the UI can point at them. */
+export function jsonInvalid(error: { issues: Array<{ path: PropertyKey[] }> }) {
+  const fields = [...new Set(error.issues.map((i) => String(i.path[0] ?? "")).filter(Boolean))];
+  return NextResponse.json({ success: false, error: "invalid_input", fields }, { status: 400 });
+}
+
 export function jsonOk(data: Record<string, unknown> = {}) {
   return NextResponse.json({ success: true, ...data });
 }

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { isLoyaltyEnabled } from "@/lib/features";
-import { adminRoute, jsonError, jsonOk } from "@/lib/admin-api";
+import { adminRoute, jsonError, jsonOk, jsonInvalid } from "@/lib/admin-api";
 import { adjustPoints } from "@/lib/loyalty";
 import { audit } from "@/lib/audit";
 
@@ -42,7 +42,7 @@ const Body = z.object({
 export const POST = adminRoute("manager", async (req, _ctx, user) => {
   if (!(await isLoyaltyEnabled())) return jsonError("loyalty_disabled", 404);
   const parsed = Body.safeParse(await req.json().catch(() => null));
-  if (!parsed.success) return jsonError("invalid_input");
+  if (!parsed.success) return jsonInvalid(parsed.error);
   const { clientId, points, reason } = parsed.data;
   if (points === 0) return jsonError("zero_points");
   await adjustPoints({ clientId, points, reason, by: user.username });

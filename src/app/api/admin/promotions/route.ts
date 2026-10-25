@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { adminRoute, jsonError, jsonOk } from "@/lib/admin-api";
+import { adminRoute, jsonError, jsonOk, jsonInvalid } from "@/lib/admin-api";
 import { PromotionInput, dateOrNull } from "@/lib/admin-schemas";
 import { audit } from "@/lib/audit";
 import { toISODate } from "@/lib/dates";
@@ -23,7 +23,7 @@ export const GET = adminRoute("viewer", async () => {
 
 export const POST = adminRoute("manager", async (req, _ctx, user) => {
   const parsed = PromotionInput.safeParse(await req.json().catch(() => null));
-  if (!parsed.success) return jsonError("invalid_input");
+  if (!parsed.success) return jsonInvalid(parsed.error);
   const d = parsed.data;
   const promotion = await prisma.promotion.create({
     data: {

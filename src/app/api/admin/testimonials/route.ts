@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { adminRoute, jsonError, jsonOk } from "@/lib/admin-api";
+import { adminRoute, jsonError, jsonOk, jsonInvalid } from "@/lib/admin-api";
 import { audit } from "@/lib/audit";
 import { pingIndexNow } from "@/lib/indexnow";
 
@@ -21,7 +21,7 @@ const Body = z.object({
 
 export const PUT = adminRoute("manager", async (req, _ctx, user) => {
   const parsed = Body.safeParse(await req.json().catch(() => null));
-  if (!parsed.success) return jsonError("invalid_input");
+  if (!parsed.success) return jsonInvalid(parsed.error);
   const { id, ...data } = parsed.data;
   try {
     const testimonial = await prisma.testimonial.update({ where: { id }, data });

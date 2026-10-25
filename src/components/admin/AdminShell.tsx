@@ -6,32 +6,60 @@ import { useState } from "react";
 import type { SessionUser } from "@/lib/auth";
 import { api, Modal, useToast } from "./ui";
 
-const NAV: Array<{
+type NavItem = {
   href: string;
   label: string;
   icon: string;
   minRole?: "owner" | "manager";
   /** hidden unless the matching feature is enabled */
   feature?: "loyalty";
-}> = [
-  { href: "/admin", label: "Tableau de bord", icon: "📊" },
-  { href: "/admin/analytics", label: "Analytique", icon: "📈" },
-  { href: "/admin/calendar", label: "Calendrier", icon: "📅" },
-  { href: "/admin/reservations", label: "Réservations", icon: "🛏️" },
-  { href: "/admin/requests", label: "Demandes", icon: "📥" },
-  { href: "/admin/clients", label: "Clients", icon: "👥" },
-  { href: "/admin/contracts", label: "Contrats", icon: "✍️" },
-  { href: "/admin/finance", label: "Finances", icon: "💶", minRole: "owner" },
-  { href: "/admin/loyalty", label: "Fidélité", icon: "✦", feature: "loyalty" },
-  { href: "/admin/agencies", label: "Agences", icon: "🤝" },
-  { href: "/admin/promotions", label: "Promotions", icon: "🏷️" },
-  { href: "/admin/pricing", label: "Tarifs par date", icon: "📆", minRole: "owner" },
-  { href: "/admin/extras", label: "Extras", icon: "🍾" },
-  { href: "/admin/concierge", label: "Conciergerie", icon: "🛎️" },
-  { href: "/admin/site", label: "Site & contenu", icon: "🖼️" },
-  { href: "/admin/map", label: "Carte de l'île", icon: "🗺️" },
-  { href: "/admin/settings", label: "Réglages", icon: "⚙️", minRole: "owner" },
-  { href: "/admin/users", label: "Utilisateurs", icon: "🔐", minRole: "owner" },
+};
+
+/** The menu, by what Alan is doing: bookings, selling, the guests' stay, the website, running the villa. */
+const NAV: Array<{ title: string | null; items: NavItem[] }> = [
+  { title: null, items: [{ href: "/admin", label: "Tableau de bord", icon: "📊" }] },
+  {
+    title: "Réservations",
+    items: [
+      { href: "/admin/calendar", label: "Calendrier", icon: "📅" },
+      { href: "/admin/reservations", label: "Réservations", icon: "🛏️" },
+      { href: "/admin/requests", label: "Demandes", icon: "📥" },
+      { href: "/admin/contracts", label: "Contrats", icon: "✍️" },
+      { href: "/admin/clients", label: "Clients", icon: "👥" },
+      { href: "/admin/loyalty", label: "Fidélité", icon: "✦", feature: "loyalty" },
+    ],
+  },
+  {
+    title: "Tarifs & ventes",
+    items: [
+      { href: "/admin/pricing", label: "Tarifs par date", icon: "📆", minRole: "owner" },
+      { href: "/admin/promotions", label: "Promotions", icon: "🏷️" },
+      { href: "/admin/agencies", label: "Agences", icon: "🤝" },
+      { href: "/admin/extras", label: "Extras", icon: "🍾" },
+    ],
+  },
+  {
+    title: "Séjour des clients",
+    items: [
+      { href: "/admin/concierge", label: "Conciergerie", icon: "🛎️" },
+      { href: "/admin/map", label: "Carte de l'île", icon: "🗺️" },
+    ],
+  },
+  {
+    title: "Site web",
+    items: [
+      { href: "/admin/site", label: "Site & contenu", icon: "🖼️" },
+      { href: "/admin/analytics", label: "Analytique", icon: "📈" },
+    ],
+  },
+  {
+    title: "Gestion",
+    items: [
+      { href: "/admin/finance", label: "Finances", icon: "💶", minRole: "owner" },
+      { href: "/admin/settings", label: "Réglages", icon: "⚙️", minRole: "owner" },
+      { href: "/admin/users", label: "Utilisateurs", icon: "🔐", minRole: "owner" },
+    ],
+  },
 ];
 
 export function AdminShell({
@@ -52,12 +80,13 @@ export function AdminShell({
   const [pwd, setPwd] = useState({ current: "", next: "" });
   const [pwdBusy, setPwdBusy] = useState(false);
 
-  const visibleNav = NAV.filter((item) => {
+  const canSee = (item: NavItem) => {
     if (item.feature && !features?.[item.feature]) return false;
     if (!item.minRole) return true;
     if (item.minRole === "owner") return user.role === "owner";
     return user.role === "owner" || user.role === "manager";
-  });
+  };
+  const visibleNav = NAV.map((g) => ({ ...g, items: g.items.filter(canSee) })).filter((g) => g.items.length);
 
   const logout = async () => {
     await api("/api/admin/logout", { method: "POST" });
@@ -88,28 +117,40 @@ export function AdminShell({
   };
 
   const NavLinks = () => (
-    <nav className="space-y-0.5">
-      {visibleNav.map((item) => {
-        const active =
-          item.href === "/admin" ? pathname === "/admin" : pathname.startsWith(item.href);
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            onClick={() => setMenuOpen(false)}
-            className={`flex min-h-[44px] items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm transition ${
-              active
-                ? "bg-white/12 font-semibold text-white"
-                : "text-white/65 hover:bg-white/8 hover:text-white"
-            }`}
-          >
-            <span aria-hidden className="w-5 text-center">
-              {item.icon}
-            </span>
-            {item.label}
-          </Link>
-        );
-      })}
+    <nav className="space-y-3">
+      {visibleNav.map((group) => (
+        <div key={group.title ?? "home"}>
+          {group.title && (
+            <div className="mb-1 px-3.5 text-[0.6rem] font-semibold uppercase tracking-[0.2em] text-white/35">
+              {group.title}
+            </div>
+          )}
+          <div className="space-y-0.5">
+            {group.items.map((item) => {
+              const active =
+                item.href === "/admin" ? pathname === "/admin" : pathname.startsWith(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMenuOpen(false)}
+                  aria-current={active ? "page" : undefined}
+                  className={`flex min-h-[40px] items-center gap-3 rounded-xl px-3.5 py-2 text-sm transition lg:min-h-[34px] lg:py-1.5 ${
+                    active
+                      ? "bg-white/12 font-semibold text-white"
+                      : "text-white/65 hover:bg-white/8 hover:text-white"
+                  }`}
+                >
+                  <span aria-hidden className="w-5 text-center">
+                    {item.icon}
+                  </span>
+                  {item.label}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      ))}
     </nav>
   );
 
@@ -117,7 +158,7 @@ export function AdminShell({
     <div className="flex min-h-screen">
       {/* Sidebar (desktop) */}
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col bg-gradient-to-b from-navy-deep to-night px-4 py-6 lg:flex">
-        <Link href="/admin" className="mb-8 block px-2">
+        <Link href="/admin" className="mb-6 block px-2">
           <div className="font-display text-xl tracking-[0.28em] text-white">ONLY&nbsp;VIEW</div>
           <div className="mt-0.5 text-[0.55rem] font-semibold uppercase tracking-[0.35em] text-gold">
             Administration
@@ -167,14 +208,28 @@ export function AdminShell({
         </button>
       </div>
       {menuOpen && (
-        <div className="fixed inset-0 z-30 bg-night/98 px-4 pb-6 pt-16 lg:hidden">
+        <div
+          className="fixed inset-0 z-30 overflow-y-auto overscroll-contain bg-night px-4 pt-20 lg:hidden"
+          style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
+        >
           <NavLinks />
-          <button
-            onClick={logout}
-            className="mt-4 w-full rounded-xl bg-white/10 px-3 py-2.5 text-sm text-white/80"
-          >
-            Déconnexion
-          </button>
+          <div className="mt-6 flex gap-2">
+            <button
+              onClick={() => {
+                setMenuOpen(false);
+                setPwdOpen(true);
+              }}
+              className="flex-1 rounded-xl bg-white/10 px-3 py-2.5 text-sm text-white/80"
+            >
+              Mot de passe
+            </button>
+            <button
+              onClick={logout}
+              className="flex-1 rounded-xl bg-white/10 px-3 py-2.5 text-sm text-white/80"
+            >
+              Déconnexion
+            </button>
+          </div>
         </div>
       )}
 
