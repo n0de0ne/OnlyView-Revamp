@@ -11,6 +11,7 @@ import { MobileTabBar } from "@/components/site/MobileTabBar";
 import { SmoothScroll } from "@/components/motion/SmoothScroll";
 import { RevealObserver } from "@/components/motion/RevealObserver";
 import { Analytics } from "@/components/site/Analytics";
+import { GoogleTags } from "@/components/site/GoogleTags";
 
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));
@@ -85,6 +86,7 @@ export default async function SiteLayout({
         <SiteFooter locale={locale as Locale} />
         <MobileTabBar locale={locale as Locale} />
         <Analytics />
+        <GoogleTags locale={locale as Locale} />
       </body>
     </html>
   );

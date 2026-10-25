@@ -186,6 +186,7 @@ export const EVENT_NAMES = [
   "quote_view",
   "booking_form_start",
   "booking_request",
+  "contract_signed",
   "contact_form_start",
   "contact_submit",
   "click_whatsapp",

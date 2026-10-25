@@ -121,6 +121,7 @@ export default async function SignContractPage({
               token={contract.token}
               locale={locale}
               expectedName={contract.clientName}
+              conversionValue={contract.kind === "contract" ? contract.totalPrice : undefined}
             />
           </div>
         )}

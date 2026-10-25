@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
+import { googleEvent } from "./GoogleTags";
 
 /**
  * The site's own audience measurement (Admin → Analytique). No third-party
@@ -11,6 +12,10 @@ import { useEffect, useRef } from "react";
  * Actions are picked up without wiring each component: links to WhatsApp,
  * email, phone or other sites, and any element with `data-track="name"`.
  * Components can also call `track()` directly.
+ *
+ * Every event also goes to Google Analytics / Ads when the visitor accepted
+ * them (GoogleTags.tsx) — that one follows the consent banner, not the
+ * opt-out below.
  */
 
 const ENDPOINT = "/api/analytics";
@@ -29,9 +34,11 @@ function beacon(body: object) {
   fetch(ENDPOINT, { method: "POST", body: data, keepalive: true, credentials: "same-origin" }).catch(() => {});
 }
 
-export function track(name: string, props?: Props) {
-  if (optedOut()) return;
-  beacon({ t: "ev", n: name, u: location.pathname, d: props ?? null });
+/** Resolves once Google has the event, so a page about to reload can wait for it. */
+export function track(name: string, props?: Props): Promise<void> {
+  const google = googleEvent(name, props);
+  if (!optedOut()) beacon({ t: "ev", n: name, u: location.pathname, d: props ?? null });
+  return google;
 }
 
 export function Analytics() {

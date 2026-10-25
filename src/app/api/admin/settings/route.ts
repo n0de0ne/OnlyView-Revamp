@@ -4,6 +4,7 @@ import { adminRoute, jsonError, jsonOk } from "@/lib/admin-api";
 import { invalidateSettings } from "@/lib/settings";
 import { isMonthDay } from "@/lib/pricing";
 import { audit } from "@/lib/audit";
+import { ADS_ID, ADS_LABEL, GA4_ID } from "@/lib/google-tags";
 
 export const dynamic = "force-dynamic";
 
@@ -43,6 +44,11 @@ const ALLOWED_KEYS = [
   "loyalty_enabled",
   "analytics_enabled",
   "analytics_cookie",
+  "google_analytics_id",
+  "google_ads_id",
+  "google_ads_label_booking",
+  "google_ads_label_contract",
+  "google_ads_label_contact",
   "tour_3d_url",
   "loyalty_earn_per_dollar",
   "loyalty_point_value",
@@ -96,6 +102,15 @@ export const PUT = adminRoute("owner", async (req, _ctx, user) => {
     ([k, v]) => k.startsWith("season_") && v.trim() !== "" && !isMonthDay(v.trim())
   );
   if (badSeason) return jsonError(`invalid_season_date: ${badSeason[0]}`);
+  // a typo would silently leave Google off: refuse it instead
+  const googleFormat = (k: string) =>
+    k === "google_analytics_id" ? GA4_ID : k === "google_ads_id" ? ADS_ID : k.startsWith("google_ads_label_") ? ADS_LABEL : null;
+  const badGoogle = entries.find(([k, v]) => {
+    const re = googleFormat(k);
+    const val = k.startsWith("google_ads_label_") ? v.trim() : v.trim().toUpperCase();
+    return re != null && val !== "" && !re.test(val);
+  });
+  if (badGoogle) return jsonError(`invalid_google_id: ${badGoogle[0]}`);
   for (const [key, value] of entries) {
     await prisma.setting.upsert({ where: { key }, create: { key, value }, update: { value } });
   }
