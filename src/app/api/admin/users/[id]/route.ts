@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
-import { adminRoute, jsonError, jsonOk } from "@/lib/admin-api";
+import { adminRoute, jsonError, jsonOk, jsonInvalid } from "@/lib/admin-api";
 import { UserInput } from "@/lib/admin-schemas";
 import { audit } from "@/lib/audit";
 
@@ -12,7 +12,7 @@ export const PUT = adminRoute<Ctx>("owner", async (req, { params }, user) => {
   const { id: idRaw } = await params;
   const id = parseInt(idRaw, 10);
   const parsed = UserInput.partial().safeParse(await req.json().catch(() => null));
-  if (!parsed.success) return jsonError("invalid_input");
+  if (!parsed.success) return jsonInvalid(parsed.error);
   const d = parsed.data;
 
   // an owner cannot deactivate or demote themselves (lock-out protection)

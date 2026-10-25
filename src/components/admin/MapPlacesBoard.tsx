@@ -83,6 +83,31 @@ interface Draft {
 /** the restaurant fields the guest portal's concierge reads */
 const CONCIERGE_TEXT = ["cuisineEn", "cuisineFr", "imageUrl", "bookingUrl", "whatsapp", "email"] as const;
 
+/** Form labels, to name the field the server refused. */
+const FIELD_LABELS: Record<string, string> = {
+  category: "Catégorie",
+  kind: "Type d'icône",
+  name: "Nom",
+  zone: "Quartier / zone",
+  driveMinutes: "Trajet depuis la villa",
+  lat: "Latitude",
+  lng: "Longitude",
+  descriptionEn: "Description (EN)",
+  descriptionFr: "Description (FR)",
+  waypoints: "Points de passage",
+  website: "Site web",
+  phone: "Téléphone",
+  bookingMode: "Réservation",
+  priceRange: "Gamme de prix",
+  cuisineFr: "Cuisine (FR)",
+  cuisineEn: "Cuisine (EN)",
+  bookingUrl: "Lien de réservation en ligne",
+  whatsapp: "WhatsApp du restaurant",
+  email: "E-mail du restaurant",
+  imageUrl: "Photo (URL)",
+  sortOrder: "Ordre d'affichage",
+};
+
 const emptyDraft = (category: MapCategory = "restaurant"): Draft => ({
   category,
   kind: "",
@@ -208,7 +233,10 @@ export function MapPlacesBoard({ villa }: { villa: LatLng }) {
       push(editing.id == null ? "Lieu ajouté" : "Lieu enregistré");
       setEditing(null);
       load();
-    } else push(res.error === "invalid_input" ? "Champs invalides (site web complet, coordonnées…)" : `Erreur : ${res.error}`, "error");
+    } else if (res.error === "invalid_input") {
+      const fields = ((res.fields as string[] | undefined) ?? []).map((f) => FIELD_LABELS[f] ?? f);
+      push(fields.length ? `Champ invalide : ${fields.join(", ")}` : "Champs invalides", "error");
+    } else push(`Erreur : ${res.error}`, "error");
   };
 
   const toggleActive = async (p: Place) => {

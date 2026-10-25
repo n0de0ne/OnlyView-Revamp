@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { adminRoute, jsonError, jsonOk } from "@/lib/admin-api";
+import { adminRoute, jsonError, jsonOk, jsonInvalid } from "@/lib/admin-api";
 import { invalidateSettings } from "@/lib/settings";
 import { isMonthDay } from "@/lib/pricing";
 import { audit } from "@/lib/audit";
@@ -87,7 +87,7 @@ const Body = z.object({ settings: z.record(z.string(), z.string()) });
 
 export const PUT = adminRoute("owner", async (req, _ctx, user) => {
   const parsed = Body.safeParse(await req.json().catch(() => null));
-  if (!parsed.success) return jsonError("invalid_input");
+  if (!parsed.success) return jsonInvalid(parsed.error);
   const entries = Object.entries(parsed.data.settings).filter(([k]) =>
     (ALLOWED_KEYS as readonly string[]).includes(k)
   );

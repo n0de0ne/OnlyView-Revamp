@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
-import { adminRoute, jsonError, jsonOk } from "@/lib/admin-api";
+import { adminRoute, jsonError, jsonOk, jsonInvalid } from "@/lib/admin-api";
 import { UserInput } from "@/lib/admin-schemas";
 import { audit } from "@/lib/audit";
 
@@ -27,7 +27,7 @@ export const GET = adminRoute("owner", async () => {
 
 export const POST = adminRoute("owner", async (req, _ctx, user) => {
   const parsed = UserInput.safeParse(await req.json().catch(() => null));
-  if (!parsed.success) return jsonError("invalid_input");
+  if (!parsed.success) return jsonInvalid(parsed.error);
   const d = parsed.data;
   if (!d.password) return jsonError("password_required");
   try {

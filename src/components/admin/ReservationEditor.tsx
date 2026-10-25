@@ -295,6 +295,29 @@ export function ReservationEditor({
     );
   }, [form, rates]);
 
+  /* A stay booked under older rates keeps its price: the server reprices on
+     every save, so without a pin a later rate change would silently rewrite
+     the agreed amount the next time anything else is edited. */
+  const [ratePin, setRatePin] = useState<null | { currentHT: number }>(null);
+  const pinChecked = useRef<number | null>(null);
+  useEffect(() => {
+    if (!loaded || !quote || pinChecked.current === loaded.id) return;
+    pinChecked.current = loaded.id;
+    if (loaded.finalPriceOverride != null || Math.abs(quote.finalHT - loaded.priceHT) < 1) return;
+    setRatePin({ currentHT: quote.finalHT });
+    set("finalPriceOverride", String(loaded.priceHT));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loaded, quote]);
+  // new dates or bedrooms: the stay is repriced, the old price no longer applies
+  useEffect(() => {
+    if (!ratePin || !loaded) return;
+    if (form.startDate !== loaded.startDate || form.endDate !== loaded.endDate || form.bedrooms !== loaded.bedrooms) {
+      setRatePin(null);
+      set("finalPriceOverride", "");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.startDate, form.endDate, form.bedrooms]);
+
   // auto deposit 30% (direct bookings) until manually edited
   useEffect(() => {
     if (!quote || depositTouched.current) return;
@@ -1132,6 +1155,24 @@ export function ReservationEditor({
 
       {/* Pricing */}
       <Card title="💰 Tarification">
+        {ratePin && loaded && (
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            <span>
+              Prix d&apos;origine conservé : {fmtUSD(loaded.priceHT)} HT. Au tarif actuel, ce séjour
+              ferait {fmtUSD(ratePin.currentHT)} HT.
+            </span>
+            <button
+              type="button"
+              className="abtn-ghost text-xs"
+              onClick={() => {
+                setRatePin(null);
+                set("finalPriceOverride", "");
+              }}
+            >
+              Appliquer le tarif actuel
+            </button>
+          </div>
+        )}
         {quote ? (
           <div className="mb-5 rounded-xl bg-slate-50 p-4 text-sm">
             <div className="flex flex-wrap items-center justify-between gap-2 text-slate-500">

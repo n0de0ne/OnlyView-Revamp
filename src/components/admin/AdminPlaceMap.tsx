@@ -96,8 +96,9 @@ export function AdminPlaceMap(props: AdminPlaceMapProps) {
       if (mode === "pin") onPin(pt);
       else onWaypoints([...waypoints, pt]);
     });
-    setTimeout(() => map.invalidateSize(), 100);
+    const sizer = setTimeout(() => map.invalidateSize(), 100);
     return () => {
+      clearTimeout(sizer);
       map.remove();
       mapRef.current = null;
     };

@@ -92,6 +92,19 @@ export const dateOrNull = (s: string | null | undefined) =>
 
 /* ───────────────────────── island map ───────────────────────── */
 
+/** "17,9020772" (French keyboard) is a coordinate too. */
+const coord = (max: number) =>
+  z.preprocess(
+    (v) => (typeof v === "string" ? Number(v.trim().replace(",", ".")) : v),
+    z.number().min(-max).max(max)
+  );
+
+/** Optional link: "kinu-gawa.com" gets its https://; Google image links run long. */
+const placeUrl = z.preprocess(
+  (v) => (typeof v === "string" && v.trim() && !/^[a-z][a-z0-9+.-]*:/i.test(v.trim()) ? `https://${v.trim()}` : v),
+  z.string().trim().url().max(4000).nullable().optional().or(z.literal("").transform(() => null))
+);
+
 const WAYPOINTS_RE = /^\s*-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?\s*(\|\s*-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?\s*)*$/;
 
 export const MapPlaceInput = z.object({
@@ -99,10 +112,10 @@ export const MapPlaceInput = z.object({
   kind: z.string().max(30).nullable().optional().or(z.literal("").transform(() => null)),
   name: z.string().trim().min(1).max(150),
   zone: z.string().trim().max(100).nullable().optional().or(z.literal("").transform(() => null)),
-  lat: z.number().min(-90).max(90),
-  lng: z.number().min(-180).max(180),
-  descriptionEn: z.string().trim().max(1000).nullable().optional().or(z.literal("").transform(() => null)),
-  descriptionFr: z.string().trim().max(1000).nullable().optional().or(z.literal("").transform(() => null)),
+  lat: coord(90),
+  lng: coord(180),
+  descriptionEn: z.string().trim().max(5000).nullable().optional().or(z.literal("").transform(() => null)),
+  descriptionFr: z.string().trim().max(5000).nullable().optional().or(z.literal("").transform(() => null)),
   driveMinutes: z.number().int().min(0).max(600).nullable().optional(),
   /** "lat,lng|lat,lng" — the via-points of the drive from the villa */
   waypoints: z
@@ -114,15 +127,15 @@ export const MapPlaceInput = z.object({
     .optional()
     .or(z.literal("").transform(() => null)),
   walkFromLastWaypoint: z.boolean().default(false),
-  website: z.string().trim().url().max(500).nullable().optional().or(z.literal("").transform(() => null)),
+  website: placeUrl,
   phone: z.string().trim().max(50).nullable().optional().or(z.literal("").transform(() => null)),
   /* restaurants — what the guest portal's concierge shows */
   cuisineEn: z.string().trim().max(100).nullable().optional().or(z.literal("").transform(() => null)),
   cuisineFr: z.string().trim().max(100).nullable().optional().or(z.literal("").transform(() => null)),
   priceRange: z.number().int().min(1).max(4).nullable().optional(),
-  imageUrl: z.string().trim().url().max(500).nullable().optional().or(z.literal("").transform(() => null)),
+  imageUrl: placeUrl,
   bookingMode: z.enum(["concierge", "direct", "none"]).nullable().optional(),
-  bookingUrl: z.string().trim().url().max(500).nullable().optional().or(z.literal("").transform(() => null)),
+  bookingUrl: placeUrl,
   whatsapp: z.string().trim().max(50).nullable().optional().or(z.literal("").transform(() => null)),
   email: z.string().trim().email().max(200).nullable().optional().or(z.literal("").transform(() => null)),
   sortOrder: z.number().int().min(-100000).max(100000).default(0),

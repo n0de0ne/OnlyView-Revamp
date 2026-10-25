@@ -1,6 +1,6 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
-import { adminRoute, jsonError, jsonOk } from "@/lib/admin-api";
+import { adminRoute, jsonError, jsonOk, jsonInvalid } from "@/lib/admin-api";
 import { MapPlaceInput } from "@/lib/admin-schemas";
 import { audit } from "@/lib/audit";
 import { slugify } from "@/lib/map-places";
@@ -26,7 +26,7 @@ export const GET = adminRoute("viewer", async () => {
 
 export const POST = adminRoute("manager", async (req, _ctx, user) => {
   const parsed = MapPlaceInput.safeParse(await req.json().catch(() => null));
-  if (!parsed.success) return jsonError("invalid_input");
+  if (!parsed.success) return jsonInvalid(parsed.error);
   const base = slugify(parsed.data.name);
   let slug = base;
   for (let n = 2; await prisma.mapPlace.findUnique({ where: { slug } }); n++) slug = `${base}-${n}`;

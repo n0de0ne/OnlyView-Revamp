@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { adminRoute, jsonError, jsonOk } from "@/lib/admin-api";
+import { adminRoute, jsonError, jsonOk, jsonInvalid } from "@/lib/admin-api";
 import { audit } from "@/lib/audit";
 import { ClientInput } from "@/lib/admin-schemas";
 import { toISODate } from "@/lib/dates";
@@ -37,7 +37,7 @@ export const PUT = adminRoute<Ctx>("manager", async (req, { params }, user) => {
   const { id: idRaw } = await params;
   const id = parseInt(idRaw, 10);
   const parsed = ClientInput.partial().safeParse(await req.json().catch(() => null));
-  if (!parsed.success) return jsonError("invalid_input");
+  if (!parsed.success) return jsonInvalid(parsed.error);
   const d = parsed.data;
   try {
     const client = await prisma.client.update({

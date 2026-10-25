@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { adminRoute, jsonError, jsonOk } from "@/lib/admin-api";
+import { adminRoute, jsonError, jsonOk, jsonInvalid } from "@/lib/admin-api";
 import { audit } from "@/lib/audit";
 import { decideDateChange } from "@/lib/date-changes";
 
@@ -19,7 +19,7 @@ const Body = z.object({
 export const PUT = adminRoute<Ctx>("manager", async (req, { params }, user) => {
   const id = parseInt((await params).id, 10);
   const parsed = Body.safeParse(await req.json().catch(() => null));
-  if (!parsed.success) return jsonError("invalid_input");
+  if (!parsed.success) return jsonInvalid(parsed.error);
   const res = await decideDateChange(id, parsed.data, user.username);
   if (!res.ok) return jsonError(res.error, res.status ?? 400);
   await audit({

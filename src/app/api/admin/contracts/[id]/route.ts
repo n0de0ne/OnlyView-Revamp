@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { adminRoute, jsonError, jsonOk } from "@/lib/admin-api";
+import { adminRoute, jsonError, jsonOk, jsonInvalid } from "@/lib/admin-api";
 import { audit } from "@/lib/audit";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +13,7 @@ export const PUT = adminRoute<Ctx>("manager", async (req, { params }, user) => {
   const { id: idRaw } = await params;
   const id = parseInt(idRaw, 10);
   const parsed = Body.safeParse(await req.json().catch(() => null));
-  if (!parsed.success) return jsonError("invalid_input");
+  if (!parsed.success) return jsonInvalid(parsed.error);
 
   const contract = await prisma.contract.findUnique({ where: { id } });
   if (!contract) return jsonError("not_found", 404);

@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { adminRoute, jsonError, jsonOk } from "@/lib/admin-api";
+import { adminRoute, jsonError, jsonOk, jsonInvalid } from "@/lib/admin-api";
 import { audit } from "@/lib/audit";
 import { ClientInput } from "@/lib/admin-schemas";
 
@@ -73,7 +73,7 @@ export const GET = adminRoute("viewer", async (req) => {
 
 export const POST = adminRoute("manager", async (req, _ctx, user) => {
   const parsed = ClientInput.safeParse(await req.json().catch(() => null));
-  if (!parsed.success) return jsonError("invalid_input");
+  if (!parsed.success) return jsonInvalid(parsed.error);
   const d = parsed.data;
   if (d.email) {
     const dupe = await prisma.client.findUnique({ where: { email: d.email.toLowerCase() } });
