@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { adminRoute, jsonError, jsonOk } from "@/lib/admin-api";
 import { MapPlaceInput } from "@/lib/admin-schemas";
 import { audit } from "@/lib/audit";
+import { slugify } from "@/lib/map-places";
 
 export const dynamic = "force-dynamic";
 
@@ -12,13 +13,6 @@ const revalidateMap = () => {
   revalidatePath("/fr/map");
 };
 
-const slugify = (s: string) =>
-  s
-    .normalize("NFKD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "") || "place";
 
 export const GET = adminRoute("viewer", async () => {
   const places = await prisma.mapPlace.findMany({
