@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { Dict } from "@/lib/i18n";
-import { EXTRA_ADDED_EVENT } from "./ConciergePanel";
-import { directionsHref } from "./map/map-meta";
+import { moneyIn } from "@/lib/extras";
 
 export interface PlannerDetails {
   arrivalFlight: string | null;
@@ -22,6 +21,11 @@ export interface PlannerExtra {
   description: string | null;
   price: number;
   unit: string;
+  category: string | null;
+  imageUrl: string | null;
+  currency: string;
+  /** supplied and billed by a rental company */
+  provider: string | null;
 }
 
 export interface PlannerItem {
@@ -29,17 +33,17 @@ export interface PlannerItem {
   label: string;
   quantity: number;
   amount: number;
+  currency: string;
+  paidToProvider: boolean;
   status: string;
   serviceDate: string | null;
   requestedByGuest: boolean;
-  /** a table request's restaurant on the island map */
-  placeSlug?: string | null;
 }
 
-const usd = (n: number) => "$" + Math.round(n).toLocaleString("en-US");
 
 /**
- * Guest portal — arrival details and extras requests for one upcoming stay.
+ * Guest portal — arrival details and extras requests for one upcoming stay
+ * (concierge requests have their own section, ConciergeRequests).
  * Collapsed by default so the reservation card stays readable.
  */
 export function StayPlanner({
@@ -74,16 +78,9 @@ export function StayPlanner({
   const [picking, setPicking] = useState<number | null>(null);
   const [req, setReq] = useState({ quantity: "1", serviceDate: "", notes: "" });
   const [reqError, setReqError] = useState(false);
-
-  // a request sent from the concierge panel joins the list
-  useEffect(() => {
-    const onAdded = (e: Event) => {
-      const { reservationId: rid, item } = (e as CustomEvent<{ reservationId: number; item: PlannerItem }>).detail;
-      if (rid === reservationId) setItems((list) => [...list, item]);
-    };
-    window.addEventListener(EXTRA_ADDED_EVENT, onAdded);
-    return () => window.removeEventListener(EXTRA_ADDED_EVENT, onAdded);
-  }, [reservationId]);
+  const categories = [...new Set(catalog.map((x) => x.category ?? ""))];
+  const [cat, setCat] = useState(categories[0] ?? "");
+  const providers = [...new Set(catalog.map((x) => x.provider).filter(Boolean))] as string[];
 
   const num = (v: string) => (v.trim() === "" ? null : Math.max(0, parseInt(v, 10) || 0));
 
@@ -209,7 +206,7 @@ export function StayPlanner({
                   <span>
                     {i.quantity > 1 ? `${i.quantity} × ` : ""}
                     {i.label}
-                    {i.amount > 0 && <span className="ml-2 text-ink/50">{usd(i.amount)}</span>}
+                    {i.amount > 0 && <span className="ml-2 text-ink/50">{moneyIn(i.amount, i.currency)}</span>}
                   </span>
                   <span className="flex items-center gap-3 text-xs">
                     <span
@@ -223,11 +220,6 @@ export function StayPlanner({
                     >
                       {t.extraStatuses[i.status] ?? i.status}
                     </span>
-                    {i.placeSlug && i.status !== "cancelled" && (
-                      <a href={directionsHref(locale, i.placeSlug)} className="text-gold underline">
-                        {t.directions}
-                      </a>
-                    )}
                     {i.status === "requested" && i.requestedByGuest && (
                       <button type="button" onClick={() => withdraw(i.id)} className="text-ink/40 underline">
                         {t.withdraw}
@@ -240,20 +232,46 @@ export function StayPlanner({
           </div>
         )}
 
+        {providers.length > 0 && (
+          <p className="mt-2 text-xs text-ink/55">{t.providerNote.replace("{name}", providers.join(", "))}</p>
+        )}
+        {categories.length > 1 && (
+          <div className="mt-4 flex flex-wrap gap-2" role="tablist">
+            {categories.map((c) => (
+              <button
+                key={c}
+                type="button"
+                role="tab"
+                aria-selected={cat === c}
+                onClick={() => {
+                  setCat(c);
+                  setPicking(null);
+                }}
+                className={`border px-3 py-1.5 text-xs font-semibold uppercase tracking-widest ${
+                  cat === c ? "border-gold bg-gold text-white" : "border-ink/15 text-ink/60"
+                }`}
+              >
+                {c || t.extrasOther}
+              </button>
+            ))}
+          </div>
+        )}
         {catalog.length > 0 && (
-          <ul className="mt-4 space-y-3">
-            {catalog.map((x) => (
+          <ul className="mt-4 max-h-[36rem] space-y-3 overflow-y-auto pr-1" data-lenis-prevent>
+            {catalog.filter((x) => categories.length < 2 || (x.category ?? "") === cat).map((x) => (
               <li key={x.id} className="border border-ink/10 px-4 py-3">
                 <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <div className="font-semibold">{x.name}</div>
                     {x.description && <div className="mt-0.5 text-xs text-ink/55">{x.description}</div>}
                   </div>
                   <div className="text-right text-sm">
                     {x.price > 0 ? (
                       <>
-                        <span className="font-semibold">{usd(x.price)}</span>
-                        <span className="ml-1 text-xs text-ink/45">{t.units[x.unit] ?? ""}</span>
+                        <span className="font-semibold">{moneyIn(x.price, x.currency)}</span>
+                        <span className="ml-1 text-xs text-ink/45">
+                          {(x.provider && x.unit === "night" ? t.perDay : t.units[x.unit]) ?? ""}
+                        </span>
                       </>
                     ) : (
                       <span className="text-xs text-ink/55">{t.onRequest}</span>
@@ -263,7 +281,9 @@ export function StayPlanner({
                 {picking === x.id ? (
                   <div className="mt-3 grid gap-3 sm:grid-cols-3">
                     <div className="field">
-                      <label htmlFor={`q-${x.id}-${reservationId}`}>{t.quantity}</label>
+                      <label htmlFor={`q-${x.id}-${reservationId}`}>
+                        {x.provider && x.unit === "night" ? t.days : t.quantity}
+                      </label>
                       <input
                         id={`q-${x.id}-${reservationId}`}
                         type="number"

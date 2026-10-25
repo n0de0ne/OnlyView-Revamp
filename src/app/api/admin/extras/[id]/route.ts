@@ -13,7 +13,7 @@ export const PUT = adminRoute<Ctx>("manager", async (req, { params }, user) => {
   const parsed = ExtraInput.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return jsonError("invalid_input: " + parsed.error.issues[0]?.message);
   try {
-    const extra = await prisma.extra.update({ where: { id }, data: parsed.data });
+    const extra = await prisma.extra.update({ where: { id }, data: parsed.data, include: { partner: true } });
     await audit({
       action: "extra_update",
       entityType: "extra",

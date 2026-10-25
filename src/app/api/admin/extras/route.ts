@@ -9,6 +9,7 @@ export const dynamic = "force-dynamic";
 export const GET = adminRoute("viewer", async () => {
   const extras = await prisma.extra.findMany({
     orderBy: [{ isActive: "desc" }, { sortOrder: "asc" }, { nameFr: "asc" }],
+    include: { partner: true },
   });
   return jsonOk({ extras: extras.map(serializeExtra) });
 });
@@ -16,7 +17,7 @@ export const GET = adminRoute("viewer", async () => {
 export const POST = adminRoute("manager", async (req, _ctx, user) => {
   const parsed = ExtraInput.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return jsonError("invalid_input: " + parsed.error.issues[0]?.message);
-  const extra = await prisma.extra.create({ data: parsed.data });
+  const extra = await prisma.extra.create({ data: parsed.data, include: { partner: true } });
   await audit({
     action: "extra_create",
     entityType: "extra",

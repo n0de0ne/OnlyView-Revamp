@@ -183,6 +183,11 @@ export const ExtraInput = z.object({
   isActive: z.boolean().default(true),
   guestBookable: z.boolean().default(true),
   sortOrder: z.number().int().min(-10000).max(10000).default(0),
+  /** supplied by a rental company: priced in its currency, paid to it */
+  partnerId: z.number().int().positive().nullable().optional(),
+  categoryEn: z.string().trim().max(80).nullable().optional(),
+  categoryFr: z.string().trim().max(80).nullable().optional(),
+  imageUrl: z.string().trim().url().max(1000).nullable().optional().or(z.literal("").transform(() => null)),
 });
 
 export const ReservationExtraInput = z.object({
@@ -200,9 +205,15 @@ export const ReservationExtraPatch = z.object({
   label: z.string().trim().min(1).max(200).optional(),
   quantity: z.number().min(0).max(1000).optional(),
   unitPrice: z.number().min(0).optional(),
-  status: z.enum(["requested", "confirmed", "cancelled"]).optional(),
+  status: z.enum(["requested", "confirmed", "declined", "cancelled"]).optional(),
   serviceDate: z.string().regex(ISO_DATE).nullable().optional(),
   notes: z.string().max(2000).nullable().optional(),
+  /** concierge requests: time, party size and the answer the guest sees */
+  serviceTime: z.string().regex(/^\d{2}:\d{2}$/).nullable().optional(),
+  guests: z.number().int().min(1).max(100).nullable().optional(),
+  adminNote: z.string().trim().max(1000).nullable().optional(),
+  /** email the guest the answer (concierge requests, default on) */
+  notifyGuest: z.boolean().optional(),
 });
 
 /** Arrival details — the same shape from the admin editor and the guest portal. */
@@ -226,7 +237,7 @@ const optUrl = z.string().trim().url().max(500).nullable().optional().or(z.liter
 const optPrice = z.number().min(0).max(1_000_000).nullable().optional();
 
 export const ServicePartnerInput = z.object({
-  kind: z.enum(["boat", "chef"]),
+  kind: z.enum(["boat", "chef", "extras"]),
   name: z.string().trim().min(1).max(150),
   contactName: optText(150),
   phone: optText(50),

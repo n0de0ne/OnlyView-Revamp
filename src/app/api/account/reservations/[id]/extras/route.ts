@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { lineAmount, serializeReservationExtra } from "@/lib/extras";
+import { lineAmount, moneyIn, providerTerms, serializeReservationExtra } from "@/lib/extras";
 import { guestEditableReservation, notifyOwnerOfGuestUpdate } from "@/lib/guest-stay";
 import { dateOrNull } from "@/lib/admin-schemas";
 
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest, { params }: Ctx) {
     return NextResponse.json({ success: false, error: "invalid_input" }, { status: 400 });
   }
   const d = parsed.data;
-  const extra = await prisma.extra.findUnique({ where: { id: d.extraId } });
+  const extra = await prisma.extra.findUnique({ where: { id: d.extraId }, include: { partner: true } });
   if (!extra || !extra.isActive || !extra.guestBookable) {
     return NextResponse.json({ success: false, error: "not_found" }, { status: 404 });
   }
@@ -42,12 +42,16 @@ export async function POST(req: NextRequest, { params }: Ctx) {
       serviceDate: dateOrNull(d.serviceDate),
       notes: d.notes || null,
       requestedByGuest: true,
+      ...providerTerms(extra),
     },
   });
   await notifyOwnerOfGuestUpdate(r.id, {
     subject: `Extra requested: ${extra.nameEn}`,
     lines: [
-      `${d.quantity} × ${extra.nameEn}${extra.price > 0 ? ` · $${item.amount}` : " · price on request"}`,
+      `${d.quantity} × ${extra.nameEn}${extra.price > 0 ? ` · ${moneyIn(item.amount, item.currency)}` : " · price on request"}`,
+      ...(item.paidToProvider && extra.partner
+        ? [`Supplied and billed by ${extra.partner.name}: ${[extra.partner.phone, extra.partner.email].filter(Boolean).join(" · ")}`]
+        : []),
       ...(d.serviceDate ? [`Wanted on ${d.serviceDate}`] : []),
       ...(d.notes ? [`Note: ${d.notes}`] : []),
       "Confirm or cancel it in the reservation (Extras).",

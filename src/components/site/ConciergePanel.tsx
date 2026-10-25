@@ -5,14 +5,12 @@
 import { useState } from "react";
 import type { Dict } from "@/lib/i18n";
 import type { ConciergeCatalog } from "@/lib/concierge";
-import type { PlannerItem } from "./StayPlanner";
+import { CONCIERGE_REQUEST_EVENT, type GuestConciergeRequest } from "./ConciergeRequests";
 import { directionsHref } from "./map/map-meta";
 
 type Tab = "restaurants" | "boats" | "chef" | "taxis";
 type Target = { type: "restaurant" | "boat" | "chef"; id: number };
 
-/** StayPlanner listens for this to list the new request with the guest's other extras. */
-export const EXTRA_ADDED_EVENT = "onlyview:extra-added";
 
 const fill = (s: string, n: number) => s.replace("{n}", String(n));
 const money = (n: number, currency: string) =>
@@ -162,10 +160,11 @@ export function ConciergePanel({
       />
     ) : null;
 
-  const announce = (item: PlannerItem) =>
+  // "My concierge requests" lists it at once
+  const announce = (item: Omit<GuestConciergeRequest, "isNew">) =>
     window.dispatchEvent(
-      new CustomEvent<{ reservationId: number; item: PlannerItem }>(EXTRA_ADDED_EVENT, {
-        detail: { reservationId, item },
+      new CustomEvent<{ reservationId: number; item: GuestConciergeRequest }>(CONCIERGE_REQUEST_EVENT, {
+        detail: { reservationId, item: { ...item, isNew: false } },
       })
     );
 

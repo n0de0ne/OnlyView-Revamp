@@ -5,6 +5,8 @@ import type { SerializedReservation } from "@/lib/reservations";
 import type { SerializedReservationExtra } from "@/lib/extras";
 import { api, Card, ConfirmButton, fmtDate, fmtUSD, Modal, StatusBadge, useToast } from "./ui";
 import { UNIT_LABELS, type CatalogExtra } from "./ExtrasBoard";
+import { confirmedExtrasTotal, moneyIn } from "@/lib/extras";
+import { ConciergeRequestList } from "./ConciergeRequestList";
 
 type Details = SerializedReservation["guestDetails"];
 
@@ -18,7 +20,7 @@ const str = (v: string | null) => v ?? "";
 const intOrNull = (v: string) => (v.trim() === "" ? null : parseInt(v, 10));
 
 /**
- * Arrival details + extras of a saved stay. Each part saves on its own (not
+ * Arrival details, concierge requests and extras of a saved stay. Each part saves on its own (not
  * with the main form), so what the guest typed in the portal is never
  * overwritten by a stale editor.
  */
@@ -68,7 +70,7 @@ export function ReservationStayPanel({
   }, []);
 
   useEffect(() => {
-    onExtrasTotal(items.filter((i) => i.status === "confirmed").reduce((s, i) => s + i.amount, 0));
+    onExtrasTotal(confirmedExtrasTotal(items));
   }, [items, onExtrasTotal]);
 
   const saveDetails = async () => {
@@ -140,7 +142,11 @@ export function ReservationStayPanel({
     if (res.success) setItems(items.filter((i) => i.id !== id));
   };
 
-  const confirmedTotal = items.filter((i) => i.status === "confirmed").reduce((s, i) => s + i.amount, 0);
+  const extras = items.filter((i) => i.kind !== "concierge");
+  const concierge = items.filter((i) => i.kind === "concierge");
+  const confirmedTotal = confirmedExtrasTotal(extras);
+  const lineCurrency = catalog.find((x) => x.id === line.extraId)?.currency ?? "USD";
+  const providerLines = extras.filter((i) => i.paidToProvider && i.status !== "cancelled");
   const field = (k: keyof typeof d, label: string, placeholder?: string) => (
     <div className="afield">
       <label>{label}</label>
@@ -188,6 +194,25 @@ export function ReservationStayPanel({
         </div>
       </Card>
 
+      {concierge.length > 0 && (
+        <Card
+          title="🛎️ Conciergerie"
+          action={
+            concierge.some((i) => i.status === "requested") && (
+              <span className="rounded bg-blue-100 px-1.5 py-0.5 text-[0.65rem] font-semibold text-blue-700">
+                {concierge.filter((i) => i.status === "requested").length} à traiter
+              </span>
+            )
+          }
+        >
+          <ConciergeRequestList
+            items={concierge}
+            reservationId={reservationId}
+            onChange={(next) => setItems((list) => list.map((i) => (i.id === next.id ? next : i)))}
+          />
+        </Card>
+      )}
+
       <Card
         title="🍾 Extras"
         action={
@@ -196,7 +221,7 @@ export function ReservationStayPanel({
           </button>
         }
       >
-        {items.length === 0 ? (
+        {extras.length === 0 ? (
           <p className="text-sm text-slate-400">Aucun extra sur ce séjour.</p>
         ) : (
           <div className="overflow-x-auto rounded-xl border border-slate-200">
@@ -211,7 +236,7 @@ export function ReservationStayPanel({
                 </tr>
               </thead>
               <tbody>
-                {items.map((i) => (
+                {extras.map((i) => (
                   <tr key={i.id} className={`border-t border-slate-100 ${i.status === "cancelled" ? "opacity-50" : ""}`}>
                     <td className="px-3 py-2">
                       <div className="font-medium text-slate-700">
@@ -231,9 +256,14 @@ export function ReservationStayPanel({
                       )}
                     </td>
                     <td className="px-3 py-2 text-right text-slate-500">
-                      {i.quantity} × {fmtUSD(i.unitPrice)}
+                      {i.quantity} × {moneyIn(i.unitPrice, i.currency)}
                     </td>
-                    <td className="px-3 py-2 text-right font-semibold">{fmtUSD(i.amount)}</td>
+                    <td className="px-3 py-2 text-right font-semibold">
+                      {moneyIn(i.amount, i.currency)}
+                      {i.paidToProvider && (
+                        <div className="text-[0.6rem] font-normal text-slate-400">payé au prestataire</div>
+                      )}
+                    </td>
                     <td className="px-3 py-2">
                       <select
                         value={i.status}
@@ -270,10 +300,16 @@ export function ReservationStayPanel({
             </table>
           </div>
         )}
-        {items.some((i) => i.status === "requested") && (
+        {extras.some((i) => i.status === "requested") && (
           <p className="mt-3 flex items-center gap-2 text-xs text-blue-700">
             <StatusBadge status="new" /> Demandes à traiter : passez-les en « Confirmé » (comptées dans le solde)
             ou « Annulé ».
+          </p>
+        )}
+        {providerLines.length > 0 && (
+          <p className="mt-2 text-[0.7rem] text-slate-500">
+            Les lignes « payé au prestataire » (St Barth Provider…) sont réglées par le client au prestataire :
+            réservez-les auprès de lui, elles ne s&apos;ajoutent pas au solde.
           </p>
         )}
         <p className="mt-2 text-[0.7rem] text-slate-400">
@@ -290,7 +326,8 @@ export function ReservationStayPanel({
               <option value="">— ligne libre —</option>
               {catalog.map((x) => (
                 <option key={x.id} value={x.id}>
-                  {x.nameFr} · {x.price > 0 ? fmtUSD(x.price) : "sur devis"} {UNIT_LABELS[x.unit] ?? ""}
+                  {x.nameFr} · {x.price > 0 ? moneyIn(x.price, x.currency) : "sur devis"} {UNIT_LABELS[x.unit] ?? ""}
+                  {x.partnerName ? ` · ${x.partnerName}` : ""}
                 </option>
               ))}
             </select>
@@ -310,7 +347,7 @@ export function ReservationStayPanel({
             />
           </div>
           <div className="afield">
-            <label>Prix unitaire ($)</label>
+            <label>Prix unitaire ({lineCurrency === "EUR" ? "€" : "$"})</label>
             <input
               type="number"
               min="0"
@@ -334,7 +371,7 @@ export function ReservationStayPanel({
         </div>
         <div className="mt-4 flex items-center justify-between">
           <span className="text-sm text-slate-500">
-            = {fmtUSD((parseFloat(line.quantity) || 0) * (parseFloat(line.unitPrice) || 0))}
+            = {moneyIn((parseFloat(line.quantity) || 0) * (parseFloat(line.unitPrice) || 0), lineCurrency)}
           </span>
           <button onClick={addLine} disabled={!line.label.trim()} className="abtn-primary">
             Ajouter

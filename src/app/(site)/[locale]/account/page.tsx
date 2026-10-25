@@ -12,7 +12,9 @@ import { GuestLoginForm } from "@/components/site/GuestLoginForm";
 import { StayPlanner } from "@/components/site/StayPlanner";
 import { DateChangeRequest } from "@/components/site/DateChangeRequest";
 import { ConciergePanel } from "@/components/site/ConciergePanel";
-import { confirmedExtrasTotal } from "@/lib/extras";
+import { ConciergeRequests } from "@/components/site/ConciergeRequests";
+import { CONCIERGE_ICON, REQUEST_STATUS_STYLE, requestWhen, type GuestConciergeRequest } from "@/components/site/concierge-format";
+import { confirmedExtrasTotal, isConcierge } from "@/lib/extras";
 import { paymentSummary } from "@/lib/payment-summary";
 import { getConciergeCatalog } from "@/lib/concierge";
 
@@ -102,6 +104,7 @@ export default async function AccountPage({
     await prisma.extra.findMany({
       where: { isActive: true, guestBookable: true },
       orderBy: [{ sortOrder: "asc" }, { nameEn: "asc" }],
+      include: { partner: true },
     })
   ).map((x) => ({
     id: x.id,
@@ -109,11 +112,33 @@ export default async function AccountPage({
     description: (locale === "fr" ? x.descriptionFr : x.descriptionEn) ?? null,
     price: x.price,
     unit: x.unit,
+    category: (locale === "fr" ? x.categoryFr : x.categoryEn) ?? null,
+    imageUrl: x.imageUrl,
+    // a rental company's item: its own currency, paid to it
+    currency: x.partner ? x.partner.currency : "USD",
+    provider: x.partner?.name ?? null,
   }));
   const concierge = upcoming.length ? await getConciergeCatalog(locale) : null;
   // table requests sent before they were linked to their place: find it by name
   const restaurantSlug = (label: string) =>
     concierge?.restaurants.find((p) => label === `Restaurant — ${p.name}`)?.slug ?? null;
+  // concierge requests, apart from extras; answers the guest hasn't seen yet are
+  // highlighted (ConciergeRequests reports them seen once shown)
+  const requestsOf = (r: (typeof client.reservations)[number]): GuestConciergeRequest[] =>
+    r.extras.filter(isConcierge).map((i) => ({
+      id: i.id,
+      label: i.label,
+      category: i.category,
+      status: i.status,
+      serviceDate: i.serviceDate ? toISODate(i.serviceDate) : null,
+      serviceTime: i.serviceTime,
+      guests: i.guests,
+      notes: i.notes,
+      adminNote: i.adminNote,
+      isNew: i.answeredAt != null && (i.guestSeenAt == null || i.answeredAt > i.guestSeenAt),
+      placeSlug: i.place?.slug ?? restaurantSlug(i.label),
+    }));
+  const fresh = upcoming.flatMap((r) => requestsOf(r).filter((i) => i.isNew).map((i) => ({ ...i, reservationId: r.id })));
   const points = client.loyalty?.points ?? 0;
   const lifetime = client.loyalty?.lifetimePoints ?? 0;
   const tier = tierFor(lifetime);
@@ -233,6 +258,29 @@ export default async function AccountPage({
           </div>
         </div>
 
+        <ConciergeRequests
+          reservationId={r.id}
+          locale={locale}
+          t={t.account.conciergeRequests}
+          items={requestsOf(r)}
+          canWithdraw={["option", "confirmed"].includes(r.status) && !r.isArchived && toISODate(r.endDate) >= today}
+        />
+        {concierge &&
+          ["option", "confirmed"].includes(r.status) &&
+          !r.isArchived &&
+          toISODate(r.endDate) >= today && (
+            <ConciergePanel
+              reservationId={r.id}
+              locale={locale}
+              t={t.account.concierge}
+              catalog={concierge}
+              stay={{
+                start: toISODate(r.startDate) > today ? toISODate(r.startDate) : today,
+                end: toISODate(r.endDate),
+                guests: r.guests,
+              }}
+            />
+          )}
         {["option", "confirmed"].includes(r.status) && !r.isArchived && toISODate(r.endDate) >= today && (
           <StayPlanner
             reservationId={r.id}
@@ -250,15 +298,16 @@ export default async function AccountPage({
               guestNames: r.guestNames,
               specialRequests: r.specialRequests,
             }}
-            items={r.extras.map((i) => ({
+            items={r.extras.filter((i) => !isConcierge(i)).map((i) => ({
               id: i.id,
               label: i.label,
               quantity: i.quantity,
               amount: i.amount,
+              currency: i.currency,
+              paidToProvider: i.paidToProvider,
               status: i.status,
               serviceDate: i.serviceDate ? toISODate(i.serviceDate) : null,
               requestedByGuest: i.requestedByGuest,
-              placeSlug: i.place?.slug ?? restaurantSlug(i.label),
             }))}
           />
         )}
@@ -285,22 +334,6 @@ export default async function AccountPage({
               }
             />
           )}
-        {concierge &&
-          ["option", "confirmed"].includes(r.status) &&
-          !r.isArchived &&
-          toISODate(r.endDate) >= today && (
-            <ConciergePanel
-              reservationId={r.id}
-              locale={locale}
-              t={t.account.concierge}
-              catalog={concierge}
-              stay={{
-                start: toISODate(r.startDate) > today ? toISODate(r.startDate) : today,
-                end: toISODate(r.endDate),
-                guests: r.guests,
-              }}
-            />
-          )}
       </div>
     );
   };
@@ -314,6 +347,32 @@ export default async function AccountPage({
       <section className="mx-auto max-w-5xl px-5 py-14 lg:px-8">
         <div className="grid gap-10 lg:grid-cols-[1.5fr_1fr]">
           <div className="space-y-10">
+            {fresh.length > 0 && (
+              <div className="border border-gold bg-gold/5 p-5" role="status">
+                <h2 className="eyebrow !text-[0.6rem]">🛎️ {t.account.conciergeRequests.noticeTitle}</h2>
+                <ul className="mt-3 space-y-2 text-sm">
+                  {fresh.map((i) => (
+                    <li key={i.id} className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                      <span aria-hidden>{CONCIERGE_ICON[i.category ?? ""] ?? "🛎️"}</span>
+                      <span className="font-semibold">{i.label.replace(/^Restaurant — /, "")}</span>
+                      <span className="text-ink/60">{requestWhen(i, locale, t.account.conciergeRequests)}</span>
+                      <span
+                        className={`border px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-widest ${REQUEST_STATUS_STYLE[i.status] ?? REQUEST_STATUS_STYLE.requested}`}
+                      >
+                        {i.status === "confirmed" && "✓ "}
+                        {t.account.conciergeRequests.statuses[i.status] ?? i.status}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                <a
+                  href={`#concierge-requests-${fresh[0].reservationId}`}
+                  className="mt-3 inline-block text-xs font-semibold uppercase tracking-widest text-gold"
+                >
+                  {t.account.conciergeRequests.noticeSee} →
+                </a>
+              </div>
+            )}
             <div>
               <h2 className="section-title mb-6 !text-2xl">{t.account.upcoming}</h2>
               {upcoming.length === 0 ? (

@@ -40,7 +40,7 @@ export async function listConcierge(type: ConciergeType) {
     case "partners":
       return prisma.servicePartner.findMany({
         orderBy: [{ kind: "asc" }, { name: "asc" }],
-        include: { _count: { select: { boats: true, chefOffers: true } } },
+        include: { _count: { select: { boats: true, chefOffers: true, extras: true } } },
       });
     case "taxis":
       return prisma.taxi.findMany({ orderBy: [{ sortOrder: "asc" }, { name: "asc" }] });
