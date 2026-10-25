@@ -179,8 +179,8 @@ export const en = {
         "The west side of the point turns its back on the Atlantic: the sea below the villa is the calm one, and the hillside still catches enough breeze to keep the evenings pleasant.",
       ],
       [
-        "Good neighbours",
-        "Hotel Le Christopher, a five-star hotel with a Sisley spa, a beach club and restaurants, is a short walk away: a drink or a massage without taking the car. Le Ti St Barth, the island's famous dinner-cabaret, is three minutes down the road.",
+        "Hotel Le Christopher, on foot",
+        "The five-star hotel on the point is a short walk from the villa, and we use it like a neighbour: what we think is the best spa in the Caribbean, the big pool above the sea, its restaurants, and a cocktail at the bar every evening while the sun goes down. No car, no parking. Le Ti St Barth, the island's famous dinner-cabaret, is three minutes down the road.",
       ],
       [
         "No beach of its own",
@@ -227,7 +227,7 @@ export const en = {
       ],
       [
         "Hotel Le Christopher",
-        "The five-star hotel on the point: a large infinity pool above the sea, a Sisley spa, a beach club and restaurants that welcome outside guests. Like several hotels on the island, it closes for a few weeks in late summer.",
+        "The five-star hotel on the point, within walking distance of the villa: a large infinity pool above the sea, a Sisley spa that is, for us, the best in the Caribbean, restaurants and a bar that welcome outside guests, and the sunset in front of it every evening. Like several hotels on the island, it closes for a few weeks in late summer.",
       ],
       [
         "Le Ti St Barth",
