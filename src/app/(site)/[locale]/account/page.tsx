@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getDict, isLocale, localePath, tpl, type Locale } from "@/lib/i18n";
+import { isLocale, localePath, tpl, type Locale } from "@/lib/i18n";
+import { getContent } from "@/lib/site-content";
 import { getGuestClientId } from "@/lib/guest-auth";
 import { prisma } from "@/lib/db";
 import { addDays, formatDateShort, toISODate, todayISO, nightsBetween } from "@/lib/dates";
@@ -26,7 +27,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const t = getDict(locale);
+  const t = await getContent(locale);
   const loyalty = await isLoyaltyEnabled();
   return {
     title: t.meta.titleAccount,
@@ -49,7 +50,7 @@ export default async function AccountPage({
 }) {
   const { locale: raw } = await params;
   const locale = (isLocale(raw) ? raw : "en") as Locale;
-  const t = getDict(locale);
+  const t = await getContent(locale);
 
   const clientId = await getGuestClientId();
 

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { getDict, isLocale, type Locale } from "@/lib/i18n";
+import { isLocale, type Locale } from "@/lib/i18n";
+import { getContent } from "@/lib/site-content";
 import { breadcrumbJsonLd, jsonLd, pageMetadata } from "@/lib/seo";
 import { getPhotos } from "@/lib/photos";
 import { getSettings } from "@/lib/settings";
@@ -16,7 +17,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale: raw } = await params;
   const locale = (isLocale(raw) ? raw : "en") as Locale;
-  const t = getDict(locale);
+  const t = await getContent(locale);
   return pageMetadata({
     locale,
     path: "/tour",
@@ -45,7 +46,7 @@ export default async function TourPage({
 }) {
   const { locale: raw } = await params;
   const locale = (isLocale(raw) ? raw : "en") as Locale;
-  const t = getDict(locale);
+  const t = await getContent(locale);
   const [photos, settings] = await Promise.all([getPhotos(), getSettings()]);
   const tour3dUrl = settings.tour_3d_url?.trim();
 

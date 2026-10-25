@@ -1,12 +1,39 @@
 /**
- * Facts about the villa that never come from the database — the things a
- * search engine or an AI answer engine should be able to state without
- * ambiguity. Plain constants, importable from anywhere (no Prisma here).
+ * The villa's facts — the things a search engine or an AI answer engine
+ * should be able to state without ambiguity.
  *
- * The owner-editable counterparts (email, phone, WhatsApp, map link, social
- * profiles) live in Réglages → Contact and are read through lib/contact.
+ * VILLA is only the initial value: the live facts are in the database
+ * (Admin → Textes du site → La villa), read with getVilla() / villaFacts()
+ * from lib/site-content. Minimum stays, deposit and tourist tax are rate
+ * settings (Réglages → Tarifs), not facts. The contact counterparts (email,
+ * phone, WhatsApp, map link, social profiles) live in Réglages → Contact and
+ * are read through lib/contact.
  */
-export const VILLA = {
+export interface VillaFacts {
+  name: string;
+  alternateNames: string[];
+  legalOwner: string;
+  ownerFirstName: string;
+  ownerName: string;
+  neighbourhood: string;
+  island: string;
+  islandShort: string;
+  postalCode: string;
+  country: string;
+  lat: number;
+  lng: number;
+  bedrooms: number;
+  bathrooms: number;
+  guests: number;
+  sizeM2: number;
+  checkin: string;
+  checkout: string;
+  balanceDaysBefore: number;
+  /** approximate drive times from the villa — quoted on several pages */
+  distances: Array<{ key: string; en: string; fr: string; minutes: number }>;
+}
+
+export const VILLA: VillaFacts = {
   name: "Villa ONLY VIEW",
   alternateNames: [
     "Villa Only View",
@@ -37,12 +64,7 @@ export const VILLA = {
   sizeM2: 200,
   checkin: "15:00",
   checkout: "11:00",
-  minNights: 4,
-  minNightsFestive: 7,
-  touristTaxPercent: 5,
-  depositPercent: 30,
   balanceDaysBefore: 30,
-  /** approximate drive times from the villa — quoted on several pages */
   distances: [
     { key: "airport", en: "Gustaf III Airport (SBH)", fr: "Aéroport Gustaf III (SBH)", minutes: 10 },
     { key: "gustavia", en: "Gustavia (harbour, shopping)", fr: "Gustavia (port, boutiques)", minutes: 12 },
@@ -55,7 +77,7 @@ export const VILLA = {
     { key: "saline", en: "Saline & Gouverneur beaches", fr: "Plages de Saline & Gouverneur", minutes: 17 },
     { key: "toiny", en: "Le Toiny", fr: "Le Toiny", minutes: 12 },
   ],
-} as const;
+};
 
 /** Date the content was last materially revised — surfaced as lastmod /
     dateModified. Bump it when the copy changes, not on every deploy. */

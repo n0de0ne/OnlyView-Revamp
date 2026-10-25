@@ -74,8 +74,10 @@ export async function POST(req: NextRequest) {
       promoDiscount: quote.promoDiscount,
       subtotalHT: quote.subtotalHT,
       taxAmount: quote.taxAmount,
+      taxPercent: Math.round(quote.taxRate * 1000) / 10,
       totalTTC: quote.totalTTC,
       depositAmount: quote.depositAmount,
+      depositPercent: Math.round(quote.depositPercent * 1000) / 10,
       balanceAmount: quote.balanceAmount,
     },
     loyaltyPoints: loyaltyOn

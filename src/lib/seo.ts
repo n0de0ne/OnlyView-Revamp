@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { Locale } from "./i18n";
-import { CONTENT_UPDATED, ISLAND, OWNER_EMAIL, OWNER_PHONE, POINTE_MILOU, VILLA, VILLA_MAP_URL } from "./site-facts";
+import { villaFacts } from "./site-content";
+import { CONTENT_UPDATED, ISLAND, OWNER_EMAIL, OWNER_PHONE, POINTE_MILOU, VILLA_MAP_URL } from "./site-facts";
 
 /**
  * The site's public address, used for every absolute link the server hands
@@ -44,7 +45,10 @@ export const localeUrl = (locale: Locale, path: string) => {
 /** The image every share card falls back to (1200×900 heated pool at sunset). */
 export const DEFAULT_OG_IMAGE = "/media/photos/pool-terrace/pool-terrace-01.webp";
 
-export const ORG = {
+/** The villa as an organisation, from its facts in the database (see villaFacts). */
+function org() {
+  const VILLA = villaFacts();
+  return {
   name: VILLA.name,
   legalName: `${VILLA.name} — ${VILLA.island}`,
   url: SITE_URL,
@@ -60,7 +64,8 @@ export const ORG = {
   },
   geo: { "@type": "GeoCoordinates", latitude: VILLA.lat, longitude: VILLA.lng },
   hasMap: VILLA_MAP_URL,
-};
+  };
+}
 
 /* ─────────────────────────── page metadata ─────────────────────────── */
 
@@ -98,6 +103,7 @@ export function pageMetadata(opts: {
   noindex?: boolean;
   type?: "website" | "article";
 }): Metadata {
+  const VILLA = villaFacts();
   const image = opts.image ?? DEFAULT_OG_IMAGE;
   const absImage = image.startsWith("http") ? image : `${SITE_URL}${image}`;
   return {
@@ -184,6 +190,8 @@ export function vacationRentalJsonLd(opts: {
   /** a few approved guest reviews, inlined as `review` (review snippets) */
   reviews?: Array<{ name: string; rating: number; message: string; date?: string }>;
 }) {
+  const VILLA = villaFacts();
+  const ORG = org();
   const fr = opts.locale === "fr";
   return {
     "@context": "https://schema.org",
@@ -282,6 +290,7 @@ export function vacationRentalJsonLd(opts: {
  * engines resolve the right Saint-Barthélemy) and the villa inside it.
  */
 export function pointeMilouJsonLd(locale: Locale, description: string) {
+  const VILLA = villaFacts();
   const fr = locale === "fr";
   return {
     "@context": "https://schema.org",
@@ -312,6 +321,8 @@ export function pointeMilouJsonLd(locale: Locale, description: string) {
 
 /** The organisation behind the site — rented by its owner, not an agency. */
 export function organizationJsonLd(sameAs: string[] = []) {
+  const VILLA = villaFacts();
+  const ORG = org();
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -332,6 +343,8 @@ export function organizationJsonLd(sameAs: string[] = []) {
 
 /** The owner, as an entity AI engines can attach the villa to. */
 export function ownerJsonLd(locale: Locale) {
+  const VILLA = villaFacts();
+  const ORG = org();
   return {
     "@context": "https://schema.org",
     "@type": "Person",
@@ -348,6 +361,7 @@ export function ownerJsonLd(locale: Locale) {
 }
 
 export function websiteJsonLd(locale: Locale) {
+  const VILLA = villaFacts();
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",

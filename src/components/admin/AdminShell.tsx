@@ -58,6 +58,8 @@ const NAV: Array<{ title: string | null; items: NavItem[] }> = [
     title: "Site web",
     items: [
       { href: "/admin/site", label: "Site & contenu", icon: "🖼️" },
+      { href: "/admin/texts", label: "Textes du site", icon: "📝" },
+      { href: "/admin/guide", label: "Guide", icon: "📖" },
       { href: "/admin/analytics", label: "Analytique", icon: "📈" },
     ],
   },

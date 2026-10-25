@@ -1,5 +1,9 @@
 /**
  * St Barth guide — evergreen content hub (SEO/GEO).
+ *
+ * These are the articles the GuideArticle table was first filled with
+ * (lib/guides seedGuides, once per database). The live articles are edited in
+ * Admin → Guide: changing the text here no longer changes the site.
  * Written in the owners' voice; structured so AI engines and search can
  * quote clean facts (headings + short paragraphs).
  */
@@ -804,7 +808,3 @@ export const GUIDES: GuideArticle[] = [
     },
   },
 ];
-
-export function getGuide(slug: string): GuideArticle | undefined {
-  return GUIDES.find((g) => g.slug === slug);
-}

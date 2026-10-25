@@ -1,6 +1,8 @@
 import { llmsFull } from "@/lib/llms";
 
-export const revalidate = 3600;
+// built from the admin-edited copy, guides and facts: read at request time
+// (the image is built without a database), cached by the browser and CDN header
+export const dynamic = "force-dynamic";
 
 /**
  * /llms-full.txt — the whole public site as one markdown document (the

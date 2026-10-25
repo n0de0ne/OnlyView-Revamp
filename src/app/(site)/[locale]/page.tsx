@@ -3,7 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { GoldenHour } from "@/components/site/golden-hour/GoldenHour";
 import { Tilt } from "@/components/motion/Tilt";
-import { getDict, isLocale, localePath, type Locale } from "@/lib/i18n";
+import { isLocale, localePath, type Locale } from "@/lib/i18n";
+import { getContent } from "@/lib/site-content";
 import {
   DEFAULT_OG_IMAGE,
   organizationJsonLd,
@@ -33,7 +34,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale: raw } = await params;
   const locale = (isLocale(raw) ? raw : "en") as Locale;
-  const t = getDict(locale);
+  const t = await getContent(locale);
   return pageMetadata({
     locale,
     path: "/",
@@ -52,7 +53,7 @@ export default async function HomePage({
 }) {
   const { locale: raw } = await params;
   const locale = (isLocale(raw) ? raw : "en") as Locale;
-  const t = getDict(locale);
+  const t = await getContent(locale);
 
   const [loyalty, photos, rates, testimonials, contact] = await Promise.all([
     isLoyaltyEnabled(),

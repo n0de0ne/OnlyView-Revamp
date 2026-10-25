@@ -1,5 +1,6 @@
 /**
- * Server start hook — loads the analytics geolocation database and schedules
+ * Server start hook — seeds the site's copy into the database, loads the
+ * analytics geolocation database and schedules
  * the hourly reminder run (Réglages → Rappels automatiques). The run goes through /api/cron/reminders on this same
  * server, authorised by a token that only lives in this process; set
  * REMINDERS_SCHEDULER=off when an external cron calls that route instead.
@@ -13,6 +14,18 @@ export async function register() {
   // lets the edge compile drop this Node-only import.
   if (process.env.NEXT_RUNTIME === "nodejs") {
     import("./lib/analytics/geo").then((m) => m.warmGeo()).catch(() => {});
+  }
+
+  // the site's copy and guide articles: write the shipped text of any block or
+  // article the database doesn't have yet (edits made in the admin are kept)
+  if (process.env.NEXT_RUNTIME === "nodejs") {
+    Promise.all([import("./lib/site-content"), import("./lib/guides")])
+      .then(async ([content, guides]) => {
+        const [texts, articles] = [await content.seedSiteTexts(), await guides.seedGuides()];
+        if (texts || articles) console.log(`[content] seeded ${texts} text block(s), ${articles} guide article(s)`);
+        await content.getVilla(); // warm the facts the metadata helpers read
+      })
+      .catch((e) => console.error("[content] seeding failed:", e instanceof Error ? e.message : e));
   }
 
   if (process.env.REMINDERS_SCHEDULER === "off") return;

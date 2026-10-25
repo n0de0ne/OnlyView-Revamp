@@ -312,3 +312,35 @@ export const ChefOfferInput = z.object({
   isActive: z.boolean().default(true),
   sortOrder: z.number().int().min(-10000).max(10000).default(0),
 });
+
+/* ───────────────────────── guide articles ───────────────────────── */
+
+export const GUIDE_CATEGORIES = ["practical", "island"] as const;
+
+const GuideBi = z.object({ en: z.string().trim(), fr: z.string().trim() });
+const GuideSectionInput = z.object({
+  h: z.string().trim().min(1),
+  p: z.array(z.string().trim().min(1)),
+  places: z.array(z.string().trim().min(1)).optional(),
+  flightSearch: z.boolean().optional(),
+});
+const guideDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+
+export const GuideInput = z.object({
+  slug: z
+    .string()
+    .trim()
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  category: z.enum(GUIDE_CATEGORIES),
+  sortOrder: z.number().int().default(0),
+  isPublished: z.boolean().default(true),
+  publishedOn: guideDate,
+  updatedOn: guideDate,
+  title: GuideBi.refine((v) => v.en && v.fr),
+  description: GuideBi,
+  metaTitle: GuideBi,
+  metaDescription: GuideBi,
+  sections: z.object({ en: z.array(GuideSectionInput), fr: z.array(GuideSectionInput) }),
+  links: z.array(z.object({ label: GuideBi, url: z.string().trim().url() })),
+});
+

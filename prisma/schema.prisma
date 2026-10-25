@@ -766,6 +766,42 @@ model Setting {
   value String
 }
 
+// ──────────────────────────────────────────────────────────── Site content
+
+/// The site's copy (Admin → Textes du site): one row per block and language.
+/// `key` is the block's path in the dictionary ("pointeMilou", "map"…); the
+/// value replaces the code's initial text, which only seeds the row.
+model SiteText {
+  key       String
+  locale    String
+  value     Json
+  updatedAt DateTime @updatedAt
+  updatedBy String?
+
+  @@id([key, locale])
+}
+
+/// St Barth guide articles (Admin → Guide). Text fields are {en, fr};
+/// `sections` is {en: Section[], fr: Section[]} (heading, paragraphs, map pins).
+model GuideArticle {
+  id              Int      @id @default(autoincrement())
+  slug            String   @unique
+  category        String   @default("island")
+  sortOrder       Int      @default(0)
+  isPublished     Boolean  @default(true)
+  /// first published / last materially revised (ISO dates, shown and sent to engines)
+  publishedOn     String
+  updatedOn       String
+  title           Json
+  description     Json
+  metaTitle       Json
+  metaDescription Json
+  sections        Json
+  links           Json     @default("[]")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
 model EmailLog {
   id             Int      @id @default(autoincrement())
   templateSlug   String?

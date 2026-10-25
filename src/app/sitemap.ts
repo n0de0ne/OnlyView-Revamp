@@ -1,11 +1,14 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/seo";
 import { CONTENT_UPDATED } from "@/lib/site-facts";
-import { GUIDES } from "@/data/guides";
+import { getGuides } from "@/lib/guides";
+import { contentUpdatedAt } from "@/lib/site-content";
 import { prisma } from "@/lib/db";
 import manifest from "@/data/photos.json";
 
-export const revalidate = 3600;
+// read at request time: guides and copy are edited in the admin, and the
+// image is built without a database
+export const dynamic = "force-dynamic";
 
 /** the first photo of a category, as an absolute URL */
 const photo = (category: string) => {
@@ -28,7 +31,8 @@ async function latestReviewDate(): Promise<Date | null> {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const content = new Date(CONTENT_UPDATED);
+  const [GUIDES, edited] = await Promise.all([getGuides(), contentUpdatedAt()]);
+  const content = new Date(edited && edited > CONTENT_UPDATED ? edited : CONTENT_UPDATED);
   const latestReview = await latestReviewDate();
   const newer = (a: Date, b: Date | null) => (b && b > a ? b : a);
 
