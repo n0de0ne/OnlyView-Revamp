@@ -186,6 +186,38 @@ export const fr: Dict = {
         "La partie honnête : on va à la plage en voiture. Lorient est à 5 minutes, Marigot et St Jean à 8. Toutes les plages de St Barth sont publiques, et la plupart de nos hôtes en changent chaque jour de toute façon.",
       ],
     ] as Array<[string, string]>,
+    packageLabel: "Tout est là",
+    packageTitle: "Tout ce qu'il faut, à quelques minutes",
+    packageIntro:
+      "Pointe Milou est un quartier calme, mais rien n'y est loin. C'est ce qui en fait l'un des endroits les plus demandés de l'île pour une villa : on dort au calme, et tout le reste est à côté.",
+    package: [
+      [
+        "Courses et boulangeries",
+        "Le U Express L'Oasis de Lorient est en rénovation et s'agrandit, et il y a aussi le nouveau Monoprix. Pour le pain et les croissants du matin, La Petite Colombe et Choisy sont tout près.",
+      ],
+      [
+        "Hôtels",
+        "Quelques-uns des plus beaux hôtels de l'île sont autour de vous : Le Toiny, Le Sereno, le Barthélemy et Les Airelles, qui vient d'ouvrir. Chacun a une table qui vaut la réservation.",
+      ],
+      [
+        "Restaurants",
+        "L'Esprit, Grain de Sel, Tamarin, et les restaurants de ces hôtels. Où que vous dîniez, vous n'êtes jamais loin de la villa.",
+      ],
+      [
+        "Plages",
+        "Lorient, Marigot, Grand Cul-de-Sac, Saline : une plage différente chaque jour, et aucune n'est loin.",
+      ],
+      [
+        "Gustavia et les soirées",
+        "Gustavia est à 15-20 minutes de la villa, et le Nikki Beach, le grand beach club festif, à une dizaine. Assez près pour sortir, assez loin pour ne pas l'entendre.",
+      ],
+      [
+        "Marcher, au calme",
+        "Pointe Milou est un quartier où l'on marche volontiers : des routes calmes, peu de voitures, idéal pour une balade le matin ou au coucher du soleil. Et sans travaux de novembre au 15 avril, la haute saison reste tranquille.",
+      ],
+    ] as Array<[string, string]>,
+    packageOutro:
+      "Au calme, près de tout, dans l'un des meilleurs quartiers de l'île : voilà pourquoi Pointe Milou est si recherché, et pourquoi nos clients reviennent.",
     whatsTitle: "Ce qu'il y a à Pointe Milou",
     whats: [
       [

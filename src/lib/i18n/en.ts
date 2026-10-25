@@ -187,6 +187,38 @@ export const en = {
         "The honest part: you drive to the beach. Lorient is 5 minutes away, Marigot and St Jean 8. All beaches in St Barth are public, and most guests go to a different one each day anyway.",
       ],
     ] as Array<[string, string]>,
+    packageLabel: "The whole package",
+    packageTitle: "Everything you need, a few minutes away",
+    packageIntro:
+      "Pointe Milou is quiet, but nothing is far. That is what makes it one of the most popular places on the island for a villa: you sleep in the calm, and everything else is close by.",
+    package: [
+      [
+        "Groceries and bakeries",
+        "The U Express L'Oasis in Lorient is being renovated and made bigger, and there is the new Monoprix too. For bread and croissants in the morning, La Petite Colombe and Choisy are close by.",
+      ],
+      [
+        "Hotels",
+        "Some of the island's finest hotels are around you: Le Toiny, Le Sereno, Barthélemy, and Les Airelles, which has just opened. Each one has a table worth booking.",
+      ],
+      [
+        "Restaurants",
+        "L'Esprit, Grain de Sel and Tamarin, plus the restaurants of those hotels. Wherever you have dinner, you are never far from home.",
+      ],
+      [
+        "Beaches",
+        "Lorient, Marigot, Grand Cul-de-Sac, Saline: a different beach every day, and none of them far.",
+      ],
+      [
+        "Gustavia and nights out",
+        "Gustavia is 15 to 20 minutes from the villa, and Nikki Beach, the big party beach club, about 10. Close enough for a night out, far enough that you don't hear it.",
+      ],
+      [
+        "Walking, in peace",
+        "Pointe Milou is a nice neighbourhood to walk in: quiet roads, little traffic, perfect for a morning walk or a stroll at sunset. And with no construction work from November to 15 April, the high season stays quiet.",
+      ],
+    ] as Array<[string, string]>,
+    packageOutro:
+      "Quiet, close to everything, in one of the best areas of the island: that is why Pointe Milou is so popular, and why our guests come back.",
     whatsTitle: "What is in Pointe Milou",
     whats: [
       [
