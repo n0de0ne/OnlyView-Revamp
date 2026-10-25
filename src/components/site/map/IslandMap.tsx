@@ -70,10 +70,13 @@ export function IslandMap({
   const [frameH, setFrameH] = useState(0);
   const [headH, setHeadH] = useState(148);
   const [drag, setDrag] = useState<number | null>(null);
+  /** the sheet takes its next detent without the slide */
+  const [jump, setJump] = useState(false);
   const frameRef = useRef<HTMLDivElement>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
   const headRef = useRef<HTMLDivElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
   const nonce = useRef(0);
 
   const send = useCallback((c: { type: MapCommand["type"] } & Record<string, unknown>) => {
@@ -216,6 +219,54 @@ export function IslandMap({
       html.style.overflow = prev;
     };
   }, [fullscreen]);
+
+  /* ── the keyboard (phone) ──
+   * When it opens, iOS keeps the layout viewport as it is and pans it to
+   * reveal the focused field, so a `fixed; inset: 0` frame slid up under the
+   * status bar — search field first: its list showed, with nothing to type
+   * into. In full screen the frame now covers the *visual* viewport, what is
+   * actually on screen with the keyboard out; the sheet, open to the top,
+   * keeps the field right under the status bar. */
+  useEffect(() => {
+    const el = frameRef.current;
+    const vv = window.visualViewport;
+    if (!fullscreen || !el || !vv) return;
+    const follow = () => {
+      el.style.top = `${vv.offsetTop}px`;
+      el.style.left = `${vv.offsetLeft}px`;
+      el.style.width = `${vv.width}px`;
+      el.style.height = `${vv.height}px`;
+    };
+    follow();
+    vv.addEventListener("resize", follow);
+    vv.addEventListener("scroll", follow);
+    return () => {
+      vv.removeEventListener("resize", follow);
+      vv.removeEventListener("scroll", follow);
+      el.style.top = el.style.left = el.style.width = el.style.height = "";
+    };
+  }, [fullscreen]);
+  // in the page flow the frame scrolls with the page: if the pan left the
+  // field off screen, the page is scrolled to put it back under the top bar
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (fullscreen || !vv) return;
+    const reveal = () => {
+      const input = searchRef.current;
+      if (!input || document.activeElement !== input || window.innerWidth >= 1024) return;
+      const r = input.getBoundingClientRect();
+      const top = r.top - vv.offsetTop;
+      if (top >= 64 && r.bottom - vv.offsetTop <= vv.height) return;
+      window.scrollBy({ top: top - 72, behavior: "auto" });
+    };
+    vv.addEventListener("resize", reveal);
+    return () => vv.removeEventListener("resize", reveal);
+  }, [fullscreen]);
+  useEffect(() => {
+    if (!jump) return;
+    const id = requestAnimationFrame(() => setJump(false));
+    return () => cancelAnimationFrame(id);
+  }, [jump]);
 
   // the locate messages fade on their own
   useEffect(() => {
@@ -363,14 +414,26 @@ export function IslandMap({
         <IconSearch />
       </span>
       <input
+        ref={searchRef}
         type="search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onFocus={() => {
           if (desktop) return;
           frameIntoView();
+          // straight to the top, no slide: the keyboard is about to open, and
+          // the browser scrolls to wherever the field is at that moment
+          setJump(true);
           setDetent("full");
         }}
+        // the keyboard's Search key closes it; the list is the result
+        onKeyDown={(e) => {
+          if (e.key === "Enter") e.currentTarget.blur();
+        }}
+        enterKeyHint="search"
+        autoComplete="off"
+        autoCorrect="off"
+        spellCheck={false}
         placeholder={t.search}
         aria-label={t.search}
         className="h-11 w-full rounded-xl bg-ink/[0.06] pl-10 pr-14 text-base text-ink outline-none transition placeholder:text-ink/40 focus:bg-ink/[0.08] focus:ring-2 focus:ring-navy/20 [&::-webkit-search-cancel-button]:hidden"
@@ -592,7 +655,7 @@ export function IslandMap({
                 ? {
                     height: sheetH,
                     transform: `translate3d(0, ${sheetY}px, 0)`,
-                    transition: drag == null ? `transform 0.5s ${SHEET_EASE}` : "none",
+                    transition: drag == null && !jump ? `transform 0.5s ${SHEET_EASE}` : "none",
                   }
                 : { height: "calc(100% - 10px)", transform: "translate3d(0, calc(100% - 148px), 0)" }
           }

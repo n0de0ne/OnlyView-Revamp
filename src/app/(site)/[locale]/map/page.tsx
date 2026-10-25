@@ -11,7 +11,15 @@ import { CountUp } from "@/components/motion/CountUp";
 import { IslandMap } from "@/components/site/map/IslandMap";
 import type { MapPlaceDTO } from "@/components/site/map/map-meta";
 
-export const revalidate = 3600;
+/**
+ * Rendered on every request. The pins — and the via-points of their
+ * itineraries — live in the admin's database, and there is no database when
+ * the image is built: prerendered, the page shipped the bundled seed and
+ * served it for up to an hour after every deploy, until the cache expired or
+ * an admin edit revalidated it. A place corrected in the admin then looked
+ * fixed, broken again after the next deploy, fixed an hour later.
+ */
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
