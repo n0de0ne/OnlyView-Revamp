@@ -6,6 +6,7 @@ import { useState } from "react";
 import type { Dict } from "@/lib/i18n";
 import type { ConciergeCatalog } from "@/lib/concierge";
 import type { PlannerItem } from "./StayPlanner";
+import { directionsHref } from "./map/map-meta";
 
 type Tab = "restaurants" | "boats" | "chef" | "taxis";
 type Target = { type: "restaurant" | "boat" | "chef"; id: number };
@@ -237,12 +238,12 @@ export function ConciergePanel({
                   </div>
                   {isOpen("restaurant", r.id) ? (
                     requestForm(true)
-                  ) : r.bookingMode === "none" ? (
-                    <p className="mt-2 text-xs text-ink/50">{t.walkIn}</p>
                   ) : (
                     <div className="flex flex-wrap items-center gap-4">
-                      {/* online booking replaces the concierge request */}
-                      {r.bookingMode === "direct" && r.bookingUrl ? (
+                      {r.bookingMode === "none" ? (
+                        <p className="mt-2 text-xs text-ink/50">{t.walkIn}</p>
+                      ) : /* online booking replaces the concierge request */
+                      r.bookingMode === "direct" && r.bookingUrl ? (
                         <a href={r.bookingUrl} target="_blank" rel="noopener" className={actionClass}>
                           {t.bookOnline} ↗
                         </a>
@@ -251,6 +252,9 @@ export function ConciergePanel({
                           + {t.bookTable}
                         </button>
                       )}
+                      <a href={directionsHref(locale, r.slug)} className={actionClass}>
+                        {t.directions}
+                      </a>
                     </div>
                   )}
                 </li>

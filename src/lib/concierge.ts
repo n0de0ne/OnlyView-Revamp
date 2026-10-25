@@ -147,6 +147,8 @@ export async function getConciergeCatalog(locale: Locale) {
   return {
     restaurants: restaurants.map((r) => ({
       id: r.id,
+      /** its pin on the island map */
+      slug: r.slug,
       name: r.name,
       zone: r.zone,
       kind: r.kind,

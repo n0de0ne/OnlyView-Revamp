@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { Dict } from "@/lib/i18n";
 import { EXTRA_ADDED_EVENT } from "./ConciergePanel";
+import { directionsHref } from "./map/map-meta";
 
 export interface PlannerDetails {
   arrivalFlight: string | null;
@@ -31,6 +32,8 @@ export interface PlannerItem {
   status: string;
   serviceDate: string | null;
   requestedByGuest: boolean;
+  /** a table request's restaurant on the island map */
+  placeSlug?: string | null;
 }
 
 const usd = (n: number) => "$" + Math.round(n).toLocaleString("en-US");
@@ -220,6 +223,11 @@ export function StayPlanner({
                     >
                       {t.extraStatuses[i.status] ?? i.status}
                     </span>
+                    {i.placeSlug && i.status !== "cancelled" && (
+                      <a href={directionsHref(locale, i.placeSlug)} className="text-gold underline">
+                        {t.directions}
+                      </a>
+                    )}
                     {i.status === "requested" && i.requestedByGuest && (
                       <button type="button" onClick={() => withdraw(i.id)} className="text-ink/40 underline">
                         {t.withdraw}

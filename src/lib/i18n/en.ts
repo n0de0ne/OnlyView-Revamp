@@ -446,6 +446,7 @@ export const en = {
     onRequest: "Price on request",
     yourExtras: "Your requests",
     withdraw: "Withdraw",
+    directions: "Directions",
     extraStatuses: { requested: "Requested", confirmed: "Confirmed", cancelled: "Unavailable" } as Record<string, string>,
     units: { stay: "per stay", night: "per night", person: "per person", unit: "each" } as Record<string, string>,
     dateChange: {
@@ -487,6 +488,7 @@ export const en = {
       intro: "Send us a request: we book it with the venue or provider and confirm it here. Prices are indicative.",
       bookTable: "Book a table",
       bookOnline: "Book online",
+      directions: "Directions",
       walkIn: "No reservation — just go",
       bookBoat: "Request this boat",
       bookChef: "Request this menu",

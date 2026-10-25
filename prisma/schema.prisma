@@ -303,6 +303,10 @@ model ReservationExtra {
   serviceDate      DateTime?
   notes            String?
   requestedByGuest Boolean     @default(false)
+  /// the map place a concierge table request is for — gives the guest a
+  /// "Directions" link to it on the island map
+  placeId          Int?
+  place            MapPlace?   @relation(fields: [placeId], references: [id], onDelete: SetNull)
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
 
@@ -610,6 +614,7 @@ model MapPlace {
   /// the venue's own contacts, for the owner booking a table
   whatsapp             String?
   email                String?
+  reservationExtras    ReservationExtra[]
   sortOrder Int     @default(0)
   isActive  Boolean @default(true)
   createdAt DateTime @default(now())
