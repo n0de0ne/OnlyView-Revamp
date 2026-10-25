@@ -661,6 +661,7 @@ export const fr: Dict = {
       ["Contrat & paiement", "Signé en ligne en quelques minutes, acompte de 30 % par virement", "Conditions de l'agence, souvent plus strictes"],
       ["Early check-in, late check-out", "Demandés et confirmés par une personne, selon le calendrier", "Selon la politique"],
       ["Conciergerie", "Incluse, organisée avec la maison", "Souvent en supplément"],
+      ["Clients fidèles", "Premier choix des dates, Noël et Nouvel An compris", "Les dates encore libres ensuite"],
       ["Conseils sur l'île", "Les adresses où nous allons vraiment, sans commission derrière", "Souvent les adresses partenaires habituelles"],
     ],
     note:
@@ -713,6 +714,10 @@ export const fr: Dict = {
       {
         t: "Parlez à la maison",
         d: "Vous échangez avec Annie, la propriétaire. Elle connaît chaque recoin de la villa et vous répond elle-même.",
+      },
+      {
+        t: "Vos dates en priorité",
+        d: "Les clients qui reviennent choisissent leurs semaines en premier, Noël et Nouvel An compris, avant que ces dates soient ouvertes aux agences.",
       },
       {
         t: "Gagnez des points de fidélité",

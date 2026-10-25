@@ -663,6 +663,7 @@ export const en = {
       ["Contract & payment", "Signed online in minutes, 30% deposit by bank transfer", "Agency terms, often stricter"],
       ["Early check-in, late check-out", "Asked and confirmed by a person, according to the calendar", "Subject to policy"],
       ["Concierge", "Included, arranged with the house", "Often an add-on"],
+      ["Returning guests", "First pick of dates, Christmas and New Year included", "The dates still open after that"],
       ["Local advice", "The places we actually go to, with no commission behind them", "Often the usual partner addresses"],
     ],
     note:
@@ -715,6 +716,10 @@ export const en = {
       {
         t: "Talk to the house",
         d: "You deal with Annie, the owner. She knows every corner of the villa and answers you herself.",
+      },
+      {
+        t: "First pick of dates",
+        d: "Guests who come back get to choose their weeks first, Christmas and New Year included, before those dates are opened to agencies.",
       },
       {
         t: "Earn loyalty points",
