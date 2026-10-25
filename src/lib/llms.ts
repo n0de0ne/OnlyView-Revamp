@@ -58,7 +58,7 @@ ${VILLA.distances.map((x) => `- ${x.en}: ${x.minutes} min`).join("\n")}
 
 ## Why book direct
 
-Agencies list St Barth villas with a 15–25% commission built into the price. Booking here is the same house at its own rate, with the owner answering personally. Details: ${SITE_URL}/why-book-direct
+Agencies rent the villa at the owner's rate plus 10–15%. Booking here is the same house at its own rate, the price can be discussed with the owner, returning guests get first pick of dates, and the local advice comes with no commission behind it. Details: ${SITE_URL}/why-book-direct
 
 ## Pages
 

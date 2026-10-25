@@ -39,9 +39,9 @@ export const en = {
     descAccountNoLoyalty: "Manage your reservations and contracts.",
     titleWhyDirect: "Book a St Barth Villa Direct with the Owner",
     descWhyDirect:
-      "Booking Villa ONLY VIEW direct with the owner saves 15–25% in agency commissions, gives you a direct line to the house, and earns loyalty points on every stay.",
+      "Book Villa ONLY VIEW with the owner and skip the 10–15% agencies add on top of the rate. You can talk the price through with us, get honest local advice, and earn loyalty points on every stay.",
     descWhyDirectNoLoyalty:
-      "Booking Villa ONLY VIEW direct with the owner saves 15–25% in agency commissions and gives you a direct line to the house.",
+      "Book Villa ONLY VIEW with the owner and skip the 10–15% agencies add on top of the rate. You can talk the price through with us and get honest local advice.",
     titleGuide: "St Barth Guide: Arriving, Beaches, Food, Seasons",
     descGuide:
       "A St Barth travel guide by villa owners in Pointe Milou: getting to the island, the best beaches, where to eat, the seasons, events and practical tips.",
@@ -136,8 +136,8 @@ export const en = {
     title: "Honest rates, booked direct",
     from: "from",
     perWeek: "/ week",
-    note: "Booking direct saves the 15–25% agency commission — and earns you loyalty points.",
-    noteNoLoyalty: "Booking direct saves the 15–25% agency commission — the honest rate, nothing on top.",
+    note: "Booking direct saves the 10–15% agencies add — and earns you loyalty points.",
+    noteNoLoyalty: "Booking direct saves the 10–15% agencies add — the honest rate, nothing on top.",
     cta: "See all rates & seasons",
   },
   location: {
@@ -769,7 +769,7 @@ export const en = {
       },
       {
         q: "Is the villa rented directly by the owner?",
-        a: "Yes. Villa ONLY VIEW belongs to Annie, who rents it herself through this site. Booking direct means the villa's own rate with no agency commission (agencies add 15–25%), and a person who knows the house answering your questions.",
+        a: "Yes. Villa ONLY VIEW belongs to Annie, who rents it herself through this site. Booking direct means the villa's own rate with no agency commission (agencies add 10–15%), and a person who knows the house answering your questions.",
       },
       {
         q: "How far is the villa from Eden Rock, Nikki Beach and Gustavia?",
@@ -842,15 +842,17 @@ export const en = {
       "The same villa is often listed by St Barth rental agencies. What changes is not the house — it's the price and who you talk to.",
     head: ["", "Direct with the owner", "Through an agency"],
     rows: [
-      ["Price", "The villa's own rate", "Same rate + 15–25% commission built in"],
+      ["Price", "The villa's own rate", "The same rate plus 10–15% for the agency"],
+      ["Negotiating", "You discuss it with the owner, which usually ends in a better rate", "The agency quotes its price, with little room to move"],
       ["Who answers", "Annie, the owner — who knows every corner of the house", "A booking agent, then a local rep"],
       ["Contract & payment", "Signed online in minutes, 30% deposit by bank transfer", "Agency terms, often stricter"],
-      ["Bedrooms in use", "Pay for 2, 3 or 4 — closed bedrooms are not billed", "Usually the full villa rate"],
       ["Early check-in, late check-out", "Asked and confirmed by a person, according to the calendar", "Subject to policy"],
       ["Concierge", "Included, arranged with the house", "Often an add-on"],
+      ["Returning guests", "First pick of dates, Christmas and New Year included", "The dates still open after that"],
+      ["Local advice", "The places we actually go to, with no commission behind them", "Often the usual partner addresses"],
     ],
     note:
-      "Agencies remain a fine way to compare villas across the island. Once you've chosen ONLY VIEW, booking here is simply the same house at the honest rate.",
+      "Agencies remain a fine way to compare villas across the island. Once you've chosen ONLY VIEW, booking here gets you the same house for less.",
   },
   contactOwner: {
     ownerTitle: "Who you'll be talking to",
@@ -907,21 +909,29 @@ export const en = {
     title: "Why book direct",
     items: [
       {
-        t: "Save the commission",
-        d: "Agencies charge 15–25% on St Barth villas. Direct means the honest rate, nothing on top.",
+        t: "Pay 10–15% less",
+        d: "Agencies rent the villa at our rate and add their 10 to 15% on top. Book here and you pay the rate itself.",
+      },
+      {
+        t: "Talk price with the owner",
+        d: "You're dealing with the person who sets the rate, so you can discuss it: your dates, how long you stay, how many bedrooms you need. It usually ends in a better price than an agency would give you.",
+      },
+      {
+        t: "Advice from people who live here",
+        d: "We don't make a commission on what we recommend, so we have nothing to push. You get the beaches, restaurants and people we actually trust, not the usual tourist circuit.",
       },
       {
         t: "Talk to the house",
-        d: "You deal with Annie, the owner — the person who actually knows the villa, the island and the good addresses.",
+        d: "You deal with Annie, the owner. She knows every corner of the villa and answers you herself.",
+      },
+      {
+        t: "First pick of dates",
+        d: "Guests who come back get to choose their weeks first, Christmas and New Year included, before those dates are opened to agencies.",
       },
       {
         t: "Earn loyalty points",
         d: "1 point per $100, worth real dollars on your next stay. Only for direct bookings.",
         tag: "loyalty",
-      },
-      {
-        t: "Flexible by nature",
-        d: "Variable bedroom pricing, early check-in when possible, personal concierge — decisions are made by a person, not a policy.",
       },
     ] as Array<{ t: string; d: string; tag?: string }>,
   },

@@ -41,9 +41,9 @@ export const fr: Dict = {
     descAccountNoLoyalty: "Gérez vos réservations et vos contrats.",
     titleWhyDirect: "Louer une villa à St Barth en direct propriétaire",
     descWhyDirect:
-      "Réserver la Villa ONLY VIEW en direct, c'est 15 à 25 % de commission d'agence économisés, un contact direct avec la maison et des points de fidélité à chaque séjour.",
+      "En réservant la Villa ONLY VIEW auprès de la propriétaire, vous évitez les 10 à 15 % que les agences ajoutent au tarif. Vous pouvez discuter du prix avec nous, profiter de vrais conseils locaux et gagner des points de fidélité à chaque séjour.",
     descWhyDirectNoLoyalty:
-      "Réserver la Villa ONLY VIEW en direct, c'est 15 à 25 % de commission d'agence économisés et un contact direct avec la maison.",
+      "En réservant la Villa ONLY VIEW auprès de la propriétaire, vous évitez les 10 à 15 % que les agences ajoutent au tarif. Vous pouvez discuter du prix avec nous et profiter de vrais conseils locaux.",
     titleGuide: "Guide St Barth — venir, plages, restaurants, saisons",
     descGuide:
       "Le guide de St Barth par des propriétaires de villa à Pointe Milou : venir sur l'île, les plages, où manger, les saisons, les événements, les conseils pratiques.",
@@ -137,8 +137,8 @@ export const fr: Dict = {
     title: "Des tarifs honnêtes, en direct",
     from: "dès",
     perWeek: "/ semaine",
-    note: "Réserver en direct, c'est 15 à 25 % de commission d'agence économisés — et des points de fidélité.",
-    noteNoLoyalty: "Réserver en direct, c'est 15 à 25 % de commission d'agence économisés — le juste prix, sans supplément.",
+    note: "Réserver en direct, c'est 10 à 15 % d'agence en moins — et des points de fidélité.",
+    noteNoLoyalty: "Réserver en direct, c'est 10 à 15 % d'agence en moins — le juste prix, sans supplément.",
     cta: "Voir tous les tarifs & saisons",
   },
   location: {
@@ -767,7 +767,7 @@ export const fr: Dict = {
       },
       {
         q: "La villa est-elle louée en direct par la propriétaire ?",
-        a: "Oui. La Villa ONLY VIEW appartient à Annie, qui la loue elle-même via ce site. Réserver en direct, c'est le tarif propre de la villa sans commission d'agence (les agences ajoutent 15 à 25 %), et une personne qui connaît la maison pour répondre à vos questions.",
+        a: "Oui. La Villa ONLY VIEW appartient à Annie, qui la loue elle-même via ce site. Réserver en direct, c'est le tarif propre de la villa sans commission d'agence (les agences ajoutent 10 à 15 %), et une personne qui connaît la maison pour répondre à vos questions.",
       },
       {
         q: "À quelle distance sont Eden Rock, Nikki Beach et Gustavia ?",
@@ -837,15 +837,17 @@ export const fr: Dict = {
       "La même villa figure parfois chez des agences de location de St Barth. Ce qui change, ce n'est pas la maison — c'est le prix et votre interlocuteur.",
     head: ["", "En direct avec la propriétaire", "Par une agence"],
     rows: [
-      ["Prix", "Le tarif de la villa", "Le même tarif + 15 à 25 % de commission intégrée"],
+      ["Prix", "Le tarif de la villa", "Le même tarif, plus 10 à 15 % pour l'agence"],
+      ["Négociation", "Vous en parlez avec la propriétaire, ce qui aboutit souvent à un meilleur tarif", "L'agence donne son prix, avec peu de marge"],
       ["Qui répond", "Annie, la propriétaire — qui connaît chaque recoin de la maison", "Un agent de réservation, puis un représentant local"],
       ["Contrat & paiement", "Signé en ligne en quelques minutes, acompte de 30 % par virement", "Conditions de l'agence, souvent plus strictes"],
-      ["Chambres utilisées", "Payez pour 2, 3 ou 4 — les chambres fermées ne sont pas facturées", "Généralement le tarif villa complète"],
       ["Early check-in, late check-out", "Demandés et confirmés par une personne, selon le calendrier", "Selon la politique"],
       ["Conciergerie", "Incluse, organisée avec la maison", "Souvent en supplément"],
+      ["Clients fidèles", "Premier choix des dates, Noël et Nouvel An compris", "Les dates encore libres ensuite"],
+      ["Conseils sur l'île", "Les adresses où nous allons vraiment, sans commission derrière", "Souvent les adresses partenaires habituelles"],
     ],
     note:
-      "Les agences restent un bon moyen de comparer les villas de l'île. Une fois ONLY VIEW choisie, réserver ici, c'est simplement la même maison au tarif honnête.",
+      "Les agences restent un bon moyen de comparer les villas de l'île. Une fois ONLY VIEW choisie, réserver ici, c'est la même maison, pour moins cher.",
   },
   contactOwner: {
     ownerTitle: "Votre interlocutrice",
@@ -902,21 +904,29 @@ export const fr: Dict = {
     title: "Pourquoi réserver en direct",
     items: [
       {
-        t: "Économisez la commission",
-        d: "Les agences prélèvent 15 à 25 % sur les villas de St Barth. En direct : le tarif honnête, rien de plus.",
+        t: "Payez 10 à 15 % de moins",
+        d: "Les agences louent la villa à notre tarif et ajoutent leurs 10 à 15 % par-dessus. En réservant ici, vous payez le tarif, c'est tout.",
+      },
+      {
+        t: "Discutez du prix avec la propriétaire",
+        d: "Vous parlez à la personne qui fixe le tarif, donc on peut en discuter : vos dates, la durée du séjour, le nombre de chambres. Au final, c'est souvent un meilleur prix que celui d'une agence.",
+      },
+      {
+        t: "Des conseils de gens d'ici",
+        d: "Nous ne touchons pas de commission sur ce que nous recommandons, donc nous n'avons rien à vous vendre. Vous avez les plages, les restaurants et les contacts en qui nous avons confiance, pas le circuit touristique habituel.",
       },
       {
         t: "Parlez à la maison",
-        d: "Vous échangez avec Annie, la propriétaire — la personne qui connaît vraiment la villa, l'île et les bonnes adresses.",
+        d: "Vous échangez avec Annie, la propriétaire. Elle connaît chaque recoin de la villa et vous répond elle-même.",
+      },
+      {
+        t: "Vos dates en priorité",
+        d: "Les clients qui reviennent choisissent leurs semaines en premier, Noël et Nouvel An compris, avant que ces dates soient ouvertes aux agences.",
       },
       {
         t: "Gagnez des points de fidélité",
         d: "1 point par 100 $, valant de vrais dollars sur votre prochain séjour. Réservé aux réservations directes.",
         tag: "loyalty",
-      },
-      {
-        t: "Flexible par nature",
-        d: "Tarification par chambres, early check-in quand c'est possible, conciergerie personnelle — les décisions sont prises par une personne, pas par un règlement.",
       },
     ],
   },
