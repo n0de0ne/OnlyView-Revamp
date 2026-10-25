@@ -17,8 +17,21 @@ export function defaultQuantity(unit: string, stay: { nights: number; guests: nu
   return 1;
 }
 
-export const lineAmount = (quantity: number, unitPrice: number) =>
-  Math.round(quantity * unitPrice * 100) / 100;
+export const lineAmount = (quantity: number, unitPrice: number, days: number | null = null) =>
+  Math.round(quantity * (days ?? 1) * unitPrice * 100) / 100;
+
+/**
+ * Days charged for a rental from `start` to `end` (YYYY-MM-DD): the nights in
+ * between, at least one — a crib from arrival on the 8th to departure on the
+ * 16th is 8 days, as rental companies count it.
+ */
+export function rentalDays(start: string, end: string): number {
+  const ms = Date.parse(`${end}T00:00:00Z`) - Date.parse(`${start}T00:00:00Z`);
+  return Math.max(1, Math.round(ms / 86_400_000));
+}
+
+/** Catalog items priced by the night/day are rented over a date range. */
+export const isRental = (unit: string) => unit === "night";
 
 /** Concierge requests are booked with the provider, not sold with the stay. */
 export const isConcierge = (i: { kind: string }) => i.kind === "concierge";
@@ -79,6 +92,8 @@ export function serializeReservationExtra(i: ReservationExtra, placeSlug: string
     paidToProvider: i.paidToProvider,
     status: i.status,
     serviceDate: i.serviceDate ? toISODate(i.serviceDate) : null,
+    serviceEndDate: i.serviceEndDate ? toISODate(i.serviceEndDate) : null,
+    days: i.days,
     notes: i.notes,
     requestedByGuest: i.requestedByGuest,
     kind: i.kind,

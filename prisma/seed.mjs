@@ -588,7 +588,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Lit en bois",
     "price": 50,
     "descriptionEn": "Delivered with mattress & sheets",
-    "descriptionFr": "Livré avec matelas et draps"
+    "descriptionFr": "Livré avec matelas et draps",
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_47536d31e8bb4079b11cf5ee3bc78c9d~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_47536d31e8bb4079b11cf5ee3bc78c9d~mv2.jpg"
   },
   {
     "categoryEn": "Baby",
@@ -597,7 +598,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Lit parapluie",
     "price": 35,
     "descriptionEn": "Delivered with mattress & sheets",
-    "descriptionFr": "Livré avec matelas et draps"
+    "descriptionFr": "Livré avec matelas et draps",
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_5d41b6a6f4414dde89af01b210cefcfc~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_5d41b6a6f4414dde89af01b210cefcfc~mv2.jpg"
   },
   {
     "categoryEn": "Baby",
@@ -606,7 +608,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Parc en bois + tapis",
     "price": 35,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_85bf707e6d3347c1bf5cf22195eb7bcb~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_85bf707e6d3347c1bf5cf22195eb7bcb~mv2.jpg"
   },
   {
     "categoryEn": "Baby",
@@ -615,7 +618,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Chaise haute",
     "price": 20,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_181d3a8e9b01482dbe50322f39971b91~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_181d3a8e9b01482dbe50322f39971b91~mv2.jpg"
   },
   {
     "categoryEn": "Baby",
@@ -624,7 +628,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Rehausseur",
     "price": 15,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_a114abacdce84a209ceac96335866d01~mv2.jpeg/v1/fill/w_600,h_600,al_c,q_85/61fde6_a114abacdce84a209ceac96335866d01~mv2.jpeg"
   },
   {
     "categoryEn": "Baby",
@@ -633,7 +638,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Matelas à langer",
     "price": 15,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_e9aa23cac95c4a7698aa832063c6cdfc~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_e9aa23cac95c4a7698aa832063c6cdfc~mv2.jpg"
   },
   {
     "categoryEn": "Baby",
@@ -642,7 +648,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Baignoire bébé",
     "price": 10,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_fc1f56d770904aed9645e89c91161843~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_fc1f56d770904aed9645e89c91161843~mv2.jpg"
   },
   {
     "categoryEn": "Baby",
@@ -651,7 +658,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Transat bébé",
     "price": 15,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_1ad1296965e4424e85f3b42cc1e9509d~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_1ad1296965e4424e85f3b42cc1e9509d~mv2.jpg"
   },
   {
     "categoryEn": "Baby",
@@ -660,7 +668,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Chauffe-biberon",
     "price": 10,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_525e9acd2eea47c4a12cdba249d4af26~mv2.png/v1/fill/w_600,h_600,al_c,q_85/61fde6_525e9acd2eea47c4a12cdba249d4af26~mv2.png"
   },
   {
     "categoryEn": "Baby",
@@ -669,7 +678,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Babyphone vidéo",
     "price": 10,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_769ab3bc7d314e309e66f4b2c045f5b8~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_769ab3bc7d314e309e66f4b2c045f5b8~mv2.jpg"
   },
   {
     "categoryEn": "Baby",
@@ -678,7 +688,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Paire de barrières de lit",
     "price": 15,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_62dc56c821e64204be677324546cc0a2~mv2.png/v1/fill/w_600,h_600,al_c,q_85/61fde6_62dc56c821e64204be677324546cc0a2~mv2.png"
   },
   {
     "categoryEn": "Baby",
@@ -687,7 +698,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Poussette",
     "price": 20,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_5ebc45f2d8924221a981a962b5694b5c~mv2.png/v1/fill/w_600,h_600,al_c,q_85/61fde6_5ebc45f2d8924221a981a962b5694b5c~mv2.png"
   },
   {
     "categoryEn": "Baby",
@@ -696,7 +708,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Panier de jouets + tapis d'éveil",
     "price": 25,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_20a9ffdcc3a4418ca0f8e9b7893438b8~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_20a9ffdcc3a4418ca0f8e9b7893438b8~mv2.jpg"
   },
   {
     "categoryEn": "Baby",
@@ -705,7 +718,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Piscine bébé",
     "price": 10,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_b8b13380159848199c4794b9a20228a5~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_b8b13380159848199c4794b9a20228a5~mv2.jpg"
   },
   {
     "categoryEn": "Baby",
@@ -714,7 +728,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Tente anti-UV",
     "price": 10,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_a7df76154b9b4abbb7245de6b914bcf8~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_a7df76154b9b4abbb7245de6b914bcf8~mv2.jpg"
   },
   {
     "categoryEn": "Baby",
@@ -723,7 +738,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Bouée bébé",
     "price": 8,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_573a0546eea247718ba6cdfa680646ce~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_573a0546eea247718ba6cdfa680646ce~mv2.jpg"
   },
   {
     "categoryEn": "Baby",
@@ -732,7 +748,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Kit de plage (seau, pelle…)",
     "price": 8,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_0fae3344d9334dc98f93d99785ebd98c~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_0fae3344d9334dc98f93d99785ebd98c~mv2.jpg"
   },
   {
     "categoryEn": "Baby",
@@ -741,7 +758,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Gilet de sauvetage enfant",
     "price": 15,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_df41eefc10414fc1bda2e640fa170ea1~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_df41eefc10414fc1bda2e640fa170ea1~mv2.jpg"
   },
   {
     "categoryEn": "Baby",
@@ -750,7 +768,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Barrière de sécurité piscine",
     "price": 0,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_16256cefcf2647de9f2304093b9c1439~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_16256cefcf2647de9f2304093b9c1439~mv2.jpg"
   },
   {
     "categoryEn": "Sleep",
@@ -759,7 +778,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Sommier + matelas",
     "price": 190,
     "descriptionEn": "Sheets for 1 week, pillow and duvet included",
-    "descriptionFr": "Draps pour 1 semaine, oreiller et couette inclus"
+    "descriptionFr": "Draps pour 1 semaine, oreiller et couette inclus",
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_335deb51a6024398b2b87ae8ec244a52~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_335deb51a6024398b2b87ae8ec244a52~mv2.jpg"
   },
   {
     "categoryEn": "Sleep",
@@ -768,7 +788,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Lit d'appoint Confort+",
     "price": 130,
     "descriptionEn": "Sheets for 1 week, pillow and duvet included",
-    "descriptionFr": "Draps pour 1 semaine, oreiller et couette inclus"
+    "descriptionFr": "Draps pour 1 semaine, oreiller et couette inclus",
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_c7446fb8468a44a1b2f572b41b1b1bce~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_c7446fb8468a44a1b2f572b41b1b1bce~mv2.jpg"
   },
   {
     "categoryEn": "Sleep",
@@ -777,7 +798,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Lit d'appoint",
     "price": 90,
     "descriptionEn": "Sheets for 1 week, pillow and duvet included",
-    "descriptionFr": "Draps pour 1 semaine, oreiller et couette inclus"
+    "descriptionFr": "Draps pour 1 semaine, oreiller et couette inclus",
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_b1aa8404978f44d9beb5aeca4cb93f61~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_b1aa8404978f44d9beb5aeca4cb93f61~mv2.jpg"
   },
   {
     "categoryEn": "Sleep",
@@ -786,7 +808,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Matelas gonflable 2 places",
     "price": 100,
     "descriptionEn": "Sheets for 1 week, pillow and duvet included",
-    "descriptionFr": "Draps pour 1 semaine, oreiller et couette inclus"
+    "descriptionFr": "Draps pour 1 semaine, oreiller et couette inclus",
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_5aca826e95124b4eb72da2975661c47c~mv2.png/v1/fill/w_600,h_600,al_c,q_85/61fde6_5aca826e95124b4eb72da2975661c47c~mv2.png"
   },
   {
     "categoryEn": "Sleep",
@@ -795,7 +818,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Matelas gonflable 1 place",
     "price": 75,
     "descriptionEn": "Sheets for 1 week, pillow and duvet included",
-    "descriptionFr": "Draps pour 1 semaine, oreiller et couette inclus"
+    "descriptionFr": "Draps pour 1 semaine, oreiller et couette inclus",
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_423a79b83cc04ad69b4e5098758c8a8d~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_423a79b83cc04ad69b4e5098758c8a8d~mv2.jpg"
   },
   {
     "categoryEn": "Sleep",
@@ -804,7 +828,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Surmatelas (1 ou 2 places)",
     "price": 25,
     "descriptionEn": "From €25 (twin) to €35 (queen) per day",
-    "descriptionFr": "De 25 € (1 place) à 35 € (2 places) par jour"
+    "descriptionFr": "De 25 € (1 place) à 35 € (2 places) par jour",
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_db34b126cfab423c99be0768d08cb233~mv2.png/v1/fill/w_600,h_600,al_c,q_85/61fde6_db34b126cfab423c99be0768d08cb233~mv2.png"
   },
   {
     "categoryEn": "Pool",
@@ -813,7 +838,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Toboggan de piscine",
     "price": 60,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_700597333b124af89a722ccbffd92c8e~mv2.png/v1/fill/w_600,h_600,al_c,q_85/61fde6_700597333b124af89a722ccbffd92c8e~mv2.png"
   },
   {
     "categoryEn": "Pool",
@@ -822,7 +848,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Trampoline aquatique",
     "price": 50,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_2140036a25c04501bfc36589ca009e5d~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_2140036a25c04501bfc36589ca009e5d~mv2.jpg"
   },
   {
     "categoryEn": "Pool",
@@ -831,7 +858,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Gliss Party enfants",
     "price": 60,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_5cb8c56794824ef894d1a1248ec6bcab~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_5cb8c56794824ef894d1a1248ec6bcab~mv2.jpg"
   },
   {
     "categoryEn": "Pool",
@@ -840,7 +868,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Bouée XXL",
     "price": 45,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_ca11f66a1273453c9c91cda72ed0a245~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_ca11f66a1273453c9c91cda72ed0a245~mv2.jpg"
   },
   {
     "categoryEn": "Pool",
@@ -849,7 +878,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Bouée Gold & Glitter",
     "price": 30,
     "descriptionEn": "From €30 to €45 per day depending on the model",
-    "descriptionFr": "De 30 € à 45 € par jour selon le modèle"
+    "descriptionFr": "De 30 € à 45 € par jour selon le modèle",
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_3bcfdb9d65394e66afcbdb54e7047918~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_3bcfdb9d65394e66afcbdb54e7047918~mv2.jpg"
   },
   {
     "categoryEn": "Pool",
@@ -858,7 +888,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Roue géante",
     "price": 40,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_2bc154b73af240a796fa60174b896139~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_2bc154b73af240a796fa60174b896139~mv2.jpg"
   },
   {
     "categoryEn": "Pool",
@@ -867,7 +898,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "But de water-polo",
     "price": 40,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_8595566739594c1092ea94fe8b12ff3a~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_8595566739594c1092ea94fe8b12ff3a~mv2.jpg"
   },
   {
     "categoryEn": "Pool",
@@ -876,7 +908,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Tapis flottant géant",
     "price": 35,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_4043d97a9e084c02a0d13dd541c2aa33~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_4043d97a9e084c02a0d13dd541c2aa33~mv2.jpg"
   },
   {
     "categoryEn": "Pool",
@@ -885,7 +918,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Matelas flottant",
     "price": 30,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_defb4d09ad344421b14428d8d86f0212~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_defb4d09ad344421b14428d8d86f0212~mv2.jpg"
   },
   {
     "categoryEn": "Pool",
@@ -894,7 +928,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Panier de basket flottant",
     "price": 30,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_ed767120e4794d14ba36da24695ed9f3~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_ed767120e4794d14ba36da24695ed9f3~mv2.jpg"
   },
   {
     "categoryEn": "Pool",
@@ -903,7 +938,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Filet de volley de piscine",
     "price": 30,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_f502ed43732940b6ae79705a2cdf3550~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_f502ed43732940b6ae79705a2cdf3550~mv2.jpg"
   },
   {
     "categoryEn": "Pool",
@@ -912,7 +948,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "2 matelas + 2 frites",
     "price": 25,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_ceb0d4d792064fbb87e0b4d7e58d9cf7~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_ceb0d4d792064fbb87e0b4d7e58d9cf7~mv2.jpg"
   },
   {
     "categoryEn": "Pool",
@@ -921,7 +958,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Bar flottant",
     "price": 15,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_ba1290069e3845e8a71cf81b3967bb35~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_ba1290069e3845e8a71cf81b3967bb35~mv2.jpg"
   },
   {
     "categoryEn": "Pool",
@@ -930,7 +968,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Matelas mousse",
     "price": 15,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_c193528cc3dd4490be5c1c5461b961dc~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_c193528cc3dd4490be5c1c5461b961dc~mv2.jpg"
   },
   {
     "categoryEn": "Beach",
@@ -939,7 +978,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Cabane de plage + plaid",
     "price": 40,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_edcdfd520b7c499fb658ec143e2920b4~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_edcdfd520b7c499fb658ec143e2920b4~mv2.jpg"
   },
   {
     "categoryEn": "Beach",
@@ -948,7 +988,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "2 grandes chaises + parasol",
     "price": 25,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_8b02e0bf702e4891bdb8f6b9816ca144~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_8b02e0bf702e4891bdb8f6b9816ca144~mv2.jpg"
   },
   {
     "categoryEn": "Beach",
@@ -957,7 +998,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "2 petites chaises + parasol",
     "price": 20,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_1681c14aa8214da68a362b1ec892d471~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_1681c14aa8214da68a362b1ec892d471~mv2.jpg"
   },
   {
     "categoryEn": "Beach",
@@ -966,7 +1008,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Glacière moyenne",
     "price": 15,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_6ecb7f4deab14428a1e0557261d834b6~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_6ecb7f4deab14428a1e0557261d834b6~mv2.jpg"
   },
   {
     "categoryEn": "Beach",
@@ -975,7 +1018,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Hamac flottant géant",
     "price": 60,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_d80436076a694e01ab674db5af10da33~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_d80436076a694e01ab674db5af10da33~mv2.jpg"
   },
   {
     "categoryEn": "Beach",
@@ -984,7 +1028,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Kit de snorkeling adulte",
     "price": 20,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_7b4606d91b64473ba6b94700d61a4702~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_7b4606d91b64473ba6b94700d61a4702~mv2.jpg"
   },
   {
     "categoryEn": "Beach",
@@ -993,7 +1038,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Kit de snorkeling enfant",
     "price": 15,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_ea94484e75a342dc83528c15087fadfd~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_ea94484e75a342dc83528c15087fadfd~mv2.jpg"
   },
   {
     "categoryEn": "Beach",
@@ -1002,7 +1048,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Bodyboard",
     "price": 25,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_4271f8b393d142f9b62cd15bed51e8bb~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_4271f8b393d142f9b62cd15bed51e8bb~mv2.jpg"
   },
   {
     "categoryEn": "Beach",
@@ -1011,7 +1058,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Paddle rigide",
     "price": 0,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_8401a40142b94951a7c655a8a41a3bcb~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_8401a40142b94951a7c655a8a41a3bcb~mv2.jpg"
   },
   {
     "categoryEn": "Beach",
@@ -1020,7 +1068,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Parc aquatique gonflable",
     "price": 0,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_b794dc79ee5d4825beb574327ed54614~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_b794dc79ee5d4825beb574327ed54614~mv2.jpg"
   },
   {
     "categoryEn": "Packages",
@@ -1029,7 +1078,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Pack Baby Time",
     "price": 50,
     "descriptionEn": "1 crib, 1 high chair, 1 bathtub",
-    "descriptionFr": "1 lit, 1 chaise haute, 1 baignoire"
+    "descriptionFr": "1 lit, 1 chaise haute, 1 baignoire",
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_bfed8e61898c46de92ecaa823b9a34fa~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_bfed8e61898c46de92ecaa823b9a34fa~mv2.jpg"
   },
   {
     "categoryEn": "Packages",
@@ -1038,7 +1088,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Pack Baby Playtime",
     "price": 60,
     "descriptionEn": "1 wooden playpen, mat, 1 toy basket, 1 tunnel",
-    "descriptionFr": "1 parc en bois, tapis, 1 panier de jouets, 1 tunnel"
+    "descriptionFr": "1 parc en bois, tapis, 1 panier de jouets, 1 tunnel",
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_e6407ffe45824ec682dda2b0cdeee3af~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_e6407ffe45824ec682dda2b0cdeee3af~mv2.jpg"
   },
   {
     "categoryEn": "Packages",
@@ -1047,7 +1098,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Pack Baby Beach Time",
     "price": 30,
     "descriptionEn": "1 UV tent, 1 baby pool, 1 beach bucket set, 1 baby float, 1 sand-free beach mat",
-    "descriptionFr": "1 tente anti-UV, 1 piscine bébé, 1 kit de plage, 1 bouée bébé, 1 tapis anti-sable"
+    "descriptionFr": "1 tente anti-UV, 1 piscine bébé, 1 kit de plage, 1 bouée bébé, 1 tapis anti-sable",
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_07ae6b5016484b4db6054b73733273d0~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_07ae6b5016484b4db6054b73733273d0~mv2.jpg"
   },
   {
     "categoryEn": "Packages",
@@ -1056,7 +1108,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Pack Fun Pool Time",
     "price": 45,
     "descriptionEn": "1 ring float, 2 pool rafts, 2 noodles, 1 animal floater",
-    "descriptionFr": "1 bouée, 2 matelas, 2 frites, 1 bouée animal"
+    "descriptionFr": "1 bouée, 2 matelas, 2 frites, 1 bouée animal",
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_7754e3a5e4864fd5b112db30d5ea526f~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_7754e3a5e4864fd5b112db30d5ea526f~mv2.jpg"
   },
   {
     "categoryEn": "Packages",
@@ -1065,7 +1118,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Pack Beach Time",
     "price": 35,
     "descriptionEn": "2 big chairs, 1 umbrella, 1 small cooler, 1 waterproof speaker",
-    "descriptionFr": "2 grandes chaises, 1 parasol, 1 petite glacière, 1 enceinte étanche"
+    "descriptionFr": "2 grandes chaises, 1 parasol, 1 petite glacière, 1 enceinte étanche",
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_7868aae0ec3645d58beccaa10d9416cd~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_7868aae0ec3645d58beccaa10d9416cd~mv2.jpg"
   },
   {
     "categoryEn": "Packages",
@@ -1074,7 +1128,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Pack Fitness Time",
     "price": 30,
     "descriptionEn": "1 mat, 2 weights, 2 ankle weights, 1 jumping rope, 1 elastic band, 1 TRX",
-    "descriptionFr": "1 tapis, 2 haltères, 2 lests de cheville, 1 corde à sauter, 1 élastique, 1 TRX"
+    "descriptionFr": "1 tapis, 2 haltères, 2 lests de cheville, 1 corde à sauter, 1 élastique, 1 TRX",
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_81502290cf8e421f9e2eb8654176c0f8~mv2.png/v1/fill/w_600,h_600,al_c,q_85/61fde6_81502290cf8e421f9e2eb8654176c0f8~mv2.png"
   },
   {
     "categoryEn": "Packages",
@@ -1083,7 +1138,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Installation plage pour la journée",
     "price": 0,
     "descriptionEn": "Beach cabana, table, beach chairs, blanket, cooler",
-    "descriptionFr": "Cabane de plage, table, chaises, plaid, glacière"
+    "descriptionFr": "Cabane de plage, table, chaises, plaid, glacière",
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_d7a02f1736d04edc813a4eabbdb867a4~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_d7a02f1736d04edc813a4eabbdb867a4~mv2.jpg"
   },
   {
     "categoryEn": "Fitness",
@@ -1092,7 +1148,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Haltères réglables",
     "price": 35,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_1e01b7fcce334d45a91386e76cf9758e~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_1e01b7fcce334d45a91386e76cf9758e~mv2.jpg"
   },
   {
     "categoryEn": "Fitness",
@@ -1101,7 +1158,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Vélo Peloton",
     "price": 0,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_cd6babb7c1d2461d8b7b7e945e2f73e0~mv2.png/v1/fill/w_600,h_600,al_c,q_85/61fde6_cd6babb7c1d2461d8b7b7e945e2f73e0~mv2.png"
   },
   {
     "categoryEn": "Fitness",
@@ -1110,7 +1168,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Tapis de course",
     "price": 0,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_91240af360024e9a8253da6c2deea786~mv2.png/v1/fill/w_600,h_600,al_c,q_85/61fde6_91240af360024e9a8253da6c2deea786~mv2.png"
   },
   {
     "categoryEn": "Fitness",
@@ -1119,7 +1178,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Reformer Pilates",
     "price": 0,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_304c9ce807c849aabffa5a40372bf2dc~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_304c9ce807c849aabffa5a40372bf2dc~mv2.jpg"
   },
   {
     "categoryEn": "Fitness",
@@ -1128,7 +1188,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Bain de glace",
     "price": 0,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_28a2bd47a67542d68d99733676ee4466~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_28a2bd47a67542d68d99733676ee4466~mv2.jpg"
   },
   {
     "categoryEn": "Fitness",
@@ -1137,7 +1198,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Bottes de compression",
     "price": 0,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_0c77ab2240e44a5b990df174f9ed5b45~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_0c77ab2240e44a5b990df174f9ed5b45~mv2.jpg"
   },
   {
     "categoryEn": "Party",
@@ -1146,7 +1208,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Photobooth miroir",
     "price": 0,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_2be8f2f9c1a34f40b130fa565a3f0f21~mv2.png/v1/fill/w_600,h_600,al_c,q_85/61fde6_2be8f2f9c1a34f40b130fa565a3f0f21~mv2.png"
   },
   {
     "categoryEn": "Party",
@@ -1155,7 +1218,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Photobooth classique",
     "price": 0,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_458882a3807f4c2ca9be12aabb0942be~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_458882a3807f4c2ca9be12aabb0942be~mv2.jpg"
   },
   {
     "categoryEn": "Party",
@@ -1164,7 +1228,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Karaoké",
     "price": 0,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_8680c1f816fc48d385f01ffe38cd05f6~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_8680c1f816fc48d385f01ffe38cd05f6~mv2.jpg"
   },
   {
     "categoryEn": "Others",
@@ -1173,7 +1238,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "PlayStation 5",
     "price": 45,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_34d9f760e29e458aacc78b111b163303~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_34d9f760e29e458aacc78b111b163303~mv2.jpg"
   },
   {
     "categoryEn": "Others",
@@ -1182,7 +1248,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Portant + cintres",
     "price": 35,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_65dad8a1845a414984b53a5880664557~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_65dad8a1845a414984b53a5880664557~mv2.jpg"
   },
   {
     "categoryEn": "Others",
@@ -1191,7 +1258,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Miroir sur pied",
     "price": 35,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_1818a7a32a944da188eb567c773fb187~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_1818a7a32a944da188eb567c773fb187~mv2.jpg"
   },
   {
     "categoryEn": "Others",
@@ -1200,7 +1268,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Défroisseur vapeur",
     "price": 30,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_673d4ea8098441dd9a9640e437ed6c26~mv2.png/v1/fill/w_600,h_600,al_c,q_85/61fde6_673d4ea8098441dd9a9640e437ed6c26~mv2.png"
   },
   {
     "categoryEn": "Others",
@@ -1209,7 +1278,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Défroisseur à main",
     "price": 20,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_7c2c8a6094f042e997c281c53a86f5af~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_7c2c8a6094f042e997c281c53a86f5af~mv2.jpg"
   },
   {
     "categoryEn": "Others",
@@ -1218,7 +1288,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Tapis de yoga",
     "price": 10,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_04f8d0aa843b4b8b937a4ce3b6cdb076~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_04f8d0aa843b4b8b937a4ce3b6cdb076~mv2.jpg"
   },
   {
     "categoryEn": "Others",
@@ -1227,7 +1298,8 @@ const SB_PROVIDER_EXTRAS = [
     "nameFr": "Tables et chaises",
     "price": 0,
     "descriptionEn": null,
-    "descriptionFr": null
+    "descriptionFr": null,
+    "imageUrl": "https://static.wixstatic.com/media/61fde6_52978432d04b4884838c82095653aaae~mv2.jpg/v1/fill/w_600,h_600,al_c,q_85/61fde6_52978432d04b4884838c82095653aaae~mv2.jpg"
   }
 ];
 
@@ -1261,10 +1333,34 @@ async function seedStBarthProviderExtras() {
   console.log(`Imported ${SB_PROVIDER_EXTRAS.length} St Barth Provider extras`);
 }
 
+/**
+ * The provider's own photos (their image URLs on stbarthprovider.com, as
+ * Alan asked, 2026-10-25) for the extras imported before they were added:
+ * once, and only on items still without a photo, so an edited one is kept.
+ */
+async function applyStBarthProviderPhotos() {
+  const key = "extras_batch_sb_provider_photos_2026_10";
+  if (await prisma.setting.findUnique({ where: { key } })) return;
+  const partner = await prisma.servicePartner.findFirst({ where: { kind: "extras", name: "St Barth Provider" } });
+  let n = 0;
+  if (partner) {
+    for (const x of SB_PROVIDER_EXTRAS) {
+      const { count } = await prisma.extra.updateMany({
+        where: { partnerId: partner.id, nameEn: x.nameEn, imageUrl: null },
+        data: { imageUrl: x.imageUrl },
+      });
+      n += count;
+    }
+  }
+  await prisma.setting.create({ data: { key, value: new Date().toISOString() } });
+  if (n) console.log(`St Barth Provider photos added to ${n} extras`);
+}
+
 async function main() {
   await seedBase();
   await backfillConciergeRequests();
   await seedStBarthProviderExtras();
+  await applyStBarthProviderPhotos();
   if (process.env.SEED_DEMO === "1") {
     await seedDemo();
   }

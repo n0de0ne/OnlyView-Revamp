@@ -313,6 +313,11 @@ model ReservationExtra {
   status           String      @default("requested")
   /// day the service is wanted, when it matters
   serviceDate      DateTime?
+  /// rentals by the day: last day of the rental (serviceDate is the first)
+  serviceEndDate   DateTime?
+  /// rentals by the day: days charged, from the two dates (amount =
+  /// quantity × days × unitPrice)
+  days             Int?
   notes            String?
   requestedByGuest Boolean     @default(false)
   /// extra (a service billed with the stay) | concierge (a table, boat or chef

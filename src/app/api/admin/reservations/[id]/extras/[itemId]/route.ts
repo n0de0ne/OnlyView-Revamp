@@ -2,7 +2,7 @@ import { prisma } from "@/lib/db";
 import { adminRoute, jsonError, jsonOk } from "@/lib/admin-api";
 import { ReservationExtraPatch, dateOrNull } from "@/lib/admin-schemas";
 import { audit } from "@/lib/audit";
-import { isConcierge, lineAmount, serializeReservationExtra } from "@/lib/extras";
+import { isConcierge, lineAmount, rentalDays, serializeReservationExtra } from "@/lib/extras";
 import { ANSWERED_STATUSES, notifyGuestOfConciergeAnswer } from "@/lib/concierge-requests";
 
 export const dynamic = "force-dynamic";
@@ -23,6 +23,11 @@ export const PUT = adminRoute<Ctx>("manager", async (req, { params }, user) => {
   const d = parsed.data;
   const quantity = d.quantity ?? item.quantity;
   const unitPrice = d.unitPrice ?? item.unitPrice;
+  // a rental keeps its day count, recomputed when its dates change
+  const start = d.serviceDate !== undefined ? d.serviceDate : item.serviceDate?.toISOString().slice(0, 10) ?? null;
+  const end =
+    d.serviceEndDate !== undefined ? d.serviceEndDate : item.serviceEndDate?.toISOString().slice(0, 10) ?? null;
+  const days = start && end && end >= start ? rentalDays(start, end) : null;
   // a concierge request is answered when its status or the owner's note changes
   const statusChanged = d.status !== undefined && d.status !== item.status;
   const noteChanged = d.adminNote !== undefined && (d.adminNote || null) !== item.adminNote;
@@ -33,7 +38,9 @@ export const PUT = adminRoute<Ctx>("manager", async (req, { params }, user) => {
       label: d.label,
       quantity,
       unitPrice,
-      amount: lineAmount(quantity, unitPrice),
+      amount: lineAmount(quantity, unitPrice, days),
+      days,
+      serviceEndDate: d.serviceEndDate !== undefined ? dateOrNull(d.serviceEndDate) : undefined,
       status: d.status,
       serviceDate: d.serviceDate !== undefined ? dateOrNull(d.serviceDate) : undefined,
       notes: d.notes !== undefined ? (d.notes ?? null) : undefined,
