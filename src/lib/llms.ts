@@ -69,7 +69,7 @@ Agencies list St Barth villas with a 15–25% commission built into the price. B
 - [Availability & booking](${SITE_URL}/booking)
 - [Guest reviews](${SITE_URL}/reviews)
 - [Pointe Milou](${SITE_URL}/pointe-milou): the neighbourhood — what it is, what is there, why stay, the villa to rent in it
-- [St Barth map](${SITE_URL}/map): the island village by village, the 15 beaches, restaurants, supermarkets, bakeries, pharmacies, airport and ferry — each with its drive time and a road itinerary from the villa
+- [St Barth map](${SITE_URL}/map): the island neighbourhood by neighbourhood, the 15 beaches, restaurants, supermarkets, bakeries, pharmacies, airport and ferry — each with its drive time and a road itinerary from the villa
 - [St Barth guide](${SITE_URL}/guide): the island in brief, plus the articles below
 ${GUIDES.map((g) => `- [${g.title.en}](${SITE_URL}/guide/${g.slug}): ${g.description.en}`).join("\n")}
 - [FAQ](${SITE_URL}/faq): booking, payment, check-in, what is included

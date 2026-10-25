@@ -436,7 +436,7 @@ export const GUIDES: GuideArticle[] = [
         {
           h: "Summer (July to the end of August)",
           p: [
-            "Hot, calm and sunny, with the warmest water of the year and our best rates. It's a great time for families. August is when the island celebrates: each village has its fête, and the island's own day, the Saint-Barthélemy, is on 24 August.",
+            "Hot, calm and sunny, with the warmest water of the year and our best rates. It's a great time for families. August is when the island celebrates: each neighbourhood has its fête, and the island's own day, the Saint-Barthélemy, is on 24 August.",
             "Summer is also the start of hurricane season, which officially runs from June to November. Most summers pass without any trouble, but we recommend travel insurance. The villa sits on the hillside and stays nicely ventilated.",
           ],
         },
@@ -667,8 +667,8 @@ export const GUIDES: GuideArticle[] = [
       fr: "Les événements de St Barth, mois par mois",
     },
     description: {
-      en: "What happens in St Barth through the year: the Music Festival in January, Carnival, the Bucket superyacht regatta in March, Les Voiles de Saint-Barth in April, the summer village fêtes, the Gourmet Festival and the Cata Cup in November, New Year's Eve in Gustavia.",
-      fr: "Ce qui se passe à St Barth au fil de l'année : le Music Festival en janvier, le Carnaval, la régate de superyachts Bucket en mars, Les Voiles de Saint-Barth en avril, les fêtes des villages l'été, le Gourmet Festival et la Cata Cup en novembre, le Nouvel An à Gustavia.",
+      en: "What happens in St Barth through the year: the Music Festival in January, Carnival, the Bucket superyacht regatta in March, Les Voiles de Saint-Barth in April, the summer neighbourhood fêtes, the Gourmet Festival and the Cata Cup in November, New Year's Eve in Gustavia.",
+      fr: "Ce qui se passe à St Barth au fil de l'année : le Music Festival en janvier, le Carnaval, la régate de superyachts Bucket en mars, Les Voiles de Saint-Barth en avril, les fêtes de quartier l'été, le Gourmet Festival et la Cata Cup en novembre, le Nouvel An à Gustavia.",
     },
     sections: {
       en: [
@@ -712,7 +712,7 @@ export const GUIDES: GuideArticle[] = [
         {
           h: "July and August: the fêtes",
           p: [
-            "Bastille Day on 14 July is celebrated in Gustavia with fireworks. Then the villages take turns through August, each with its own fête of music, food and boat races: the island's own day, the Fête de la Saint-Barthélemy, is on 24 August with a regatta and fireworks over Gustavia harbour, and Corossol follows with the Fête de Saint-Louis on the 25th.",
+            "Bastille Day on 14 July is celebrated in Gustavia with fireworks. Then the neighbourhoods take turns through August, each with its own fête of music, food and boat races: the island's own day, the Fête de la Saint-Barthélemy, is on 24 August with a regatta and fireworks over Gustavia harbour, and Corossol follows with the Fête de Saint-Louis on the 25th.",
           ],
           places: ["corossol-beach"],
         },
@@ -777,7 +777,7 @@ export const GUIDES: GuideArticle[] = [
         {
           h: "Juillet et août : les fêtes",
           p: [
-            "Le 14 juillet se fête à Gustavia avec un feu d'artifice. Puis les villages se relaient tout le mois d'août, chacun avec sa fête, sa musique, ses repas et ses courses de bateaux : la fête de l'île, la Saint-Barthélemy, tombe le 24 août avec une régate et un feu d'artifice sur le port de Gustavia, et Corossol enchaîne avec la fête de la Saint-Louis le 25.",
+            "Le 14 juillet se fête à Gustavia avec un feu d'artifice. Puis les quartiers se relaient tout le mois d'août, chacun avec sa fête, sa musique, ses repas et ses courses de bateaux : la fête de l'île, la Saint-Barthélemy, tombe le 24 août avec une régate et un feu d'artifice sur le port de Gustavia, et Corossol enchaîne avec la fête de la Saint-Louis le 25.",
           ],
           places: ["corossol-beach"],
         },

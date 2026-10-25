@@ -31,9 +31,9 @@ export const en = {
     titleLocation: "Pointe Milou, St Barth — Guide & Villa to Rent",
     descLocation:
       "Pointe Milou, St Barth: the quiet sunset headland next to Hotel Le Christopher, 10 min from the airport, 5 from Lorient beach. What's there, and the villa to rent.",
-    titleMap: "St Barth Map: Beaches, Villages & Restaurants",
+    titleMap: "St Barth Map: Beaches, Neighbourhoods & Restaurants",
     descMap:
-      "Map of St Barth (St Barts): the 15 beaches, villages, restaurants, supermarkets and pharmacies, with drive times and itineraries from Villa ONLY VIEW, Pointe Milou.",
+      "Map of St Barth (St Barts): 15 beaches, neighbourhoods, restaurants, supermarkets and pharmacies, with drive times and routes from Villa ONLY VIEW, Pointe Milou.",
     titleAccount: "My Stay — Guest Portal",
     descAccount: "Manage your reservations, contracts and loyalty points.",
     descAccountNoLoyalty: "Manage your reservations and contracts.",
@@ -171,6 +171,10 @@ export const en = {
         "A residential road with no through-traffic, yet 10 minutes from the airport, 5 from Lorient beach, 8 from St Jean and 12 from Gustavia. You are in the middle of the island without being in the middle of the noise.",
       ],
       [
+        "No construction in season",
+        "Pointe Milou has its own rule: no construction work from November to 15 April, the whole high season. No drilling, no cement mixer, no trucks on the lane while you are on the terrace; what you hear is the wind and the sea. It is one of the reasons the point has stayed what it is.",
+      ],
+      [
         "Sheltered",
         "The west side of the point turns its back on the Atlantic: the sea below the villa is the calm one, and the hillside still catches enough breeze to keep the evenings pleasant.",
       ],
@@ -199,7 +203,7 @@ export const en = {
       ],
       [
         "Lorient, five minutes away",
-        "The nearest village: a calm beach, the bakery, the Oasis supermarket, the gas station and the church. Everything you need for breakfast on the terrace.",
+        "The neighbourhood next door: a calm beach, the bakery, the Oasis supermarket, the gas station and the church. Everything you need for breakfast on the terrace.",
       ],
     ] as Array<[string, string]>,
     villaTitle: "The villa we rent in Pointe Milou",
@@ -220,6 +224,10 @@ export const en = {
       {
         q: "What is Pointe Milou known for?",
         a: "Its sunsets over the bay and its quiet. It is one of the island's classic villa neighbourhoods, home to Hotel Le Christopher and to Le Ti St Barth, the dinner-cabaret.",
+      },
+      {
+        q: "Is Pointe Milou quiet?",
+        a: "Yes. It is a residential road with no through-traffic, and the neighbourhood has a rule of no construction work from November to 15 April, so there is no building noise during the season. From the terrace you hear the wind and the sea.",
       },
       {
         q: "Is Pointe Milou a good area to stay in St Barth?",
@@ -249,7 +257,7 @@ export const en = {
       "Pointe Milou is one of St Barth's most central addresses: from the terrace, the whole island is a short drive. Pick a place on the map or in the list — every pin shows its drive time from the villa and draws the itinerary through the right turn-offs, because St Barth's lanes rarely follow the shortest line. Some beaches end on foot from a car park; those legs are drawn in gold.",
     all: "All",
     villa: "Villa ONLY VIEW",
-    search: "Search a place, a village…",
+    search: "Search a place, a neighbourhood…",
     noResults: "No place matches",
     min: "min",
     route: "Itinerary",
@@ -313,13 +321,13 @@ export const en = {
     ctaButton: "Contact the concierge",
     noscript: "JavaScript is required to display the interactive map; the list of places works without it.",
     /* the island in words — what a map page needs to say to be the answer to "St Barth map" */
-    areasTitle: "St Barth, village by village",
+    areasTitle: "St Barth, neighbourhood by neighbourhood",
     areasIntro:
       "St Barth is small: 25 km², 8 km from end to end, one main road and a lot of hills. Here is how the island is laid out, starting from Pointe Milou, with the drive time from the villa.",
     areaFromVilla: "min from the villa",
     areas: [
       ["Pointe Milou", "The quiet headland on the north coast where the villa is: hillside villas, Hotel Le Christopher, Le Ti St Barth and the sunset over the bay. No beach of its own; Lorient is 5 minutes away."],
-      ["Lorient", "The village next door: a calm beach with a surf break at the far end, the bakery, the Oasis supermarket, the gas station and the church. Where you shop for breakfast."],
+      ["Lorient", "The neighbourhood next door: a calm beach with a surf break at the far end, the bakery, the Oasis supermarket, the gas station and the church. Where you shop for breakfast."],
       ["Saint-Jean", "The island's busy bay: Eden Rock on its rock, Nikki Beach, boutiques, and the airport runway ending on the sand. Shallow, clear water."],
       ["Gustavia", "The capital and harbour on the west coast: the yachts, the shops, most of the restaurants, the ferry dock, the hospital, and Shell Beach at the end of town."],
       ["Marigot", "A small, calm bay east of Pointe Milou, good for a quiet swim and snorkelling."],
@@ -329,7 +337,7 @@ export const en = {
       ["Saline", "The long wild beach of the south, reached on foot over a dune from the car park. No buildings, no shade, the best light of the day late in the afternoon."],
       ["Gouverneur", "Saline's twin, down a steep road from Lurin, with a view worth a stop on the way. Wide, empty, and sometimes with surf."],
       ["Lurin", "The hill above Gustavia and Gouverneur: villas, the road to the south beaches, and a few of the island's best dinner tables."],
-      ["Corossol", "The old fishing village west of Gustavia, where the straw hats come from. A small beach and a slower pace."],
+      ["Corossol", "The old fishermen's neighbourhood west of Gustavia, where the straw hats come from. A small beach and a slower pace."],
       ["Flamands", "The wide beach of the north-west, good for a long swim, with Cheval Blanc at one end and the trail to Colombier at the other."],
       ["Colombier", "The bay at the far north-west with no road: a boat, or a walk of about half an hour from Flamands. The most secluded beach on the island."],
       ["Anse des Cayes", "A small cove between Flamands and St Jean, reached on foot from the car park; locals' surf when the swell comes in."],
@@ -814,7 +822,7 @@ export const en = {
     minutes: "min",
     items: [
       ["Hotel Le Christopher", "next door — sunset cocktails and the spa on foot"],
-      ["Lorient beach & village", "5 min — the local beach, the bakery, the Oasis supermarket"],
+      ["Lorient beach & shops", "5 min — the local beach, the bakery, the Oasis supermarket"],
       ["St-Jean beach, Eden Rock & Nikki Beach", "8 min — the lively side of the island"],
       ["Grand Cul-de-Sac lagoon & Le Sereno", "7 min — kitesurf, paddle, the lagoon restaurants"],
       ["Gustaf III airport", "10 min"],

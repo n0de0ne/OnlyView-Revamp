@@ -170,6 +170,10 @@ export const fr: Dict = {
         "Une route résidentielle sans trafic de passage, et pourtant 10 minutes de l'aéroport, 5 de la plage de Lorient, 8 de St Jean et 12 de Gustavia. On est au milieu de l'île sans être au milieu du bruit.",
       ],
       [
+        "Pas de chantier en saison",
+        "Pointe Milou a sa propre règle : pas de travaux de construction de novembre au 15 avril, toute la haute saison. Ni perceuse, ni bétonnière, ni camion sur la route pendant que vous êtes sur la terrasse ; on n'entend que le vent et la mer. C'est l'une des raisons pour lesquelles la pointe est restée ce qu'elle est.",
+      ],
+      [
         "À l'abri",
         "Le versant ouest de la pointe tourne le dos à l'Atlantique : la mer sous la villa est la mer calme, et la colline garde juste assez de brise pour que les soirées restent agréables.",
       ],
@@ -198,7 +202,7 @@ export const fr: Dict = {
       ],
       [
         "Lorient, à cinq minutes",
-        "Le village le plus proche : une plage calme, la boulangerie, le supermarché de l'Oasis, la station-service et l'église. Tout ce qu'il faut pour le petit-déjeuner sur la terrasse.",
+        "Le quartier voisin : une plage calme, la boulangerie, le supermarché de l'Oasis, la station-service et l'église. Tout ce qu'il faut pour le petit-déjeuner sur la terrasse.",
       ],
     ] as Array<[string, string]>,
     villaTitle: "La villa que nous louons à Pointe Milou",
@@ -219,6 +223,10 @@ export const fr: Dict = {
       {
         q: "Pour quoi Pointe Milou est-elle connue ?",
         a: "Pour ses couchers de soleil sur la baie et pour son calme. C'est l'un des quartiers de villas classiques de l'île, où se trouvent l'hôtel Le Christopher et le Ti St Barth, le dîner-cabaret.",
+      },
+      {
+        q: "Pointe Milou est-il un quartier calme ?",
+        a: "Oui. C'est une route résidentielle sans trafic de passage, et le quartier applique une règle : pas de travaux de construction de novembre au 15 avril, donc aucun bruit de chantier pendant la saison. Depuis la terrasse, on entend le vent et la mer.",
       },
       {
         q: "Pointe Milou est-il un bon quartier pour séjourner à St Barth ?",
@@ -248,7 +256,7 @@ export const fr: Dict = {
       "Pointe Milou est l'une des adresses les plus centrales de Saint-Barth : depuis la terrasse, toute l'île est à quelques minutes de route. Choisissez un lieu sur la carte ou dans la liste — chaque repère indique son temps de trajet depuis la villa et trace l'itinéraire par les bons embranchements, car les routes de St Barth suivent rarement la ligne droite. Certaines plages se terminent à pied depuis un parking ; ce dernier tronçon est dessiné en or.",
     all: "Tout",
     villa: "Villa ONLY VIEW",
-    search: "Rechercher un lieu, un village…",
+    search: "Rechercher un lieu, un quartier…",
     noResults: "Aucun lieu ne correspond",
     min: "min",
     route: "Itinéraire",
@@ -317,7 +325,7 @@ export const fr: Dict = {
     areaFromVilla: "min depuis la villa",
     areas: [
       ["Pointe Milou", "La presqu'île calme de la côte nord où se trouve la villa : des villas à flanc de colline, l'hôtel Le Christopher, le Ti St Barth et le coucher de soleil sur la baie. Pas de plage sur place ; Lorient est à 5 minutes."],
-      ["Lorient", "Le village voisin : une plage calme avec un spot de surf au bout, la boulangerie, le supermarché de l'Oasis, la station-service et l'église. C'est là qu'on fait les courses du petit-déjeuner."],
+      ["Lorient", "Le quartier voisin : une plage calme avec un spot de surf au bout, la boulangerie, le supermarché de l'Oasis, la station-service et l'église. C'est là qu'on fait les courses du petit-déjeuner."],
       ["Saint-Jean", "La baie animée de l'île : l'Eden Rock sur son rocher, Nikki Beach, les boutiques, et la piste de l'aéroport qui finit sur le sable. Eau peu profonde et claire."],
       ["Gustavia", "La capitale et le port, sur la côte ouest : les yachts, les boutiques, la plupart des restaurants, le quai des ferries, l'hôpital, et Shell Beach au bout de la ville."],
       ["Marigot", "Une petite baie calme à l'est de Pointe Milou, pour une baignade tranquille et du snorkeling."],
@@ -327,7 +335,7 @@ export const fr: Dict = {
       ["Saline", "La grande plage sauvage du sud, qu'on rejoint à pied par-dessus une dune depuis le parking. Aucune construction, pas d'ombre, la plus belle lumière de la journée en fin d'après-midi."],
       ["Gouverneur", "La jumelle de Saline, au bout d'une route raide qui descend de Lurin, avec une vue qui mérite un arrêt en chemin. Large, vide, parfois avec des vagues."],
       ["Lurin", "La colline au-dessus de Gustavia et de Gouverneur : des villas, la route des plages du sud, et quelques-unes des meilleures tables de l'île le soir."],
-      ["Corossol", "Le vieux village de pêcheurs à l'ouest de Gustavia, d'où viennent les chapeaux de paille. Une petite plage et un rythme plus lent."],
+      ["Corossol", "Le vieux quartier de pêcheurs à l'ouest de Gustavia, d'où viennent les chapeaux de paille. Une petite plage et un rythme plus lent."],
       ["Flamands", "La grande plage du nord-ouest, idéale pour nager longtemps, avec le Cheval Blanc à un bout et le sentier de Colombier à l'autre."],
       ["Colombier", "La baie tout au nord-ouest, sans route : en bateau, ou à pied en une demi-heure environ depuis Flamands. La plage la plus isolée de l'île."],
       ["Anse des Cayes", "Une petite anse entre Flamands et St Jean, qu'on rejoint à pied depuis le parking ; le spot de surf des locaux quand la houle rentre."],
@@ -809,7 +817,7 @@ export const fr: Dict = {
     minutes: "min",
     items: [
       ["Hôtel Le Christopher", "voisin — cocktails au coucher du soleil et spa à pied"],
-      ["Plage & village de Lorient", "5 min — la plage du quartier, la boulangerie, le supermarché Oasis"],
+      ["Plage & commerces de Lorient", "5 min — la plage du quartier, la boulangerie, le supermarché Oasis"],
       ["Plage de St-Jean, Eden Rock & Nikki Beach", "8 min — le côté animé de l'île"],
       ["Lagon de Grand Cul-de-Sac & Le Sereno", "7 min — kitesurf, paddle, les restaurants du lagon"],
       ["Aéroport Gustaf III", "10 min"],

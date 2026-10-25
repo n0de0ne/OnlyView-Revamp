@@ -47,7 +47,7 @@ pretending to be a hotel.
   `Place` node is anchored to the island's Wikidata entity and contains the
   villa, so "villa in Pointe Milou" resolves to this house. `/location` 301s
   here.
-- **`/map` in words**: the island village by village with drive times from the
+- **`/map` in words**: the island neighbourhood by neighbourhood with drive times from the
   villa, six questions about the island (`FAQPage`), on top of the directory and
   the `TouristDestination` graph — the text a "St Barth map" query needs.
 - **Guide hub with the island in brief** (eleven facts: where, size, how to get
@@ -57,7 +57,7 @@ pretending to be a hotel.
   beaches, restaurants, seasons, practical info, events month by month.
 - **Titles that carry the queries**: "Villa ONLY VIEW St Barth (St Barts) — Luxury
   Villa Rental in Pointe Milou", "4-Bedroom Villa in St Barth…", "St Barth Villa
-  Rental Rates & Seasons", "St Barth Map: Beaches, Villages & Restaurants",
+  Rental Rates & Seasons", "St Barth Map: Beaches, Neighbourhoods & Restaurants",
   "Pointe Milou, St Barth — Guide & Villa to Rent".
 - **Direct-vs-agency comparison table** on /why-book-direct — the page for
   "book St Barth villa direct" and the "vs agency" questions.
