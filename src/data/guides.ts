@@ -40,7 +40,7 @@ export const GUIDES: GuideArticle[] = [
           p: [
             "There's no long-haul flight into St Barth. The runway is far too short, so everyone connects through a bigger airport nearby. You have two choices.",
             "St Maarten (SXM) is the one most of our guests use. It has direct flights from the US East Coast, Canada and Paris, and from there it's a very short hop to St Barth with Winair or St Barth Commuter.",
-            "San Juan, Puerto Rico (SJU) is the other option, and often the easier one if you're coming from the US: lots of flights, US domestic arrivals, no extra passport control. From San Juan, Tradewind Aviation flies you to St Barth in about an hour. One thing people mix up: Tradewind only flies from San Juan, not from St Maarten.",
+            "San Juan, Puerto Rico (SJU) is the other option, and often the easier one if you're coming from the US: lots of flights, US domestic arrivals, no extra passport control. From San Juan, Tradewind Aviation flies you to St Barth in about an hour.",
           ],
           flightSearch: true,
         },
@@ -77,7 +77,7 @@ export const GUIDES: GuideArticle[] = [
           p: [
             "Aucun long-courrier n'atterrit à St Barth. La piste est bien trop courte, donc tout le monde passe par un aéroport voisin plus grand. Il y a deux possibilités.",
             "St Maarten (SXM) est celle que choisissent la plupart de nos hôtes. On y arrive en direct depuis Paris, la côte Est des États-Unis ou le Canada, puis un tout petit vol avec Winair ou St Barth Commuter vous dépose à St Barth.",
-            "San Juan, à Porto Rico (SJU), est l'autre option, souvent la plus simple depuis les États-Unis : beaucoup de vols, et ce sont des vols intérieurs américains. Depuis San Juan, Tradewind Aviation vous emmène à St Barth en une heure environ. Petite précision que beaucoup confondent : Tradewind ne vole que depuis San Juan, pas depuis St Maarten.",
+            "San Juan, à Porto Rico (SJU), est l'autre option, souvent la plus simple depuis les États-Unis : beaucoup de vols, et ce sont des vols intérieurs américains. Depuis San Juan, Tradewind Aviation vous emmène à St Barth en une heure environ.",
           ],
           flightSearch: true,
         },
