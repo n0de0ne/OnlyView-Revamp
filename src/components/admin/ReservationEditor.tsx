@@ -7,6 +7,7 @@ import { computeQuote, type RateConfig } from "@/lib/pricing";
 import { addDays, nightsBetween } from "@/lib/dates";
 import type { SerializedReservation } from "@/lib/reservations";
 import { maxGuestsFor } from "@/lib/site-facts";
+import { paymentSummary } from "@/lib/payment-summary";
 import {
   api,
   Card,
@@ -167,8 +168,9 @@ export function ReservationEditor({
   const [payModal, setPayModal] = useState(false);
   // opt-in, like the legacy "envoyer l'email de confirmation" checkbox
   const [sendConfirmation, setSendConfirmation] = useState(false);
-  // amendment: the next contract releases these dates (detected, or set by hand)
-  const [amend, setAmend] = useState({ on: false, startDate: "", endDate: "" });
+  // amendment: detected by the server; `open` only when the owner sets the
+  // released dates by hand (a stay moved before date changes were tracked)
+  const [amend, setAmend] = useState({ open: false, startDate: "", endDate: "" });
   const [payForm, setPayForm] = useState({
     kind: "deposit",
     amount: "",
@@ -209,7 +211,7 @@ export function ReservationEditor({
       const r = res.reservation;
       setLoaded(r);
       setAmend({
-        on: r.releasedDates != null,
+        open: false,
         startDate: r.releasedDates?.startDate ?? "",
         endDate: r.releasedDates?.endDate ?? "",
       });
@@ -533,19 +535,23 @@ export function ReservationEditor({
     }
   };
 
-  const amendmentParam = () =>
-    amend.on && amend.startDate && amend.endDate
-      ? { startDate: amend.startDate, endDate: amend.endDate }
-      : null;
+  // dates typed in the form but not saved: the contract is built from the saved stay
+  const unsavedDates =
+    !!loaded && (form.startDate !== loaded.startDate || form.endDate !== loaded.endDate);
 
   const generateContract = async (lang: "fr" | "en" | undefined, send: boolean) => {
-    if (amend.on && !amendmentParam()) {
+    if (unsavedDates) {
+      push("Enregistrez d'abord les nouvelles dates : le contrat reprend le séjour enregistré", "error");
+      return;
+    }
+    if (amend.open && !(amend.startDate && amend.endDate && amend.endDate > amend.startDate)) {
       push("Indiquez les dates libérées de l'avenant", "error");
       return;
     }
     const res = await doAction(send ? "send-contract" : "generate-contract", {
       lang,
-      previous: amendmentParam(),
+      // omitted = the server decides (amendment whenever the dates moved)
+      ...(amend.open ? { previous: { startDate: amend.startDate, endDate: amend.endDate } } : {}),
     });
     if (res?.success) {
       const url = res.signUrl as string;
@@ -553,7 +559,10 @@ export function ReservationEditor({
         await navigator.clipboard.writeText(url).catch(() => {});
         push("Contrat généré — lien de signature copié");
       } else {
-        push(res.emailSent ? "Contrat envoyé par email" : "Contrat généré (email en file — SMTP non configuré)");
+        push(
+          (res.amendment ? "Avenant" : "Contrat") +
+            (res.emailSent ? " envoyé par email" : " généré (email en file — SMTP non configuré)")
+        );
       }
       load();
     }
@@ -597,16 +606,20 @@ export function ReservationEditor({
   const totalPaid =
     loaded?.payments.reduce((s, p) => s + (p.kind === "refund" ? -p.amount : p.amount), 0) ?? 0;
   const latestContract = loaded?.contracts.find((c) => c.status !== "void");
-  // A ticked "Acompte reçu" counts the expected deposit as paid, minus any
-  // deposit already recorded as a payment so it is not counted twice.
-  const depositPaid =
-    loaded?.payments.reduce((s, p) => s + (p.kind === "deposit" ? p.amount : 0), 0) ?? 0;
-  const depositCredit = form.depositReceived
-    ? Math.max(0, (parseFloat(form.depositAmount) || 0) - depositPaid)
-    : 0;
+  // rent counted like the "Suivi des sommes" table and the contract (a ticked
+  // "Acompte reçu" with no deposit recorded counts the expected deposit);
+  // extras are owed on top, less what was paid for them
+  const extrasPaid =
+    loaded?.payments.reduce((s, p) => s + (p.kind === "extra" ? p.amount : 0), 0) ?? 0;
   const remainingBalance =
-    quote && !form.balanceReceived
-      ? Math.max(0, quote.totalTTC + extrasTotal - totalPaid - depositCredit)
+    quote && loaded && !form.balanceReceived
+      ? paymentSummary({
+          totalTTC: quote.totalTTC,
+          checkIn: form.startDate || loaded.startDate,
+          payments: loaded.payments,
+          depositReceived: form.depositReceived,
+          depositAmount: parseFloat(form.depositAmount) || 0,
+        }).remaining + Math.max(0, extrasTotal - extrasPaid)
       : 0;
 
   return (
@@ -1378,6 +1391,63 @@ export function ReservationEditor({
           </div>
         </div>
 
+        {loaded && (quote?.totalTTC ?? loaded.priceTTC) > 0 && (() => {
+          // the rent only (extras are billed apart), against the stay as it is now
+          const total = quote?.totalTTC ?? loaded.priceTTC;
+          const sum = paymentSummary({
+            totalTTC: total,
+            checkIn: form.startDate || loaded.startDate,
+            payments: loaded.payments,
+            depositReceived: form.depositReceived,
+            depositAmount: parseFloat(form.depositAmount) || 0,
+          });
+          const lastMove = loaded.dateChanges.find((d) => d.status === "approved");
+          const line = (label: string, value: React.ReactNode, cls = "") => (
+            <div className={`flex items-center justify-between gap-3 px-4 py-2 ${cls}`}>
+              <span>{label}</span>
+              <span className="font-semibold">{value}</span>
+            </div>
+          );
+          return (
+            <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 text-sm">
+              <div className="bg-slate-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Suivi des sommes — loyer
+              </div>
+              <div className="divide-y divide-slate-100">
+                {lastMove && Math.round(lastMove.previousTTC) !== Math.round(total) &&
+                  line(
+                    `Loyer avant le changement de dates (${fmtDate(lastMove.fromStart)} → ${fmtDate(lastMove.fromEnd)})`,
+                    fmtUSD(lastMove.previousTTC),
+                    "text-slate-500"
+                  )}
+                {line("Loyer TTC", fmtUSD(total))}
+                {line("Acompte requis (30 %)", fmtUSD(sum.depositRequired))}
+                {line("Déjà reçu", fmtUSD(sum.received), "text-emerald-700")}
+                {sum.depositShortfall > 0 &&
+                  line(
+                    sum.received > 0 ? "Complément d'acompte à recevoir" : "Acompte à recevoir",
+                    fmtUSD(sum.depositShortfall),
+                    "bg-amber-50 text-amber-800"
+                  )}
+                {sum.overpaid > 0
+                  ? line("Trop-perçu (crédit client)", fmtUSD(sum.overpaid), "bg-sky-50 text-sky-800")
+                  : line(
+                      `Solde restant — dû le ${fmtDate(sum.balanceDueDate)}`,
+                      fmtUSD(sum.remaining),
+                      sum.remaining > 0 ? "text-navy" : "text-emerald-700"
+                    )}
+              </div>
+              {sum.flagOnly && (
+                <p className="border-t border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-800">
+                  « Acompte reçu » est coché sans paiement enregistré : l&apos;acompte attendu (
+                  {fmtUSD(parseFloat(form.depositAmount) || 0)}) est compté comme reçu. Enregistrez le montant
+                  réellement reçu (+ Paiement) pour que le suivi et l&apos;avenant soient exacts.
+                </p>
+              )}
+            </div>
+          );
+        })()}
+
         {loaded && loaded.payments.length > 0 && (
           <div className="mt-4 overflow-hidden rounded-xl border border-slate-200">
             <table className="w-full text-sm">
@@ -1478,22 +1548,38 @@ export function ReservationEditor({
               ✉️ Envoyer l&apos;accès client
             </button>
           </div>
-          <div className="mt-4 rounded-xl border border-slate-200 px-4 py-3 text-sm">
-            <label className="flex items-center gap-2 font-medium text-slate-700">
-              <input
-                type="checkbox"
-                checked={amend.on}
-                onChange={(e) => setAmend({ ...amend, on: e.target.checked })}
-              />
-              Avenant — changement de dates
-            </label>
-            <p className="mt-1 text-xs text-slate-500">
-              {loaded?.releasedDates
-                ? "Les dates ont changé depuis le contrat signé : le prochain contrat sera un avenant."
-                : "À cocher quand ce contrat remplace un contrat signé pour d'autres dates."}{" "}
-              Il mentionne les dates libérées, les sommes déjà reçues (paiements enregistrés) et le solde restant.
+          {unsavedDates && (
+            <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              Dates modifiées non enregistrées — enregistrez avant de générer le contrat : il deviendra
+              automatiquement un avenant.
             </p>
-            {amend.on && (
+          )}
+          {loaded?.releasedDates && !amend.open && (
+            <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+              <strong>Le prochain contrat sera un avenant</strong> : il libère le séjour du{" "}
+              {fmtDate(loaded.releasedDates.startDate)} au {fmtDate(loaded.releasedDates.endDate)}, reprend les
+              sommes déjà reçues et indique le solde restant.{" "}
+              <button
+                type="button"
+                className="text-xs underline"
+                onClick={() => setAmend({ open: true, ...loaded.releasedDates! })}
+              >
+                corriger les dates libérées
+              </button>
+            </div>
+          )}
+          {!loaded?.releasedDates && !amend.open && (
+            <button
+              type="button"
+              className="mt-3 text-xs text-slate-400 underline"
+              onClick={() => setAmend({ open: true, startDate: "", endDate: "" })}
+            >
+              Séjour déplacé avant le suivi des changements ? Indiquer les dates libérées
+            </button>
+          )}
+          {amend.open && (
+            <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm">
+              <div className="font-medium text-amber-900">Avenant — dates libérées</div>
               <div className="mt-3 grid max-w-md grid-cols-2 gap-3">
                 <div className="afield">
                   <label>Arrivée libérée</label>
@@ -1512,8 +1598,15 @@ export function ReservationEditor({
                   />
                 </div>
               </div>
-            )}
-          </div>
+              <button
+                type="button"
+                className="mt-2 text-xs text-slate-500 underline"
+                onClick={() => setAmend({ open: false, startDate: "", endDate: "" })}
+              >
+                annuler
+              </button>
+            </div>
+          )}
           {latestContract && (
             <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl bg-slate-50 px-4 py-3 text-sm">
               <span>

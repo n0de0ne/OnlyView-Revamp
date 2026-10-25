@@ -550,6 +550,9 @@ export const fr: Dict = {
     depositReceived: "Acompte reçu",
     balanceReceived: "Payé en totalité",
     awaitingDeposit: "En attente d'acompte",
+    received: "Reçu",
+    depositTopUp: "Complément d'acompte dû",
+    remainingDue: "Solde {amount} dû au plus tard le {date}",
     contractTitle: "Contrat",
     contractSign: "Relire & signer votre contrat",
     contractSigned: "Contrat signé",
@@ -696,6 +699,7 @@ export const fr: Dict = {
     typeName: "Tapez votre nom complet",
     nameMismatch: "Merci de saisir votre nom tel qu'il figure au contrat.",
     agreeLabel: "J'ai lu et j'accepte les termes du présent contrat de location.",
+    ownerSignature: "Signature du Propriétaire",
   },
   contact: {
     title: "Contact",

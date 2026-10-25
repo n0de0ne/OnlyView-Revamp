@@ -81,7 +81,9 @@ export const GET = adminRoute("owner", async () => {
   return jsonOk({ settings, keys: ALLOWED_KEYS });
 });
 
-const Body = z.object({ settings: z.record(z.string(), z.string().max(2000)) });
+// the board sends every setting back, including ones it doesn't edit (the
+// owner's signature image): only allowed keys are length-checked and saved
+const Body = z.object({ settings: z.record(z.string(), z.string()) });
 
 export const PUT = adminRoute("owner", async (req, _ctx, user) => {
   const parsed = Body.safeParse(await req.json().catch(() => null));
@@ -89,6 +91,7 @@ export const PUT = adminRoute("owner", async (req, _ctx, user) => {
   const entries = Object.entries(parsed.data.settings).filter(([k]) =>
     (ALLOWED_KEYS as readonly string[]).includes(k)
   );
+  if (entries.some(([, v]) => v.length > 2000)) return jsonError("invalid_input");
   const badSeason = entries.find(
     ([k, v]) => k.startsWith("season_") && v.trim() !== "" && !isMonthDay(v.trim())
   );

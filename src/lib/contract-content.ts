@@ -106,6 +106,7 @@ function paymentTerms(p: ContractParams, deposit: number) {
   });
   table.push(
     [fr ? "Loyer total" : "Total rent", money(p.totalPrice)],
+    [fr ? "Acompte requis (30 %)" : "Deposit required (30%)", money(deposit)],
     [fr ? "Total déjà reçu" : "Total already received", money(received)],
     remaining >= 0
       ? [fr ? "Solde restant dû" : "Remaining balance", money(remaining)]
