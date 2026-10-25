@@ -3,7 +3,8 @@
 /**
  * The editor's map: drop the pin, add the via-points the drive must pass
  * through, drag any of them, and test the resulting itinerary against the
- * router — the same one the public page uses.
+ * router — the same base map, router and drawing as the public page, so
+ * what is tested here is what guests see (from the villa).
  */
 import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
@@ -23,6 +24,7 @@ import {
   haversineM,
   walkMinutes,
 } from "@/components/site/map/routing";
+import { addBaseMap } from "@/components/site/map/base-map";
 
 export type EditMode = "pin" | "via";
 
@@ -64,12 +66,9 @@ export function AdminPlaceMap(props: AdminPlaceMapProps) {
     if (!el || mapRef.current) return;
     const p = propsRef.current;
     const center: LatLng = p.lat != null && p.lng != null ? [p.lat, p.lng] : [17.9, -62.83];
-    const map = L.map(el, { center, zoom: p.lat != null ? 15 : 13 });
+    const map = L.map(el, { center, zoom: p.lat != null ? 15 : 13, minZoom: 11, maxZoom: 19 });
     mapRef.current = map;
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      maxZoom: 19,
-    }).addTo(map);
+    void addBaseMap(map);
     L.marker(p.villa, { icon: icon(VILLA_PIN_COLOR, "🏠", 30), zIndexOffset: 1000, interactive: false }).addTo(map);
     const others = L.layerGroup().addTo(map);
     for (const o of p.others) {
@@ -159,7 +158,12 @@ export function AdminPlaceMap(props: AdminPlaceMapProps) {
       setTest({ status: "fail" });
       return;
     }
-    layer.addLayer(L.polyline(route.coords, { color: ROUTE_COLOR, weight: 5, opacity: 0.8 }));
+    // drawn as on the public map: a white halo under the line, the walk in gold
+    layer.addLayer(L.polyline(route.coords, { color: "#fff", weight: 10, opacity: 0.95, lineCap: "round", lineJoin: "round" }));
+    layer.addLayer(L.polyline(route.coords, { color: ROUTE_COLOR, weight: 5.5, opacity: 1, lineCap: "round", lineJoin: "round" }));
+    if (it.walk) {
+      layer.addLayer(L.polyline(it.walk, { color: WALK_COLOR, weight: 4, opacity: 0.95, dashArray: "1, 9", lineCap: "round" }));
+    }
     map.fitBounds(L.latLngBounds([...route.coords, [lat, lng]]), { padding: [30, 30] });
     const walkM = it.walk ? haversineM(it.walk[0], it.walk[1]) : 0;
     setTest({

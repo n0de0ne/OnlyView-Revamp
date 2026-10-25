@@ -16,7 +16,6 @@ import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet.markercluster/dist/MarkerCluster.css";
-import "maplibre-gl/dist/maplibre-gl.css";
 import {
   MAP_CATEGORIES,
   ROUTE_COLOR,
@@ -28,10 +27,12 @@ import {
   type MapPlaceDTO,
 } from "./map-meta";
 import { buildItinerary, fetchDrivingRoute, haversineM } from "./routing";
+import { addBaseMap } from "./base-map";
 
 export type MapCommand =
   | { type: "select"; id: number; nonce: number }
-  | { type: "route"; id: number; nonce: number }
+  /** `from: "villa"` forces the villa; otherwise the guest's position when on the island */
+  | { type: "route"; id: number; from?: "villa"; nonce: number }
   | { type: "clear"; nonce: number }
   | { type: "villa"; nonce: number }
   | { type: "fit"; nonce: number }
@@ -44,6 +45,8 @@ export interface RouteState {
   /** where the itinerary starts: the guest's position on the island, else the villa */
   origin: LatLng;
   fromMe: boolean;
+  /** the guest's position is known and on the island: the card can offer to switch */
+  canFromMe: boolean;
   distanceM: number;
   durationS: number;
   walkM: number;
@@ -99,31 +102,6 @@ const meIcon = L.divIcon({
   iconSize: [22, 22],
   iconAnchor: [11, 11],
 });
-
-function hasWebGL() {
-  try {
-    const c = document.createElement("canvas");
-    return !!(c.getContext("webgl2") || c.getContext("webgl"));
-  } catch {
-    return false;
-  }
-}
-
-/** the vector base map; false when this browser can't draw it */
-async function addVectorBase(map: L.Map): Promise<boolean> {
-  if (!hasWebGL()) return false;
-  try {
-    const [{ islandStyle, MAP_ATTRIBUTION }] = await Promise.all([
-      import("./map-style"),
-      import("@maplibre/maplibre-gl-leaflet"),
-    ]);
-    L.maplibreGL({ style: islandStyle, attributionControl: false, maxZoom: 19 }).addTo(map);
-    map.attributionControl?.addAttribution(MAP_ATTRIBUTION);
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 const esc = (s: string) =>
   s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
@@ -232,17 +210,8 @@ export function LeafletMap({
       mapRef.current = map;
       map.fitBounds(ISLAND_BOUNDS, { ...pad(8), animate: false });
       L.control.attribution({ position: "bottomright", prefix: false }).addTo(map);
-      // the base map: our own vector cartography (map-style.ts) drawn by
-      // MapLibre under Leaflet's pins; plain OSM tiles where WebGL is missing
-      if (await addVectorBase(map)) {
-        if (cancelled) return;
-      } else {
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-          maxZoom: 19,
-          className: "map-osm-fallback",
-        }).addTo(map);
-      }
+      await addBaseMap(map);
+      if (cancelled) return;
 
       const villaMarker = L.marker(villa, {
         icon: pinIcon(VILLA_PIN_COLOR, "🏠", { size: 38 }),
@@ -361,7 +330,7 @@ export function LeafletMap({
     cb.current.onRoute(null);
   }
 
-  async function drawRoute(place: MapPlaceDTO) {
+  async function drawRoute(place: MapPlaceDTO, forceVilla = false) {
     const map = mapRef.current;
     const layer = routeLayerRef.current;
     if (!map || !layer) return;
@@ -373,13 +342,15 @@ export function LeafletMap({
     // from where the guest stands when they are on the island, else from the villa
     const pending = buildItinerary(villa, place);
     cb.current.onRoute({
-      place, status: "loading", origin: villa, fromMe: false, walkM: 0, distanceM: 0, durationS: 0,
+      place, status: "loading", origin: villa, fromMe: false, canFromMe: false, walkM: 0, distanceM: 0, durationS: 0,
       navTarget: pending.navTarget, via: pending.via,
     });
-    const me = await watchMe();
+    const me = forceVilla ? null : await watchMe();
     if (abort.signal.aborted) return;
     const fromMe = !!me && haversineM(villa, me) < ON_ISLAND_M;
     const origin: LatLng = fromMe ? me! : villa;
+    const known = meRef.current?.fix;
+    const canFromMe = fromMe || (!!known && haversineM(villa, known) < ON_ISLAND_M);
 
     const it = buildItinerary(origin, place);
     let walkM = 0;
@@ -392,7 +363,7 @@ export function LeafletMap({
       );
       walkM = haversineM(park, end);
     }
-    const base = { place, origin, fromMe, walkM, navTarget: it.navTarget, via: it.via };
+    const base = { place, origin, fromMe, canFromMe, walkM, navTarget: it.navTarget, via: it.via };
     cb.current.onRoute({ ...base, status: "loading", distanceM: 0, durationS: 0 });
     fitVisible(L.latLngBounds([origin, ...it.drive, dest]));
 
@@ -528,7 +499,7 @@ export function LeafletMap({
     const entry = markersRef.current.get(command.id);
     if (!entry) return;
     if (command.type === "route") {
-      void drawRoute(entry.place);
+      void drawRoute(entry.place, command.from === "villa");
       return;
     }
     // select: open its cluster if it hides in one, then bring it into view
