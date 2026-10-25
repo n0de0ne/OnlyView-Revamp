@@ -26,7 +26,7 @@ import {
   type MapCategory,
   type MapPlaceDTO,
 } from "./map-meta";
-import { buildItinerary, fetchDrivingRoute, haversineM } from "./routing";
+import { buildItinerary, haversineM, OFF_ROAD_M, routeDrive, STEPS_STYLE } from "./routing";
 import { addBaseMap } from "./base-map";
 
 export type MapCommand =
@@ -352,7 +352,7 @@ export function LeafletMap({
     const known = meRef.current?.fix;
     const canFromMe = fromMe || (!!known && haversineM(villa, known) < ON_ISLAND_M);
 
-    const it = buildItinerary(origin, place);
+    const it = buildItinerary(origin, place, { fromGuest: fromMe });
     let walkM = 0;
     for (const v of it.via) layer.addLayer(L.marker(v, { icon: dotIcon(ROUTE_COLOR, 12), zIndexOffset: 500, interactive: false }));
     if (it.walk) {
@@ -367,12 +367,19 @@ export function LeafletMap({
     cb.current.onRoute({ ...base, status: "loading", distanceM: 0, durationS: 0 });
     fitVisible(L.latLngBounds([origin, ...it.drive, dest]));
 
-    const route = await fetchDrivingRoute(it.drive, abort.signal);
+    const route = await routeDrive(it, abort.signal);
     if (abort.signal.aborted) return;
     if (route) {
       // the system maps' route: a wide halo under a bright line
       layer.addLayer(L.polyline(route.coords, { color: "#fff", weight: 10, opacity: 0.95, lineCap: "round", lineJoin: "round", interactive: false }));
       layer.addLayer(L.polyline(route.coords, { color: ROUTE_COLOR, weight: 5.5, opacity: 1, lineCap: "round", lineJoin: "round", interactive: false }));
+      // the road seldom starts under the guest's feet or reaches the pin (a
+      // beach, a club on the sand): dotted steps join the route to both
+      const stops: LatLng = it.walk ? it.walk[0] : dest;
+      const gaps: Array<[LatLng, LatLng]> = [[origin, route.coords[0]], [route.coords[route.coords.length - 1], stops]];
+      for (const gap of gaps) {
+        if (haversineM(gap[0], gap[1]) > OFF_ROAD_M) layer.addLayer(L.polyline(gap, { color: ROUTE_COLOR, ...STEPS_STYLE }));
+      }
       fitVisible(L.latLngBounds([...route.coords, dest]));
       cb.current.onRoute({ ...base, status: "ok", distanceM: route.distanceM, durationS: route.durationS });
     } else {

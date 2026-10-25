@@ -19,9 +19,12 @@ import {
 } from "@/components/site/map/map-meta";
 import {
   buildItinerary,
-  fetchDrivingRoute,
   fmtKm,
+  fmtWalk,
   haversineM,
+  OFF_ROAD_M,
+  routeDrive,
+  STEPS_STYLE,
   walkMinutes,
 } from "@/components/site/map/routing";
 import { addBaseMap } from "@/components/site/map/base-map";
@@ -58,7 +61,14 @@ export function AdminPlaceMap(props: AdminPlaceMapProps) {
   const routeLayer = useRef<L.LayerGroup | null>(null);
   const propsRef = useRef(props);
   propsRef.current = props;
-  const [test, setTest] = useState<null | { status: "loading" | "ok" | "fail"; km?: string; min?: number; walkMin?: number }>(null);
+  const [test, setTest] = useState<null | {
+    status: "loading" | "ok" | "fail";
+    km?: string;
+    min?: number;
+    walkMin?: number;
+    /** the drive stops at the last via-point, this far from the pin */
+    stopsShortM?: number;
+  }>(null);
 
   /* ── map once ── */
   useEffect(() => {
@@ -153,14 +163,18 @@ export function AdminPlaceMap(props: AdminPlaceMapProps) {
       waypoints: waypoints.map((w) => w.join(",")).join("|") || null,
       walkFromLastWaypoint: walk,
     });
-    const route = await fetchDrivingRoute(it.drive);
+    const route = await routeDrive(it);
     if (!route) {
       setTest({ status: "fail" });
       return;
     }
-    // drawn as on the public map: a white halo under the line, the walk in gold
+    // drawn as on the public map: a white halo under the line, dotted steps
+    // where the road stops short of the pin, the walk in gold
     layer.addLayer(L.polyline(route.coords, { color: "#fff", weight: 10, opacity: 0.95, lineCap: "round", lineJoin: "round" }));
     layer.addLayer(L.polyline(route.coords, { color: ROUTE_COLOR, weight: 5.5, opacity: 1, lineCap: "round", lineJoin: "round" }));
+    const end = route.coords[route.coords.length - 1];
+    const stops: LatLng = it.walk ? it.walk[0] : [lat, lng];
+    if (haversineM(end, stops) > OFF_ROAD_M) layer.addLayer(L.polyline([end, stops], { color: ROUTE_COLOR, ...STEPS_STYLE }));
     if (it.walk) {
       layer.addLayer(L.polyline(it.walk, { color: WALK_COLOR, weight: 4, opacity: 0.95, dashArray: "1, 9", lineCap: "round" }));
     }
@@ -171,6 +185,7 @@ export function AdminPlaceMap(props: AdminPlaceMapProps) {
       km: fmtKm(route.distanceM),
       min: Math.max(1, Math.round(route.durationS / 60)),
       walkMin: walkM ? walkMinutes(walkM) : undefined,
+      stopsShortM: route.trimmed ? haversineM(end, [lat, lng]) : undefined,
     });
   };
 
@@ -191,6 +206,13 @@ export function AdminPlaceMap(props: AdminPlaceMapProps) {
                 puis <strong>{test.walkMin} min</strong> à pied
               </>
             ) : null}
+            {test.stopsShortM != null && (
+              <>
+                {" "}
+                · la voiture s&apos;arrête au dernier point de passage, à {fmtWalk(test.stopsShortM)} du repère (le routeur ne
+                rejoignait le repère qu&apos;en faisant le tour du quartier)
+              </>
+            )}
           </span>
         )}
         {test?.status === "fail" && <span className="text-red-600">Le routeur ne répond pas — réessayez.</span>}

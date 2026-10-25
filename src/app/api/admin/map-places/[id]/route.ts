@@ -8,9 +8,10 @@ export const dynamic = "force-dynamic";
 
 type Ctx = { params: Promise<{ id: string }> };
 
-// by route (group included), not URL: the middleware rewrites `/map` to
-// `/en/map`, so revalidatePath("/map") matched no page and English stayed stale.
-// The guides show live pins too ("On the map").
+/** The map page renders on every request (its pins must never be stale);
+ *  the guides, cached for an hour, show live pins too ("On the map") and are
+ *  refreshed here. By route (group included), not URL: the middleware
+ *  rewrites `/map` to `/en/map`, so revalidatePath("/map") matched no page. */
 const revalidateMap = () => {
   revalidatePath("/(site)/[locale]/map", "page");
   revalidatePath("/(site)/[locale]/guide/[slug]", "page");
