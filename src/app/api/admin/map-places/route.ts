@@ -8,9 +8,12 @@ import { slugify } from "@/lib/map-places";
 export const dynamic = "force-dynamic";
 
 /** the public page is ISR; an edit should show now, not within the hour */
+// by route (group included), not URL: the middleware rewrites `/map` to
+// `/en/map`, so revalidatePath("/map") matched no page and English stayed stale.
+// The guides show live pins too ("On the map").
 const revalidateMap = () => {
-  revalidatePath("/map");
-  revalidatePath("/fr/map");
+  revalidatePath("/(site)/[locale]/map", "page");
+  revalidatePath("/(site)/[locale]/guide/[slug]", "page");
 };
 
 
