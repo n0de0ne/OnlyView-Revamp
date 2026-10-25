@@ -15,6 +15,7 @@ const NAV: Array<{
   feature?: "loyalty";
 }> = [
   { href: "/admin", label: "Tableau de bord", icon: "📊" },
+  { href: "/admin/analytics", label: "Analytique", icon: "📈" },
   { href: "/admin/calendar", label: "Calendrier", icon: "📅" },
   { href: "/admin/reservations", label: "Réservations", icon: "🛏️" },
   { href: "/admin/requests", label: "Demandes", icon: "📥" },
