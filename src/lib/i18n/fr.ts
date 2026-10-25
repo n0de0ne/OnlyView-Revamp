@@ -178,8 +178,8 @@ export const fr: Dict = {
         "Le versant ouest de la pointe tourne le dos à l'Atlantique : la mer sous la villa est la mer calme, et la colline garde juste assez de brise pour que les soirées restent agréables.",
       ],
       [
-        "De bons voisins",
-        "L'hôtel Le Christopher, cinq étoiles avec son spa Sisley, son beach club et ses restaurants, est à quelques pas : un verre ou un massage sans prendre la voiture. Le Ti St Barth, le célèbre dîner-cabaret de l'île, est à trois minutes sur la route.",
+        "L'hôtel Le Christopher, à pied",
+        "L'hôtel cinq étoiles de la pointe est à quelques minutes à pied de la villa, et on s'en sert comme d'un voisin : le meilleur spa des Caraïbes à notre avis, la grande piscine au-dessus de la mer, ses restaurants, et un cocktail au bar chaque soir pendant que le soleil se couche. Pas de voiture, pas de parking. Le Ti St Barth, le célèbre dîner-cabaret de l'île, est à trois minutes sur la route.",
       ],
       [
         "Pas de plage sur place",
@@ -226,7 +226,7 @@ export const fr: Dict = {
       ],
       [
         "L'hôtel Le Christopher",
-        "L'hôtel cinq étoiles de la pointe : une grande piscine à débordement au-dessus de la mer, un spa Sisley, un beach club et des restaurants ouverts aux clients extérieurs. Comme plusieurs hôtels de l'île, il ferme quelques semaines en fin d'été.",
+        "L'hôtel cinq étoiles de la pointe, accessible à pied depuis la villa : une grande piscine à débordement au-dessus de la mer, un spa Sisley qui est pour nous le meilleur des Caraïbes, des restaurants et un bar ouverts aux clients extérieurs, et le coucher de soleil devant chaque soir. Comme plusieurs hôtels de l'île, il ferme quelques semaines en fin d'été.",
       ],
       [
         "Le Ti St Barth",
