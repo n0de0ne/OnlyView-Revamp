@@ -52,41 +52,96 @@ export function contractTerms(c: Pick<Contract, "termsJson">): ContractParams | 
 }
 
 /**
+ * Something already binds the guest to the stay's dates: a contract that was
+ * issued (signed, awaiting signature or expired — only drafts replaced before
+ * being sent are void) or money received toward the rent.
+ */
+export function hasPriorAgreement(r: {
+  depositReceived: boolean;
+  contracts: Pick<Contract, "status">[];
+  payments: Pick<Payment, "kind">[];
+}): boolean {
+  return (
+    r.contracts.some((c) => c.status !== "void") ||
+    r.payments.some((p) => p.kind !== "extra") ||
+    r.depositReceived
+  );
+}
+
+/**
  * The dates the next contract must release, or null when it is a plain
- * contract. Only stays that already have a signed agreement get an
- * amendment: the earliest approved change not yet covered by one gives the
- * dates that were signed for; failing that, a signed contract whose snapshot
- * shows other dates than the stay's current ones.
+ * contract. Any change of dates on a stay that was already contracted or
+ * paid for gives an amendment. The dates released are those of the signed
+ * agreement (from its snapshot; for one issued before snapshots, the earliest
+ * change not yet covered by an amendment); with nothing signed, the earliest
+ * such change, else the latest issued contract for other dates.
  */
 export function detectReleasedDates(
-  r: Pick<Reservation, "startDate" | "endDate"> & {
+  r: Pick<Reservation, "startDate" | "endDate" | "depositReceived"> & {
     contracts: Pick<Contract, "status" | "signedAt" | "totalPrice" | "termsJson" | "createdAt">[];
+    payments: Pick<Payment, "kind">[];
     dateChanges: Pick<DateChange, "id" | "status" | "contractId" | "fromStart" | "fromEnd" | "previousTTC" | "createdAt">[];
   }
 ): ReleasedDates | null {
-  const signed = r.contracts
-    .filter((c) => c.status === "signed")
-    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0];
-  if (!signed) return null;
+  if (!hasPriorAgreement(r)) return null;
+  const issued = r.contracts
+    .filter((c) => c.status !== "void")
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  const signed = issued.find((c) => c.status === "signed");
   const start = toISODate(r.startDate);
   const end = toISODate(r.endDate);
   const open = r.dateChanges
     .filter((d) => d.status === "approved" && d.contractId == null)
     .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
-  const signedOn = signed.signedAt ? toISODate(signed.signedAt) : null;
 
-  let prev: { start: string; end: string } | null = null;
-  if (open.length) prev = { start: toISODate(open[0].fromStart), end: toISODate(open[0].fromEnd) };
-  else {
-    const t = contractTerms(signed);
-    if (t) prev = { start: t.checkIn, end: t.checkOut };
+  type Prev = { start: string; end: string; total: number | null } | null;
+  // what a contract says was agreed before the stay's current dates:
+  // undefined when it has no snapshot, null when it is for the current
+  // dates and releases nothing
+  const fromTerms = (c: (typeof issued)[number]): Prev | undefined => {
+    const t = contractTerms(c);
+    if (!t) return undefined;
+    if (t.checkIn !== start || t.checkOut !== end) return { start: t.checkIn, end: t.checkOut, total: c.totalPrice };
+    if (t.amendment) {
+      // an amendment for these very dates, issued again: it releases the same dates
+      return {
+        start: t.amendment.previousCheckIn,
+        end: t.amendment.previousCheckOut,
+        total: t.amendment.previousTotal ?? null,
+      };
+    }
+    return null;
+  };
+  const fromChanges: Prev = open.length
+    ? {
+        start: toISODate(open[0].fromStart),
+        end: toISODate(open[0].fromEnd),
+        total: signed?.totalPrice ?? issued[0]?.totalPrice ?? open[0].previousTTC,
+      }
+    : null;
+
+  let prev: Prev = null;
+  if (signed) {
+    // the signed agreement is the one being replaced; unsigned drafts in between don't count
+    const v = fromTerms(signed);
+    prev = v === undefined ? fromChanges : v;
+  } else if (fromChanges) {
+    prev = fromChanges;
+  } else {
+    for (const c of issued) {
+      const v = fromTerms(c);
+      if (v !== undefined) {
+        prev = v;
+        break;
+      }
+    }
   }
   if (!prev || (prev.start === start && prev.end === end)) return null;
   return {
     startDate: prev.start,
     endDate: prev.end,
-    previousTotal: signed.totalPrice,
-    previousSignedOn: signedOn,
+    previousTotal: prev.total,
+    previousSignedOn: signed?.signedAt ? toISODate(signed.signedAt) : null,
     changeIds: open.map((d) => d.id),
   };
 }

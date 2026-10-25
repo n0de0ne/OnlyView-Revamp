@@ -6,7 +6,7 @@ import { getRateConfig } from "./settings";
 import { isRangeAvailable } from "./availability";
 import { formatDate, nightsBetween, toISODate, todayISO } from "./dates";
 import { sendMail } from "./mailer";
-import { issueContract } from "./contracts";
+import { hasPriorAgreement, issueContract, loadReservationForContract } from "./contracts";
 import { portalUrlFor } from "./guest-stay";
 
 export const DATE_CHANGE_STATUSES = ["pending", "approved", "rejected", "cancelled"] as const;
@@ -96,15 +96,14 @@ export async function checkNewDates(
 
 /** Log a change of dates the owner made in the editor, so the next contract is an amendment. */
 export async function recordOwnerDateChange(
-  before: Pick<Reservation, "id" | "startDate" | "endDate" | "priceTTC">,
+  before: Pick<Reservation, "id" | "startDate" | "endDate" | "priceTTC" | "status">,
   after: { startDate: string; endDate: string; priceTTC: number },
   username: string
 ) {
   if (toISODate(before.startDate) === after.startDate && toISODate(before.endDate) === after.endDate) return;
-  const hasAgreement = await prisma.contract.count({
-    where: { reservationId: before.id, status: { in: ["signed", "pending"] } },
-  });
-  if (!hasAgreement) return;
+  if (!["option", "confirmed"].includes(before.status)) return;
+  // every move is logged; whether the next contract is an amendment is
+  // decided when it is issued (a contract was sent or money was received)
   await prisma.dateChange.create({
     data: {
       reservationId: before.id,
@@ -206,10 +205,8 @@ export async function decideDateChange(
 
   let contractId: number | null = null;
   let signUrl: string | null = null;
-  const hasAgreement = await prisma.contract.count({
-    where: { reservationId: r.id, status: { in: ["signed", "pending"] } },
-  });
-  if (decision.issueAmendment !== false && hasAgreement) {
+  const after = await loadReservationForContract(r.id);
+  if (decision.issueAmendment !== false && after && hasPriorAgreement(after)) {
     const issued = await issueContract(r.id);
     if (issued.ok) {
       contractId = issued.contract.id;

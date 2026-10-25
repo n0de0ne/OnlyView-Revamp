@@ -13,6 +13,7 @@ import { StayPlanner } from "@/components/site/StayPlanner";
 import { DateChangeRequest } from "@/components/site/DateChangeRequest";
 import { ConciergePanel } from "@/components/site/ConciergePanel";
 import { confirmedExtrasTotal } from "@/lib/extras";
+import { paymentSummary } from "@/lib/payment-summary";
 import { getConciergeCatalog } from "@/lib/concierge";
 
 export const dynamic = "force-dynamic";
@@ -71,6 +72,7 @@ export default async function AccountPage({
           contracts: { where: { status: { not: "void" } }, orderBy: { createdAt: "desc" } },
           dateChanges: { where: { source: "guest" }, orderBy: { createdAt: "desc" }, take: 1 },
           extras: { orderBy: { createdAt: "asc" }, include: { place: { select: { slug: true } } } },
+          payments: { select: { kind: true, amount: true } },
         },
       },
       loyalty: {
@@ -156,13 +158,39 @@ export default async function AccountPage({
                   + {t.account.extrasTitle} {usd(confirmedExtrasTotal(r.extras))}
                 </div>
               )}
-              <div className="mt-1 text-xs text-ink/60">
-                {r.balanceReceived
-                  ? `✓ ${t.account.balanceReceived}`
-                  : r.depositReceived
-                    ? `✓ ${t.account.depositReceived} (${usd(r.depositAmount)})`
-                    : `· ${t.account.awaitingDeposit} (${usd(r.depositAmount)})`}
-              </div>
+              {(() => {
+                const sum = paymentSummary({
+                  totalTTC: r.priceTTC,
+                  checkIn: r.startDate,
+                  payments: r.payments,
+                  depositReceived: r.depositReceived,
+                  depositAmount: r.depositAmount,
+                });
+                if (r.balanceReceived || (r.priceTTC > 0 && sum.remaining === 0)) {
+                  return <div className="mt-1 text-xs text-st-free">✓ {t.account.balanceReceived}</div>;
+                }
+                return (
+                  <div className="mt-1 space-y-0.5 text-xs text-ink/60">
+                    {sum.received > 0 && (
+                      <div>
+                        ✓ {t.account.received} {usd(sum.received)}
+                      </div>
+                    )}
+                    {sum.depositShortfall > 0 && (
+                      <div className="text-st-option">
+                        · {sum.received > 0 ? t.account.depositTopUp : t.account.awaitingDeposit}{" "}
+                        {usd(sum.depositShortfall)}
+                      </div>
+                    )}
+                    <div>
+                      · {tpl(t.account.remainingDue, {
+                        amount: usd(sum.remaining),
+                        date: formatDateShort(sum.balanceDueDate, locale),
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           </div>
           <div>
