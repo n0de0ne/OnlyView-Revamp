@@ -108,6 +108,7 @@ export default async function MapPage({
       },
       ...(p.website ? { sameAs: p.website } : {}),
       ...(p.phone ? { telephone: p.phone } : {}),
+      ...(p.bookingUrl && p.category === "restaurant" ? { acceptsReservations: p.bookingUrl } : {}),
     })),
   };
 

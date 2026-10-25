@@ -78,6 +78,8 @@ export interface MapPlaceDTO {
   walkFromLastWaypoint: boolean;
   website: string | null;
   phone: string | null;
+  /** the place's own online booking page (a restaurant's), when it has one */
+  bookingUrl: string | null;
 }
 
 export function pinStyle(place: { category: MapCategory; kind?: string | null }) {

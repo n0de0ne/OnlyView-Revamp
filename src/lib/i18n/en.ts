@@ -306,6 +306,7 @@ export const en = {
     openWaze: "Waze",
     close: "Close",
     website: "Website",
+    bookOnline: "Book online",
     call: "Call",
     locate: "Show my position",
     locateFar: "You're not on the island yet. Your position will show once you're here.",

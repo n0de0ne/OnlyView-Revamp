@@ -35,6 +35,7 @@ type Row = {
   walkFromLastWaypoint: boolean;
   website: string | null;
   phone: string | null;
+  bookingUrl?: string | null;
   sortOrder: number;
 };
 
@@ -64,6 +65,7 @@ function toDto(row: Row, locale: Locale): MapPlaceDTO {
     walkFromLastWaypoint: row.walkFromLastWaypoint,
     website: row.website,
     phone: row.phone,
+    bookingUrl: row.bookingUrl ?? null,
   };
 }
 
