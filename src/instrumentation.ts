@@ -8,8 +8,12 @@ export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
   if (process.env.NEXT_PHASE === "phase-production-build") return;
 
-  // visitor geolocation database (Analytique): fetched/loaded in the background
-  import("./lib/analytics/geo").then((m) => m.warmGeo()).catch(() => {});
+  // visitor geolocation database (Analytique): fetched/loaded in the background.
+  // The inline NEXT_RUNTIME check (not just the early return above) is what
+  // lets the edge compile drop this Node-only import.
+  if (process.env.NEXT_RUNTIME === "nodejs") {
+    import("./lib/analytics/geo").then((m) => m.warmGeo()).catch(() => {});
+  }
 
   if (process.env.REMINDERS_SCHEDULER === "off") return;
 
