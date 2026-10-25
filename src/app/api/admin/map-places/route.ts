@@ -3,22 +3,19 @@ import { prisma } from "@/lib/db";
 import { adminRoute, jsonError, jsonOk } from "@/lib/admin-api";
 import { MapPlaceInput } from "@/lib/admin-schemas";
 import { audit } from "@/lib/audit";
+import { slugify } from "@/lib/map-places";
 
 export const dynamic = "force-dynamic";
 
-/** the public page is ISR; an edit should show now, not within the hour */
+/** The map page renders on every request (its pins must never be stale);
+ *  the guides, cached for an hour, show live pins too ("On the map") and are
+ *  refreshed here. By route (group included), not URL: the middleware
+ *  rewrites `/map` to `/en/map`, so revalidatePath("/map") matched no page. */
 const revalidateMap = () => {
-  revalidatePath("/map");
-  revalidatePath("/fr/map");
+  revalidatePath("/(site)/[locale]/map", "page");
+  revalidatePath("/(site)/[locale]/guide/[slug]", "page");
 };
 
-const slugify = (s: string) =>
-  s
-    .normalize("NFKD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "") || "place";
 
 export const GET = adminRoute("viewer", async () => {
   const places = await prisma.mapPlace.findMany({

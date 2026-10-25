@@ -3,6 +3,7 @@ import { adminRoute, jsonError, jsonOk } from "@/lib/admin-api";
 import { audit } from "@/lib/audit";
 import { isRangeAvailable } from "@/lib/availability";
 import { sendBookingConfirmation } from "@/lib/booking-emails";
+import { recordOwnerDateChange } from "@/lib/date-changes";
 import {
   ReservationInput,
   computePersistedPricing,
@@ -61,6 +62,12 @@ export const PUT = adminRoute<Ctx>("manager", async (req, { params }, user) => {
     }),
   ]);
 
+  // a stay that already has an agreement: its next contract will be an amendment
+  await recordOwnerDateChange(
+    existing,
+    { startDate: input.startDate, endDate: input.endDate, priceTTC: pricing.priceTTC },
+    user.username
+  );
   await afterSaveHooks(id);
   // opt-in confirmation email once the stay is confirmed (never re-sent silently)
   if (input.sendConfirmationEmail && input.status === "confirmed") {

@@ -24,6 +24,19 @@ interface BookingRequest {
   quote: { totalTTC?: number; subtotalHT?: number } | null;
 }
 
+interface PendingDateChange {
+  id: number;
+  fromStart: string;
+  fromEnd: string;
+  toStart: string;
+  toEnd: string;
+  previousTTC: number;
+  quotedTTC: number | null;
+  message: string | null;
+  createdAt: string;
+  reservation: { id: number; clientName: string | null };
+}
+
 export function RequestsInbox() {
   const router = useRouter();
   const { push } = useToast();
@@ -41,6 +54,14 @@ export function RequestsInbox() {
   }, [filter]);
 
   useEffect(load, [load]);
+
+  // guests asking to move a booked stay — answered from the reservation
+  const [dateChanges, setDateChanges] = useState<PendingDateChange[]>([]);
+  useEffect(() => {
+    api<{ changes: PendingDateChange[] }>("/api/admin/date-changes?status=pending").then(
+      (d) => d.success && setDateChanges(d.changes)
+    );
+  }, []);
 
   const setStatus = async (id: number, status: string) => {
     const res = await api(`/api/admin/requests/${id}`, {
@@ -90,6 +111,31 @@ export function RequestsInbox() {
           <option value="declined">Refusées</option>
         </select>
       </div>
+
+      {dateChanges.length > 0 && (
+        <Card title={`📅 Changements de dates demandés (${dateChanges.length})`}>
+          <ul className="divide-y divide-slate-100 text-sm">
+            {dateChanges.map((c) => (
+              <li key={c.id} className="flex flex-wrap items-center justify-between gap-3 py-2.5">
+                <div>
+                  <div className="font-semibold text-slate-800">{c.reservation.clientName ?? `#${c.reservation.id}`}</div>
+                  <div className="text-xs text-slate-500">
+                    {fmtDate(c.fromStart)} → {fmtDate(c.fromEnd)} <span className="mx-1">devient</span>
+                    <strong className="text-slate-700">
+                      {fmtDate(c.toStart)} → {fmtDate(c.toEnd)}
+                    </strong>
+                    {c.quotedTTC != null && ` · estimé ${fmtUSD(c.quotedTTC)} (actuel ${fmtUSD(c.previousTTC)})`}
+                  </div>
+                  {c.message && <div className="mt-1 text-xs italic text-slate-500">« {c.message} »</div>}
+                </div>
+                <Link href={`/admin/reservations/${c.reservation.id}`} className="abtn-primary">
+                  Répondre
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
 
       {!requests ? (
         <Spinner />

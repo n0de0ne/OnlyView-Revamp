@@ -17,7 +17,7 @@ export function SiteFooter({ locale }: { locale: Locale }) {
   const practical: Array<[string, string]> = [
     [localePath(locale, "/booking"), t.nav.booking],
     [localePath(locale, "/why-book-direct"), t.footer.whyDirect],
-    [localePath(locale, "/location"), t.nav.villa + " — " + t.location.title],
+    [localePath(locale, "/pointe-milou"), t.nav.pointeMilou + " · St Barth"],
     [localePath(locale, "/faq"), "FAQ"],
     [localePath(locale, "/contact"), t.nav.contact],
     [localePath(locale, "/account"), t.footer.guestPortal],

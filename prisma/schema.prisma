@@ -219,6 +219,7 @@ model Reservation {
   bookingRequest     BookingRequest?
   extras             ReservationExtra[]
   reminders          ReminderLog[]
+  dateChanges        DateChange[]
 
   @@index([startDate, endDate])
   @@index([status])
@@ -302,10 +303,49 @@ model ReservationExtra {
   serviceDate      DateTime?
   notes            String?
   requestedByGuest Boolean     @default(false)
+  /// the map place a concierge table request is for — gives the guest a
+  /// "Directions" link to it on the island map
+  placeId          Int?
+  place            MapPlace?   @relation(fields: [placeId], references: [id], onDelete: SetNull)
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
 
   @@index([reservationId])
+}
+
+/// A change of dates on a stay: asked by the guest from the portal (pending
+/// until the owner approves or rejects it) or made by the owner in the editor.
+/// The next contract issued for the stay becomes an amendment that releases
+/// the previous dates.
+model DateChange {
+  id            Int         @id @default(autoincrement())
+  reservationId Int
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  /// guest | admin
+  source        String      @default("guest")
+  /// pending | approved | rejected | cancelled
+  status        String      @default("pending")
+  /// the stay's dates when the change was asked
+  fromStart     DateTime
+  fromEnd       DateTime
+  toStart       DateTime
+  toEnd         DateTime
+  /// rent TTC (USD) before the change
+  previousTTC   Float       @default(0)
+  /// estimated rent TTC for the new dates (null when it can't be estimated)
+  quotedTTC     Float?
+  message       String?
+  /// owner's reply, shown to the guest
+  adminNote     String?
+  decidedAt     DateTime?
+  decidedBy     String?
+  /// the amendment issued for this change
+  contractId    Int?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([reservationId])
+  @@index([status])
 }
 
 // ─────────────────────────────────────────────────────────────── Automations
@@ -375,6 +415,8 @@ model BookingRequest {
   adminNotes String?
   reservationId Int?         @unique
   reservation   Reservation? @relation(fields: [reservationId], references: [id], onDelete: SetNull)
+  /// the site visit the request was sent from (Analytique → attribution)
+  analyticsSessionId String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -396,8 +438,14 @@ model Contract {
   clientEmail   String?
   totalPrice    Float
   depositAmount Float
+  /// contract | amendment (replaces an earlier agreement after a change of dates)
+  kind          String      @default("contract")
   /// contract body snapshot (HTML) at generation time
   bodyHtml      String
+  /// JSON snapshot of the terms the contract was issued with (dates, price,
+  /// amounts received, released dates) — the PDF is rebuilt from it, so a
+  /// later change to the stay never rewrites an agreement already issued
+  termsJson     String?
   signatureData String? // data-URL PNG drawn by the client
   signedAt      DateTime?
   signerIp      String?
@@ -566,6 +614,7 @@ model MapPlace {
   /// the venue's own contacts, for the owner booking a table
   whatsapp             String?
   email                String?
+  reservationExtras    ReservationExtra[]
   sortOrder Int     @default(0)
   isActive  Boolean @default(true)
   createdAt DateTime @default(now())
@@ -704,4 +753,127 @@ model EmailLog {
   sentAt         DateTime @default(now())
 
   @@index([sentAt])
+}
+
+// ──────────────────────────────────────────────────────────────── Analytics
+//
+// First-party audience measurement for the public site (Admin → Analytique).
+// No third party sees a visitor: the location comes from an offline database
+// on this server and raw IP addresses are never stored. Rows older than
+// 25 months are purged (CNIL audience-measurement exemption).
+
+/// A browser, recognised by the first-party `ov_vid` cookie (13 months).
+model AnalyticsVisitor {
+  id           String   @id
+  firstSeenAt  DateTime @default(now())
+  lastSeenAt   DateTime @default(now())
+  sessions     Int      @default(0)
+  pageviews    Int      @default(0)
+  /// how they first found the site
+  firstChannel String?
+  firstSource  String?
+  country      String?
+  city         String?
+  legacy       Boolean  @default(false)
+
+  @@index([firstSeenAt])
+  @@index([lastSeenAt])
+}
+
+/// One visit: a visitor's pages until 30 minutes of inactivity, or until
+/// they come back through another campaign/source.
+model AnalyticsSession {
+  id           String   @id
+  visitorId    String
+  isNewVisitor Boolean  @default(true)
+  startedAt    DateTime @default(now())
+  lastSeenAt   DateTime @default(now())
+  pageviews    Int      @default(0)
+  /// time the page was actually visible and in use, summed over the pages
+  engagedSec   Int      @default(0)
+  entryPath    String
+  exitPath     String
+  referrer     String?
+  referrerHost String?
+  /// search | ai | social | agency | email | paid | referral | direct
+  channel      String   @default("direct")
+  /// google, chatgpt, wimco, instagram…
+  source       String?
+  utmSource    String?
+  utmMedium    String?
+  utmCampaign  String?
+  utmTerm      String?
+  utmContent   String?
+  /// gclid | msclkid | fbclid…
+  clickIdType  String?
+  locale       String?
+  language     String?
+  country      String?
+  region       String?
+  city         String?
+  /// mobile | tablet | desktop
+  device       String?
+  browser      String?
+  os           String?
+  screenWidth  Int?
+  /// a booking request was sent during this visit
+  converted    Boolean  @default(false)
+  bookingRequestId Int?
+  legacy       Boolean  @default(false)
+
+  @@index([startedAt])
+  @@index([visitorId])
+  @@index([lastSeenAt])
+}
+
+model AnalyticsPageview {
+  id         Int      @id @default(autoincrement())
+  sessionId  String
+  visitorId  String
+  /// path without the /fr prefix, so both languages add up per page
+  path       String
+  locale     String?
+  title      String?
+  createdAt  DateTime @default(now())
+  engagedSec Int      @default(0)
+  /// deepest scroll reached, in %
+  scrollPct  Int      @default(0)
+
+  @@index([createdAt])
+  @@index([sessionId])
+  @@index([path])
+}
+
+/// Something a visitor did: quote_view, booking_form_start, booking_request,
+/// contact_submit, click_whatsapp, click_email, click_phone, outbound…
+model AnalyticsEvent {
+  id        Int      @id @default(autoincrement())
+  sessionId String?
+  visitorId String?
+  name      String
+  path      String?
+  /// JSON
+  props     String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([name])
+  @@index([sessionId])
+}
+
+/// A page fetched by a search engine or AI crawler (they run no JavaScript,
+/// so they're logged server-side from their user agent).
+model CrawlerHit {
+  id        Int      @id @default(autoincrement())
+  /// GPTBot, Googlebot, ClaudeBot, PerplexityBot…
+  bot       String
+  /// ai_search | ai_training | ai_user | search | seo | social | other
+  category  String
+  /// who runs it: OpenAI, Google, Anthropic…
+  operator  String?
+  path      String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([bot])
 }

@@ -1,11 +1,8 @@
-import { randomBytes } from "node:crypto";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { adminRoute, jsonError, jsonOk } from "@/lib/admin-api";
 import { audit } from "@/lib/audit";
-import { buildContract, contractToHtml } from "@/lib/contract-content";
-import { getSettings } from "@/lib/settings";
-import { toISODate, nightsBetween } from "@/lib/dates";
+import { issueContract } from "@/lib/contracts";
 import { newPortalToken } from "@/lib/guest-auth";
 import { sendMail } from "@/lib/mailer";
 import { SITE_URL } from "@/lib/seo";
@@ -41,6 +38,14 @@ const Body = z.object({
     })
     .optional(),
   paymentId: z.number().int().optional(),
+  /** released dates of an amendment; null = plain contract, omitted = detected */
+  previous: z
+    .object({
+      startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    })
+    .nullable()
+    .optional(),
 });
 
 export const POST = adminRoute<Ctx>("manager", async (req, { params }, user) => {
@@ -82,89 +87,23 @@ export const POST = adminRoute<Ctx>("manager", async (req, { params }, user) => 
 
     case "generate-contract":
     case "send-contract": {
-      const lang = parsed.data.lang ?? (reservation.client?.language === "fr" ? "fr" : "en");
-      const clientName =
-        reservation.clientName ??
-        (reservation.client
-          ? `${reservation.client.firstname} ${reservation.client.lastname}`
-          : null);
-      if (!clientName) return jsonError("missing_client_name");
-      if (reservation.priceTTC <= 0) return jsonError("missing_price");
-
-      const s = await getSettings();
-      const content = buildContract({
-        clientName,
-        checkIn: toISODate(reservation.startDate),
-        checkOut: toISODate(reservation.endDate),
-        nights: nightsBetween(toISODate(reservation.startDate), toISODate(reservation.endDate)),
-        bedrooms: reservation.bedrooms,
-        guests: reservation.guests,
-        totalPrice: reservation.priceTTC,
-        lang,
-        ownerName: s.owner_name ?? "Annie CHRIQUI",
-        noTax: reservation.noTax,
-        bank: {
-          accountName: s.bank_account_name ?? "",
-          accountNumber: s.bank_account_number ?? "",
-          bankName: s.bank_name ?? "",
-          iban: s.bank_iban ?? "",
-          bic: s.bank_bic ?? "",
-        },
+      const res = await issueContract(id, {
+        lang: parsed.data.lang,
+        send: action === "send-contract",
+        previous: parsed.data.previous,
       });
-
-      // void previous pending contracts for this reservation
-      await prisma.contract.updateMany({
-        where: { reservationId: id, status: "pending" },
-        data: { status: "void" },
+      if (!res.ok) return jsonError(res.error, res.error === "not_found" ? 404 : 400);
+      await auditIt("contract_generated", {
+        contractId: res.contract.id,
+        lang: res.contract.language,
+        sent: res.emailSent,
+        amendment: res.amendment,
       });
-
-      const contract = await prisma.contract.create({
-        data: {
-          reservationId: id,
-          token: randomBytes(24).toString("hex"),
-          language: lang,
-          clientName,
-          clientEmail: reservation.email ?? reservation.client?.email ?? null,
-          totalPrice: reservation.priceTTC,
-          depositAmount: content.deposit,
-          bodyHtml: contractToHtml(content),
-          expiresAt: new Date(Date.now() + 30 * 86400000),
-        },
-      });
-
-      const signUrl = `${SITE_URL}${lang === "fr" ? "/fr" : ""}/contracts/sign/${contract.token}`;
-
-      let emailSent = false;
-      if (action === "send-contract") {
-        const to = contract.clientEmail;
-        if (!to) return jsonError("missing_client_email");
-        const fr = lang === "fr";
-        const res = await sendMail({
-          to,
-          toName: clientName,
-          templateSlug: "contract_signature_request",
-          reservationId: id,
-          subject: fr
-            ? "Votre contrat de location — Villa ONLY VIEW"
-            : "Your rental agreement — Villa ONLY VIEW",
-          html: fr
-            ? `<p>Bonjour <strong>${clientName}</strong>,</p>
-<p>Votre contrat de location pour la Villa ONLY VIEW (du ${toISODate(reservation.startDate)} au ${toISODate(reservation.endDate)}) est prêt à être signé en ligne :</p>
-<p style="text-align:center;margin:24px 0;"><a href="${signUrl}" style="background:#C9A962;color:#fff;padding:13px 26px;text-decoration:none;letter-spacing:0.1em;">RELIRE & SIGNER</a></p>
-<p style="font-size:12px;color:#8a8a8a;">Ce lien est valable 30 jours.</p>`
-            : `<p>Hello <strong>${clientName}</strong>,</p>
-<p>Your rental agreement for Villa ONLY VIEW (${toISODate(reservation.startDate)} → ${toISODate(reservation.endDate)}) is ready to sign online:</p>
-<p style="text-align:center;margin:24px 0;"><a href="${signUrl}" style="background:#C9A962;color:#fff;padding:13px 26px;text-decoration:none;letter-spacing:0.1em;">REVIEW & SIGN</a></p>
-<p style="font-size:12px;color:#8a8a8a;">This link is valid for 30 days.</p>`,
-        });
-        emailSent = res.sent;
-      }
-
-      await auditIt("contract_generated", { contractId: contract.id, lang, sent: emailSent });
       return jsonOk({
-        contract: { id: contract.id, token: contract.token, status: contract.status },
-        signUrl,
-        emailSent,
+        contract: { id: res.contract.id, token: res.contract.token, status: res.contract.status, kind: res.contract.kind },
+        signUrl: res.signUrl,
+        emailSent: res.emailSent,
+        amendment: res.amendment,
       });
     }
 

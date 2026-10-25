@@ -108,6 +108,12 @@ export default async function HomePage({
               ratingValue: avgRating ? Math.round(avgRating * 10) / 10 : undefined,
               reviewCount: testimonials.length || undefined,
               sameAs,
+              reviews: testimonials.map((r) => ({
+                name: r.name,
+                rating: r.rating,
+                message: r.message,
+                date: r.stayDate?.toISOString().slice(0, 10),
+              })),
             }),
             faqJsonLd(t.faq.items.filter((i) => loyalty || i.tag !== "loyalty").slice(0, 6)),
           ]),
@@ -342,7 +348,7 @@ export default async function HomePage({
                 )
               )}
             </ul>
-            <Link href={localePath(locale, "/location")} className="btn-outline mt-9">
+            <Link href={localePath(locale, "/pointe-milou")} className="btn-outline mt-9">
               {t.location.mapCta}
             </Link>
           </div>

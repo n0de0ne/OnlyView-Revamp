@@ -40,7 +40,8 @@ export function serializeExtra(e: Extra) {
   };
 }
 
-export function serializeReservationExtra(i: ReservationExtra) {
+/** `placeSlug`: the map place of a table request, for its "Directions" link. */
+export function serializeReservationExtra(i: ReservationExtra, placeSlug: string | null = null) {
   return {
     id: i.id,
     extraId: i.extraId,
@@ -52,6 +53,7 @@ export function serializeReservationExtra(i: ReservationExtra) {
     serviceDate: i.serviceDate ? toISODate(i.serviceDate) : null,
     notes: i.notes,
     requestedByGuest: i.requestedByGuest,
+    placeSlug,
     createdAt: i.createdAt.toISOString(),
   };
 }

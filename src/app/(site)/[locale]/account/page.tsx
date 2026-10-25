@@ -10,8 +10,10 @@ import { isLoyaltyEnabled } from "@/lib/features";
 import { PageHero } from "@/components/site/PageHero";
 import { GuestLoginForm } from "@/components/site/GuestLoginForm";
 import { StayPlanner } from "@/components/site/StayPlanner";
+import { DateChangeRequest } from "@/components/site/DateChangeRequest";
 import { ConciergePanel } from "@/components/site/ConciergePanel";
 import { confirmedExtrasTotal } from "@/lib/extras";
+import { paymentSummary } from "@/lib/payment-summary";
 import { getConciergeCatalog } from "@/lib/concierge";
 
 export const dynamic = "force-dynamic";
@@ -67,8 +69,10 @@ export default async function AccountPage({
         where: { status: { not: "blocked" } },
         orderBy: { startDate: "desc" },
         include: {
-          contracts: { orderBy: { createdAt: "desc" }, take: 1 },
-          extras: { orderBy: { createdAt: "asc" } },
+          contracts: { where: { status: { not: "void" } }, orderBy: { createdAt: "desc" } },
+          dateChanges: { where: { source: "guest" }, orderBy: { createdAt: "desc" }, take: 1 },
+          extras: { orderBy: { createdAt: "asc" }, include: { place: { select: { slug: true } } } },
+          payments: { select: { kind: true, amount: true } },
         },
       },
       loyalty: {
@@ -107,6 +111,9 @@ export default async function AccountPage({
     unit: x.unit,
   }));
   const concierge = upcoming.length ? await getConciergeCatalog(locale) : null;
+  // table requests sent before they were linked to their place: find it by name
+  const restaurantSlug = (label: string) =>
+    concierge?.restaurants.find((p) => label === `Restaurant — ${p.name}`)?.slug ?? null;
   const points = client.loyalty?.points ?? 0;
   const lifetime = client.loyalty?.lifetimePoints ?? 0;
   const tier = tierFor(lifetime);
@@ -118,6 +125,12 @@ export default async function AccountPage({
     r: (typeof client.reservations)[number];
   }) => {
     const contract = r.contracts[0];
+    // an amendment awaiting signature: the agreement it replaces stays downloadable
+    const signedBefore =
+      contract && contract.status !== "signed"
+        ? r.contracts.find((c) => c.status === "signed")
+        : undefined;
+    const dc = r.dateChanges[0];
     return (
       <div className="border border-ink/10 bg-white p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -145,22 +158,59 @@ export default async function AccountPage({
                   + {t.account.extrasTitle} {usd(confirmedExtrasTotal(r.extras))}
                 </div>
               )}
-              <div className="mt-1 text-xs text-ink/60">
-                {r.balanceReceived
-                  ? `✓ ${t.account.balanceReceived}`
-                  : r.depositReceived
-                    ? `✓ ${t.account.depositReceived} (${usd(r.depositAmount)})`
-                    : `· ${t.account.awaitingDeposit} (${usd(r.depositAmount)})`}
-              </div>
+              {(() => {
+                const sum = paymentSummary({
+                  totalTTC: r.priceTTC,
+                  checkIn: r.startDate,
+                  payments: r.payments,
+                  depositReceived: r.depositReceived,
+                  depositAmount: r.depositAmount,
+                });
+                if (r.balanceReceived || (r.priceTTC > 0 && sum.remaining === 0)) {
+                  return <div className="mt-1 text-xs text-st-free">✓ {t.account.balanceReceived}</div>;
+                }
+                return (
+                  <div className="mt-1 space-y-0.5 text-xs text-ink/60">
+                    {sum.received > 0 && (
+                      <div>
+                        ✓ {t.account.received} {usd(sum.received)}
+                      </div>
+                    )}
+                    {sum.depositShortfall > 0 && (
+                      <div className="text-st-option">
+                        · {sum.received > 0 ? t.account.depositTopUp : t.account.awaitingDeposit}{" "}
+                        {usd(sum.depositShortfall)}
+                      </div>
+                    )}
+                    <div>
+                      · {tpl(t.account.remainingDue, {
+                        amount: usd(sum.remaining),
+                        date: formatDateShort(sum.balanceDueDate, locale),
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           </div>
           <div>
             <div className="eyebrow !text-[0.6rem]">{t.account.contractTitle}</div>
             <div className="mt-2 text-sm">
+              {signedBefore && (
+                <div className="mb-1">
+                  <span className="text-st-free">✓ {signedBefore.kind === "amendment" ? t.account.amendmentSigned : t.account.contractSigned}</span>
+                  <a
+                    href={`/api/contracts/pdf/${signedBefore.token}`}
+                    className="ml-3 text-xs text-gold underline"
+                  >
+                    {t.account.downloadPdf}
+                  </a>
+                </div>
+              )}
               {contract ? (
                 contract.status === "signed" ? (
                   <div>
-                    <span className="text-st-free">✓ {t.account.contractSigned}</span>
+                    <span className="text-st-free">✓ {contract.kind === "amendment" ? t.account.amendmentSigned : t.account.contractSigned}</span>
                     <a
                       href={`/api/contracts/pdf/${contract.token}`}
                       className="ml-3 text-xs text-gold underline"
@@ -173,7 +223,7 @@ export default async function AccountPage({
                     href={localePath(locale, `/contracts/sign/${contract.token}`)}
                     className="text-gold underline"
                   >
-                    → {t.account.contractSign}
+                    → {contract.kind === "amendment" ? t.account.amendmentSign : t.account.contractSign}
                   </Link>
                 )
               ) : (
@@ -208,9 +258,33 @@ export default async function AccountPage({
               status: i.status,
               serviceDate: i.serviceDate ? toISODate(i.serviceDate) : null,
               requestedByGuest: i.requestedByGuest,
+              placeSlug: i.place?.slug ?? restaurantSlug(i.label),
             }))}
           />
         )}
+        {["option", "confirmed"].includes(r.status) &&
+          !r.isArchived &&
+          toISODate(r.startDate) > today && (
+            <DateChangeRequest
+              reservationId={r.id}
+              locale={locale}
+              t={t.account.dateChange}
+              start={toISODate(r.startDate)}
+              end={toISODate(r.endDate)}
+              latest={
+                dc
+                  ? {
+                      status: dc.status,
+                      fromStart: toISODate(dc.fromStart),
+                      fromEnd: toISODate(dc.fromEnd),
+                      toStart: toISODate(dc.toStart),
+                      toEnd: toISODate(dc.toEnd),
+                      adminNote: dc.adminNote,
+                    }
+                  : null
+              }
+            />
+          )}
         {concierge &&
           ["option", "confirmed"].includes(r.status) &&
           !r.isArchived &&

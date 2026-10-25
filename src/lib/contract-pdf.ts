@@ -100,8 +100,13 @@ function drawRich(ctx: Ctx, text: string, opts: { size?: number; indent?: number
   ctx.y -= lineH * 1.35;
 }
 
+/** Setting holding the owner's signature (PNG data URL) — Réglages → Contrat & banque */
+export const OWNER_SIGNATURE_KEY = "owner_signature";
+
 export interface SignatureBlock {
   signaturePngDataUrl?: string | null;
+  /** the owner's own signature, printed in the Owner box */
+  ownerSignaturePngDataUrl?: string | null;
   signerName?: string;
   signedAtLabel?: string;
   ownerName: string;
@@ -133,6 +138,25 @@ const CERT_TEXT = {
       "Ce document a été signé électroniquement via onlyviewstbarth.com et constitue un accord juridiquement contraignant en vertu des lois applicables sur la signature électronique.",
   },
 };
+
+/** A signature PNG sitting on its line (bottom at `y`); unreadable images leave the line empty. */
+async function drawSignatureImage(
+  doc: PDFDocument,
+  page: PDFPage,
+  dataUrl: string | null | undefined,
+  x: number,
+  y: number,
+  maxWidth: number
+) {
+  if (!dataUrl?.startsWith("data:image/png;base64,")) return;
+  try {
+    const png = await doc.embedPng(Buffer.from(dataUrl.split(",")[1], "base64"));
+    const dims = png.scaleToFit(maxWidth, 46);
+    page.drawImage(png, { x, y, width: dims.width, height: dims.height });
+  } catch {
+    // unreadable signature image
+  }
+}
 
 export async function renderContractPdf(
   content: ContractContent,
@@ -210,6 +234,7 @@ export async function renderContractPdf(
   // Owner column
   ctx.page.drawText(safe(signature.labels.owner), { x: leftX, y: topY, size: 10, font: bold, color: INK });
   ctx.page.drawText(safe(signature.ownerName), { x: leftX, y: topY - 16, size: 10, font, color: INK });
+  await drawSignatureImage(doc, ctx.page, signature.ownerSignaturePngDataUrl, leftX, topY - 66, colW);
   ctx.page.drawLine({
     start: { x: leftX, y: topY - 70 },
     end: { x: leftX + colW, y: topY - 70 },
@@ -222,22 +247,7 @@ export async function renderContractPdf(
   if (signature.signerName) {
     ctx.page.drawText(safe(signature.signerName), { x: rightX, y: topY - 16, size: 10, font, color: INK });
   }
-  if (signature.signaturePngDataUrl?.startsWith("data:image/png;base64,")) {
-    try {
-      const png = await doc.embedPng(
-        Buffer.from(signature.signaturePngDataUrl.split(",")[1], "base64")
-      );
-      const dims = png.scaleToFit(colW, 46);
-      ctx.page.drawImage(png, {
-        x: rightX,
-        y: topY - 68 + 2,
-        width: dims.width,
-        height: dims.height,
-      });
-    } catch {
-      // unreadable signature image — leave the line empty
-    }
-  }
+  await drawSignatureImage(doc, ctx.page, signature.signaturePngDataUrl, rightX, topY - 66, colW);
   ctx.page.drawLine({
     start: { x: rightX, y: topY - 70 },
     end: { x: rightX + colW, y: topY - 70 },

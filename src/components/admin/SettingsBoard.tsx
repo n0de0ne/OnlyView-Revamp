@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { api, Card, Spinner, useToast } from "./ui";
 import { RemindersPanel } from "./RemindersPanel";
+import { IndexNowPanel } from "./IndexNowPanel";
 
 const GROUPS: Array<{
   title: string;
@@ -90,6 +91,17 @@ const GROUPS: Array<{
       ["loyalty_point_value", "Valeur d'un point ($)"],
       ["loyalty_min_redeem", "Utilisation minimum (points)"],
       ["loyalty_max_redeem_percent", "Max. du séjour payable en points (%)"],
+    ],
+  },
+  {
+    title: "Statistiques de visite (Analytique)",
+    fields: [
+      ["analytics_enabled", "Mesure d'audience", "1 = active (défaut) · 0 = plus rien n'est enregistré"],
+      [
+        "analytics_cookie",
+        "Reconnaître les visiteurs qui reviennent",
+        "1 = cookie interne de 13 mois, sans bandeau (exemption CNIL de mesure d'audience, défaut) · 0 = aucun cookie : un visiteur n'est reconnu que le jour même",
+      ],
     ],
   },
   {
@@ -201,6 +213,7 @@ export function SettingsBoard() {
         ))}
       </div>
       <RemindersPanel key={savedAt} />
+      <IndexNowPanel />
       <p className="text-xs text-slate-400">
         Les tarifs modifiés s&apos;appliquent aux nouveaux devis et aux réservations recalculées —
         jamais rétroactivement aux montants déjà enregistrés.

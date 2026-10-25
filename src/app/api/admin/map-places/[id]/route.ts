@@ -8,9 +8,13 @@ export const dynamic = "force-dynamic";
 
 type Ctx = { params: Promise<{ id: string }> };
 
+/** The map page renders on every request (its pins must never be stale);
+ *  the guides, cached for an hour, show live pins too ("On the map") and are
+ *  refreshed here. By route (group included), not URL: the middleware
+ *  rewrites `/map` to `/en/map`, so revalidatePath("/map") matched no page. */
 const revalidateMap = () => {
-  revalidatePath("/map");
-  revalidatePath("/fr/map");
+  revalidatePath("/(site)/[locale]/map", "page");
+  revalidatePath("/(site)/[locale]/guide/[slug]", "page");
 };
 
 export const PUT = adminRoute<Ctx>("manager", async (req, { params }, user) => {

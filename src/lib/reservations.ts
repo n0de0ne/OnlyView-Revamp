@@ -7,6 +7,8 @@ import { toISODate } from "./dates";
 import { earnForReservation } from "./loyalty";
 import { serializeReservationExtra } from "./extras";
 import { maxGuestsFor } from "./site-facts";
+import { serializeDateChange } from "./date-changes";
+import { detectReleasedDates } from "./contracts";
 
 export const RESERVATION_STATUSES = [
   "option",
@@ -148,6 +150,7 @@ const include = {
   payments: { orderBy: { receivedAt: "asc" as const } },
   contracts: { orderBy: { createdAt: "desc" as const } },
   extras: { orderBy: { createdAt: "asc" as const } },
+  dateChanges: { orderBy: { createdAt: "desc" as const } },
 } as const;
 
 export type ReservationWithRelations = NonNullable<
@@ -212,7 +215,7 @@ export function serializeReservation(r: ReservationWithRelations) {
       specialRequests: r.specialRequests,
       updatedAt: r.guestDetailsUpdatedAt?.toISOString() ?? null,
     },
-    extras: r.extras.map(serializeReservationExtra),
+    extras: r.extras.map((i) => serializeReservationExtra(i)),
     portalToken: r.portalToken,
     isArchived: r.isArchived,
     confirmationEmailSent: r.confirmationEmailSent,
@@ -234,6 +237,7 @@ export function serializeReservation(r: ReservationWithRelations) {
     contracts: r.contracts.map((c) => ({
       id: c.id,
       token: c.token,
+      kind: c.kind,
       status: c.status,
       language: c.language,
       totalPrice: c.totalPrice,
@@ -242,6 +246,12 @@ export function serializeReservation(r: ReservationWithRelations) {
       createdAt: c.createdAt.toISOString(),
       expiresAt: c.expiresAt?.toISOString() ?? null,
     })),
+    dateChanges: r.dateChanges.map(serializeDateChange),
+    /** dates the next contract will release (it is then an amendment) */
+    releasedDates: (() => {
+      const d = detectReleasedDates(r);
+      return d ? { startDate: d.startDate, endDate: d.endDate } : null;
+    })(),
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
   };

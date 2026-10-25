@@ -2,6 +2,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { adminRoute, jsonError, jsonOk } from "@/lib/admin-api";
 import { audit } from "@/lib/audit";
+import { pingIndexNow } from "@/lib/indexnow";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,9 @@ export const PUT = adminRoute("manager", async (req, _ctx, user) => {
   const { id, ...data } = parsed.data;
   try {
     const testimonial = await prisma.testimonial.update({ where: { id }, data });
+    // a review going live changes the reviews page and the home page's
+    // rating: tell Bing now rather than at its next crawl
+    if (data.isApproved !== undefined) pingIndexNow(["/reviews", "/"]);
     await audit({
       action: "testimonial_update",
       entityType: "testimonial",

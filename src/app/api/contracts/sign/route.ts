@@ -7,6 +7,8 @@ import { SITE_URL } from "@/lib/seo";
 import { renderContractPdfFor, formatDateTime } from "@/lib/contract-render";
 import { formatDate, toISODate, nightsBetween } from "@/lib/dates";
 import { ownerNotifyEmail } from "@/lib/contact";
+import { contractTerms } from "@/lib/contracts";
+import { totalReceived } from "@/lib/contract-content";
 
 export const dynamic = "force-dynamic";
 
@@ -88,7 +90,7 @@ export async function POST(req: NextRequest) {
     reservationId: r.id,
     clientId: r.clientId ?? undefined,
     html: `<h2 style="margin-top:0;color:#1B4965;">Contract signed!</h2>
-<p><strong>${signed.clientName}</strong> has signed the rental agreement for reservation #${r.id}.</p>
+<p><strong>${signed.clientName}</strong> has signed the ${signed.kind === "amendment" ? "amendment (change of dates)" : "rental agreement"} for reservation #${r.id}.</p>
 ${table(
   row("Client", signed.clientName) +
     row("Check-in", formatDate(checkIn, "en")) +
@@ -110,13 +112,17 @@ ${table(
   const to = signed.clientEmail ?? r.email ?? null;
   if (to) {
     const { pdf } = await renderContractPdfFor(signed);
+    const received = totalReceived(contractTerms(signed)?.received);
     const summary = table(
       row(lang === "fr" ? "Arrivée" : "Check-in", formatDate(checkIn, lang)) +
         row(lang === "fr" ? "Départ" : "Check-out", formatDate(checkOut, lang)) +
         row(lang === "fr" ? "Durée" : "Duration", `${nights} ${lang === "fr" ? "nuits" : "nights"}`) +
         row("Total", money(signed.totalPrice)) +
-        row(lang === "fr" ? "Acompte" : "Deposit", money(signed.depositAmount)) +
-        row(lang === "fr" ? "Solde (30 j. avant l'arrivée)" : "Balance (30 days before arrival)", money(signed.totalPrice - signed.depositAmount))
+        (received !== 0
+          ? row(lang === "fr" ? "Déjà reçu" : "Already received", money(received)) +
+            row(lang === "fr" ? "Solde restant" : "Remaining balance", money(Math.max(0, signed.totalPrice - received)))
+          : row(lang === "fr" ? "Acompte" : "Deposit", money(signed.depositAmount)) +
+            row(lang === "fr" ? "Solde (30 j. avant l'arrivée)" : "Balance (30 days before arrival)", money(signed.totalPrice - signed.depositAmount)))
     );
     const en = `<p>Dear <strong>${signed.clientName}</strong>,</p>
 <p>Thank you for signing your rental agreement for Villa ONLY VIEW. A copy of the signed contract is attached for your records.</p>

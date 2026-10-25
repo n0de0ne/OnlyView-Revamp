@@ -1,12 +1,20 @@
 /**
- * Server start hook — schedules the hourly reminder run (Réglages → Rappels
- * automatiques). The run goes through /api/cron/reminders on this same
+ * Server start hook — loads the analytics geolocation database and schedules
+ * the hourly reminder run (Réglages → Rappels automatiques). The run goes through /api/cron/reminders on this same
  * server, authorised by a token that only lives in this process; set
  * REMINDERS_SCHEDULER=off when an external cron calls that route instead.
  */
 export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
   if (process.env.NEXT_PHASE === "phase-production-build") return;
+
+  // visitor geolocation database (Analytique): fetched/loaded in the background.
+  // The inline NEXT_RUNTIME check (not just the early return above) is what
+  // lets the edge compile drop this Node-only import.
+  if (process.env.NEXT_RUNTIME === "nodejs") {
+    import("./lib/analytics/geo").then((m) => m.warmGeo()).catch(() => {});
+  }
+
   if (process.env.REMINDERS_SCHEDULER === "off") return;
 
   // Web Crypto: this file is also compiled for the edge runtime, where node:crypto doesn't exist

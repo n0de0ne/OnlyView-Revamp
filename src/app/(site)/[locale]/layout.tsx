@@ -10,6 +10,7 @@ import { SiteFooter } from "@/components/site/SiteFooter";
 import { MobileTabBar } from "@/components/site/MobileTabBar";
 import { SmoothScroll } from "@/components/motion/SmoothScroll";
 import { RevealObserver } from "@/components/motion/RevealObserver";
+import { Analytics } from "@/components/site/Analytics";
 
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));
@@ -83,6 +84,7 @@ export default async function SiteLayout({
         <main>{children}</main>
         <SiteFooter locale={locale as Locale} />
         <MobileTabBar locale={locale as Locale} />
+        <Analytics />
       </body>
     </html>
   );
