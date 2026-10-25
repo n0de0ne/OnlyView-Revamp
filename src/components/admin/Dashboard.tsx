@@ -64,6 +64,7 @@ interface Stats {
     priceTTC: number;
     depositReceived: boolean;
     balanceReceived: boolean;
+    agencyId: number | null;
   }>;
   pendingRequests: number;
   pendingContracts: number;
@@ -286,7 +287,11 @@ export function Dashboard() {
                     {fmtUSD(r.priceTTC)}
                   </span>
                   {/* every stay here is confirmed: the pill says where its payment stands */}
-                  <PaymentBadge depositReceived={r.depositReceived} balanceReceived={r.balanceReceived} />
+                  <PaymentBadge
+                    agency={r.agencyId != null}
+                    depositReceived={r.depositReceived}
+                    balanceReceived={r.balanceReceived}
+                  />
                 </div>
               </Link>
             ))}
@@ -297,10 +302,21 @@ export function Dashboard() {
   );
 }
 
-function PaymentBadge({ depositReceived, balanceReceived }: { depositReceived: boolean; balanceReceived: boolean }) {
+/** An agency pays no deposit: it settles its net once the stay is done. */
+function PaymentBadge({
+  agency,
+  depositReceived,
+  balanceReceived,
+}: {
+  agency: boolean;
+  depositReceived: boolean;
+  balanceReceived: boolean;
+}) {
   const [label, cls] = balanceReceived
     ? ["Soldé", "bg-emerald-100 text-emerald-700"]
-    : depositReceived
+    : agency
+      ? ["Agence · réglé après le séjour", "bg-slate-100 text-slate-600"]
+      : depositReceived
       ? ["Acompte reçu", "bg-sky-100 text-sky-700"]
       : ["Acompte à recevoir", "bg-amber-100 text-amber-700"];
   return <span className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-semibold ${cls}`}>{label}</span>;

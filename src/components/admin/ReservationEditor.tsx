@@ -318,11 +318,17 @@ export function ReservationEditor({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.startDate, form.endDate, form.bedrooms]);
 
-  // auto deposit 30% (direct bookings) until manually edited
+  // auto deposit 30% (direct bookings) until manually edited; an agency pays
+  // no deposit, only its net once the stay is done
+  const isAgency = form.agencyId != null;
+  const agencyTerms = isAgency
+    ? { feePercent: form.agencyFeePercent, checkOut: form.endDate || loaded?.endDate || form.startDate }
+    : null;
   useEffect(() => {
     if (!quote || depositTouched.current) return;
-    set("depositAmount", quote.depositAmount ? String(quote.depositAmount) : "");
-  }, [quote?.depositAmount]);
+    set("depositAmount", !isAgency && quote.depositAmount ? String(quote.depositAmount) : "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quote?.depositAmount, isAgency]);
 
   /* ── profitability (port of the PHP analysis panel) ── */
   const profitability = useMemo(() => {
@@ -642,6 +648,7 @@ export function ReservationEditor({
           payments: loaded.payments,
           depositReceived: form.depositReceived,
           depositAmount: parseFloat(form.depositAmount) || 0,
+          agency: agencyTerms,
         }).remaining + Math.max(0, extrasTotal - extrasPaid)
       : 0;
 
@@ -1396,6 +1403,13 @@ export function ReservationEditor({
         </label>
 
         <div className="mt-4 grid items-end gap-4 sm:grid-cols-3">
+          {isAgency ? (
+            <p className="text-xs text-slate-500 sm:col-span-2">
+              Réservation agence : pas d&apos;acompte. L&apos;agence règle le loyer moins sa commission une
+              fois le séjour terminé.
+            </p>
+          ) : (
+          <>
           <div className="afield">
             <label>Acompte attendu ($)</label>
             <input
@@ -1421,6 +1435,8 @@ export function ReservationEditor({
             />
             Acompte reçu
           </label>
+          </>
+          )}
           <div className="pb-1 text-sm">
             <div className="text-xs text-slate-400">Balance restante</div>
             <div className="font-display text-2xl text-navy">
@@ -1441,6 +1457,7 @@ export function ReservationEditor({
             payments: loaded.payments,
             depositReceived: form.depositReceived,
             depositAmount: parseFloat(form.depositAmount) || 0,
+            agency: agencyTerms,
           });
           const lastMove = loaded.dateChanges.find((d) => d.status === "approved");
           const line = (label: string, value: React.ReactNode, cls = "") => (
@@ -1462,7 +1479,14 @@ export function ReservationEditor({
                     "text-slate-500"
                   )}
                 {line("Loyer TTC", fmtUSD(total))}
-                {line("Acompte requis (30 %)", fmtUSD(sum.depositRequired))}
+                {sum.agency ? (
+                  <>
+                    {line(`Commission agence (${form.agencyFeePercent} %)`, `-${fmtUSD(sum.commission)}`, "text-slate-500")}
+                    {line("Dû par l'agence (pas d'acompte)", fmtUSD(sum.due))}
+                  </>
+                ) : (
+                  line("Acompte requis (30 %)", fmtUSD(sum.depositRequired))
+                )}
                 {line("Déjà reçu", fmtUSD(sum.received), "text-emerald-700")}
                 {sum.depositShortfall > 0 &&
                   line(
@@ -1473,7 +1497,9 @@ export function ReservationEditor({
                 {sum.overpaid > 0
                   ? line("Trop-perçu (crédit client)", fmtUSD(sum.overpaid), "bg-sky-50 text-sky-800")
                   : line(
-                      `Solde restant — dû le ${fmtDate(sum.balanceDueDate)}`,
+                      sum.agency
+                        ? `Reste à recevoir de l'agence — après le séjour (${fmtDate(sum.balanceDueDate)})`
+                        : `Solde restant — dû le ${fmtDate(sum.balanceDueDate)}`,
                       fmtUSD(sum.remaining),
                       sum.remaining > 0 ? "text-navy" : "text-emerald-700"
                     )}
