@@ -305,6 +305,7 @@ export const fr: Dict = {
     openWaze: "Waze",
     close: "Fermer",
     website: "Site web",
+    bookOnline: "Réserver en ligne",
     call: "Appeler",
     locate: "Afficher ma position",
     locateFar: "Vous n'êtes pas encore sur l'île. Votre position s'affichera une fois sur place.",

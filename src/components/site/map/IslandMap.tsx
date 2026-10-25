@@ -5,7 +5,8 @@
  * frame and the places live in a panel over it — a bottom sheet with three
  * resting heights on a phone (drag it, flick it, or tap its grabber), a
  * floating card on the left on a desktop. Tapping a pin or a row turns the
- * panel into that place's card: drive time, itinerary, Maps, call, website.
+ * panel into that place's card: drive time, itinerary, Maps, call, website,
+ * online booking.
  *
  * The list, the filters and the search render on the server (that text is
  * what crawlers and answer engines read); only the Leaflet canvas waits for
@@ -44,6 +45,15 @@ const SIDE_W = 384;
 const SIDE_GAP = 16;
 /** iOS's sheet curve */
 const SHEET_EASE = "cubic-bezier(0.32, 0.72, 0, 1)";
+
+/** what a link row shows for "https://www.sellasaintbarth.com/en/": sellasaintbarth.com */
+function hostOf(url: string) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return url;
+  }
+}
 
 export function IslandMap({
   villa,
@@ -503,6 +513,23 @@ export function IslandMap({
         {place.website && <ActionTile href={place.website} icon={<IconGlobe />} label={t.website} />}
       </div>
 
+      {/* the place's own booking page: a row of its own, the tiles are full */}
+      {place.bookingUrl && (
+        <a
+          href={place.bookingUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="tap mt-2 flex h-11 items-center justify-center gap-2 rounded-xl bg-gold text-[0.82rem] font-semibold text-white hover:bg-gold-dark"
+        >
+          <span aria-hidden className="shrink-0">
+            <IconCalendar />
+          </span>
+          {t.bookOnline}
+          <span className="truncate font-normal text-white/80">· {hostOf(place.bookingUrl)}</span>
+          <span aria-hidden>↗</span>
+        </a>
+      )}
+
       {routeHere && (
         <div className="mt-3 rounded-2xl bg-navy px-4 py-3.5 text-white" role="status" aria-live="polite">
           {routeHere.status !== "loading" || routeHere.fromMe ? (
@@ -723,6 +750,26 @@ export function IslandMap({
                       </dd>
                     </div>
                   )}
+                  {place.website && (
+                    <div className="flex justify-between gap-4 py-3">
+                      <dt className="text-ink/50">{t.website}</dt>
+                      <dd className="min-w-0 truncate text-right">
+                        <a href={place.website} target="_blank" rel="noopener noreferrer" className="text-navy">
+                          {hostOf(place.website)} ↗
+                        </a>
+                      </dd>
+                    </div>
+                  )}
+                  {place.bookingUrl && (
+                    <div className="flex justify-between gap-4 py-3">
+                      <dt className="text-ink/50">{t.bookOnline}</dt>
+                      <dd className="min-w-0 truncate text-right">
+                        <a href={place.bookingUrl} target="_blank" rel="noopener noreferrer" className="text-navy">
+                          {hostOf(place.bookingUrl)} ↗
+                        </a>
+                      </dd>
+                    </div>
+                  )}
                 </dl>
               </div>
             ) : (
@@ -888,6 +935,13 @@ const IconGlobe = () => (
   <svg {...svg}>
     <circle cx="12" cy="12" r="9" />
     <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
+  </svg>
+);
+/** a calendar with a tick: the place's own booking page */
+const IconCalendar = () => (
+  <svg {...svg} width={18} height={18}>
+    <rect x="3" y="5" width="18" height="16" rx="2.5" />
+    <path d="M3 10h18M8 3v4M16 3v4M9.5 15.5l1.8 1.8 3.7-3.8" />
   </svg>
 );
 const IconLocate = ({ filled }: { filled?: boolean }) => (
