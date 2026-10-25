@@ -283,10 +283,24 @@ async function seedBase() {
 const MAP_BATCHES = [
   {
     key: "map_batch_2026_10_restaurants",
-    add: ["eddys-ghetto", "le-diamant", "le-jardin-sbh", "le-portugal", "les-bananiers", "la-guerite-gustavia"],
-    // the restaurant at Hotel Le Christopher reopened as Solis — rename the
-    // pin unless the owner already changed it
-    rename: [{ slug: "christo", from: "La Plage du Christo - Hotel Christopher" }],
+    add: [
+      "eddys-ghetto", "le-diamant", "le-jardin-sbh", "le-portugal", "les-bananiers", "la-guerite-gustavia",
+      "burger-palace", "caribbean-to-go", "creage-to-go", "heiko", "koi-sushi-bar", "lenvol",
+      "la-cantine-anse-caraibes", "la-creperie", "la-pizzetta", "la-saintoise", "le-bouchon",
+      "papas-pizza", "so-cuisine", "st-barth-burger",
+    ],
+    // copy these fields from map-places.json onto an existing pin, unless the
+    // owner already changed it (it no longer matches `when`)
+    update: [
+      // the restaurant at Hotel Le Christopher reopened as Solis
+      {
+        slug: "christo",
+        when: { name: "La Plage du Christo - Hotel Christopher" },
+        fields: ["name", "kind", "descriptionEn", "descriptionFr", "website", "phone"],
+      },
+      // a sit-down restaurant, not a snack
+      { slug: "fish-corner", when: { kind: "snack" }, fields: ["kind"] },
+    ],
   },
 ];
 
@@ -303,14 +317,13 @@ async function applyMapBatches() {
       await prisma.mapPlace.create({ data: place });
       added++;
     }
-    for (const { slug, from } of batch.rename ?? []) {
+    for (const { slug, when, fields } of batch.update ?? []) {
       const place = bySlug.get(slug);
       const row = await prisma.mapPlace.findUnique({ where: { slug } });
-      if (!place || !row || row.name !== from) continue;
-      const { name, kind, descriptionEn, descriptionFr, website, phone } = place;
+      if (!place || !row || Object.entries(when).some(([k, v]) => row[k] !== v)) continue;
       await prisma.mapPlace.update({
         where: { slug },
-        data: { name, kind, descriptionEn, descriptionFr, website, phone },
+        data: Object.fromEntries(fields.map((f) => [f, place[f]])),
       });
     }
     await prisma.setting.create({ data: { key: batch.key, value: new Date().toISOString() } });
