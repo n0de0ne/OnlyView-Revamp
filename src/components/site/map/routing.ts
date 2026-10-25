@@ -1,5 +1,5 @@
 /**
- * Itineraries from the villa. Driving legs come from the public OSRM
+ * Itineraries from the guest's position or the villa. Driving legs come from the public OSRM
  * router (the same service the legacy map used), forced through the
  * place's via-points; when a place is reached on foot from a car park the
  * last via-point ends the drive and a straight walking leg finishes it.
@@ -16,7 +16,7 @@ export interface DrivingRoute {
 }
 
 export interface Itinerary {
-  /** villa → via-points → where the car stops */
+  /** origin → via-points → where the car stops */
   drive: LatLng[];
   /** car park → place, on foot (only for walk-in places) */
   walk: [LatLng, LatLng] | null;
@@ -27,7 +27,7 @@ export interface Itinerary {
 }
 
 export function buildItinerary(
-  villa: LatLng,
+  origin: LatLng,
   place: { lat: number; lng: number; waypoints: string | null; walkFromLastWaypoint: boolean }
 ): Itinerary {
   const via = parseWaypoints(place.waypoints);
@@ -35,13 +35,13 @@ export function buildItinerary(
   if (place.walkFromLastWaypoint && via.length) {
     const park = via[via.length - 1];
     return {
-      drive: [villa, ...via],
+      drive: [origin, ...via],
       walk: [park, dest],
       via: via.slice(0, -1),
       navTarget: park,
     };
   }
-  return { drive: [villa, ...via, dest], walk: null, via, navTarget: dest };
+  return { drive: [origin, ...via, dest], walk: null, via, navTarget: dest };
 }
 
 export async function fetchDrivingRoute(
@@ -90,13 +90,14 @@ export function haversineM(a: LatLng, b: LatLng): number {
 /** ~80 m per minute, never less than a minute */
 export const walkMinutes = (m: number) => Math.max(1, Math.round(m / 80));
 
-export function googleMapsDirectionsUrl(origin: LatLng, dest: LatLng, via: LatLng[] = []) {
+/** `origin: null` lets Google Maps start from the device's own position */
+export function googleMapsDirectionsUrl(origin: LatLng | null, dest: LatLng, via: LatLng[] = []) {
   const p = new URLSearchParams({
     api: "1",
-    origin: `${origin[0]},${origin[1]}`,
     destination: `${dest[0]},${dest[1]}`,
     travelmode: "driving",
   });
+  if (origin) p.set("origin", `${origin[0]},${origin[1]}`);
   if (via.length) p.set("waypoints", via.map(([a, b]) => `${a},${b}`).join("|"));
   return `https://www.google.com/maps/dir/?${p.toString()}`;
 }

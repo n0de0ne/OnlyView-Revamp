@@ -162,6 +162,8 @@ export const en = {
     min: "min",
     route: "Itinerary",
     routeTo: "Itinerary from the villa",
+    routeFromYou: "From your position",
+    routeFromVilla: "From the villa",
     routing: "Computing the itinerary…",
     distance: "Distance",
     duration: "Drive",
