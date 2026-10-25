@@ -93,6 +93,17 @@ const GROUPS: Array<{
     ],
   },
   {
+    title: "Statistiques de visite (Analytique)",
+    fields: [
+      ["analytics_enabled", "Mesure d'audience", "1 = active (défaut) · 0 = plus rien n'est enregistré"],
+      [
+        "analytics_cookie",
+        "Reconnaître les visiteurs qui reviennent",
+        "1 = cookie interne de 13 mois, sans bandeau (exemption CNIL de mesure d'audience, défaut) · 0 = aucun cookie : un visiteur n'est reconnu que le jour même",
+      ],
+    ],
+  },
+  {
     title: "Analyse de rentabilité",
     fields: [
       ["cost_cleaning_per_day_eur", "Ménage (€/jour)"],

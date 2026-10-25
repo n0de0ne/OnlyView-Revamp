@@ -41,6 +41,8 @@ const ALLOWED_KEYS = [
   "reminder_review",
   "reminder_review_days",
   "loyalty_enabled",
+  "analytics_enabled",
+  "analytics_cookie",
   "tour_3d_url",
   "loyalty_earn_per_dollar",
   "loyalty_point_value",

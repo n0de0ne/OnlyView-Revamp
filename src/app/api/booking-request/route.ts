@@ -6,6 +6,7 @@ import { todayISO } from "@/lib/dates";
 import { siteUrl } from "@/lib/seo";
 import { ownerNotifyEmail } from "@/lib/contact";
 import { maxGuestsFor } from "@/lib/site-facts";
+import { analyticsConfig, attributeBookingRequest, clientIp, dailyVisitorId, VISITOR_COOKIE } from "@/lib/analytics/collect";
 
 export const dynamic = "force-dynamic";
 
@@ -72,6 +73,17 @@ export async function POST(req: NextRequest) {
       quoteJson: d.quote != null ? JSON.stringify(d.quote) : null,
     },
   });
+
+  // which visit (and so which source) the request came from — Admin → Analytique
+  try {
+    const { useCookie } = await analyticsConfig();
+    const visitorId = useCookie
+      ? req.cookies.get(VISITOR_COOKIE)?.value
+      : await dailyVisitorId(clientIp(req.headers), req.headers.get("user-agent") ?? "");
+    await attributeBookingRequest(visitorId, request.id);
+  } catch (e) {
+    console.error("[analytics] booking attribution failed:", e instanceof Error ? e.message : e);
+  }
 
   // notify admin
   const adminEmail = await ownerNotifyEmail();
