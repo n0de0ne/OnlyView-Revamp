@@ -439,9 +439,10 @@ html.lenis body {
  * Scoped to .island-map so the admin's editor map keeps its plain controls.
  */
 .island-map .leaflet-container {
-  background: #aad3df;
+  background: #f4f1ea;
 }
-.island-map .leaflet-tile-pane {
+/* the no-WebGL fallback: OSM raster, softened toward the vector style */
+.island-map .map-osm-fallback {
   filter: saturate(0.62) brightness(1.06) contrast(0.92);
 }
 .island-map .leaflet-control-attribution {

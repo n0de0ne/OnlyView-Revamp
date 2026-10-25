@@ -16,6 +16,7 @@ import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet.markercluster/dist/MarkerCluster.css";
+import "maplibre-gl/dist/maplibre-gl.css";
 import {
   MAP_CATEGORIES,
   ROUTE_COLOR,
@@ -99,6 +100,31 @@ const meIcon = L.divIcon({
   iconAnchor: [11, 11],
 });
 
+function hasWebGL() {
+  try {
+    const c = document.createElement("canvas");
+    return !!(c.getContext("webgl2") || c.getContext("webgl"));
+  } catch {
+    return false;
+  }
+}
+
+/** the vector base map; false when this browser can't draw it */
+async function addVectorBase(map: L.Map): Promise<boolean> {
+  if (!hasWebGL()) return false;
+  try {
+    const [{ islandStyle, MAP_ATTRIBUTION }] = await Promise.all([
+      import("./map-style"),
+      import("@maplibre/maplibre-gl-leaflet"),
+    ]);
+    L.maplibreGL({ style: islandStyle, attributionControl: false, maxZoom: 19 }).addTo(map);
+    map.attributionControl?.addAttribution(MAP_ATTRIBUTION);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 const esc = (s: string) =>
   s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
@@ -148,6 +174,8 @@ export function LeafletMap({
     waiting: Array<(v: LatLng | null) => void>;
   } | null>(null);
   const shownRef = useRef<number | null>(null);
+  const readyRef = useRef(false);
+  const pendingRef = useRef<MapCommand | null>(null);
   const cb = useRef({ onRoute, onSelect, onLocate });
   cb.current = { onRoute, onSelect, onLocate };
   const labelsRef = useRef(labels);
@@ -194,6 +222,8 @@ export function LeafletMap({
 
       const map = L.map(el, {
         zoomControl: false,
+        minZoom: 11,
+        maxZoom: 19,
         attributionControl: false,
         zoomSnap: 0.25,
         wheelPxPerZoomLevel: 90,
@@ -202,13 +232,17 @@ export function LeafletMap({
       mapRef.current = map;
       map.fitBounds(ISLAND_BOUNDS, { ...pad(8), animate: false });
       L.control.attribution({ position: "bottomright", prefix: false }).addTo(map);
-      // OpenStreetMap, softened in CSS (.island-map .leaflet-tile-pane) to a
-      // quiet, pastel cartography close to the system maps: the pins carry
-      // the colour, not the roads
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        maxZoom: 19,
-      }).addTo(map);
+      // the base map: our own vector cartography (map-style.ts) drawn by
+      // MapLibre under Leaflet's pins; plain OSM tiles where WebGL is missing
+      if (await addVectorBase(map)) {
+        if (cancelled) return;
+      } else {
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+          maxZoom: 19,
+          className: "map-osm-fallback",
+        }).addTo(map);
+      }
 
       const villaMarker = L.marker(villa, {
         icon: pinIcon(VILLA_PIN_COLOR, "🏠", { size: 38 }),
@@ -259,6 +293,10 @@ export function LeafletMap({
       ro = new ResizeObserver(() => map.invalidateSize({ pan: false }));
       ro.observe(el);
       applyVisibility(visibleRef.current);
+      readyRef.current = true;
+      const pending = pendingRef.current;
+      pendingRef.current = null;
+      if (pending) runCommand(pending);
     })();
 
     return () => {
@@ -269,6 +307,7 @@ export function LeafletMap({
       meRef.current = null;
       mapRef.current?.remove();
       mapRef.current = null;
+      readyRef.current = false;
       groupsRef.current = new Map();
       markersRef.current = new Map();
     };
@@ -452,9 +491,20 @@ export function LeafletMap({
     }
   }
 
-  /* ── commands from the page ── */
+  /* ── commands from the page ──
+   * One that arrives while the map is still loading (a #slug link) waits
+   * for it, rather than being lost. */
   useEffect(() => {
     if (!command) return;
+    if (!readyRef.current) {
+      pendingRef.current = command;
+      return;
+    }
+    runCommand(command);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [command]);
+
+  function runCommand(command: MapCommand) {
     const map = mapRef.current;
     if (!map) return;
     switch (command.type) {
@@ -490,8 +540,7 @@ export function LeafletMap({
     } else {
       flyToVisible(marker.getLatLng(), target);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [command]);
+  }
 
   return <div ref={elRef} className="h-full w-full" role="application" aria-label={labels.villaSub} />;
 }
