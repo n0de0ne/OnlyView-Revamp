@@ -35,6 +35,7 @@ export const GET = adminRoute("viewer", async (req) => {
           priceTTC: true,
           balanceReceived: true,
           depositReceived: true,
+          agencyId: true,
         },
       }),
       prisma.bookingRequest.count({ where: { status: "new" } }),

@@ -1,3 +1,4 @@
+import { rentDue } from "./payment-summary";
 import "server-only";
 import type { DateChange, Reservation, ReservationPeriod } from "@prisma/client";
 import { prisma } from "./db";
@@ -189,7 +190,9 @@ export async function decideDateChange(
       taxAmount: quote.taxAmount,
       priceTTC: quote.totalTTC,
       depositAmount,
-      balanceReceived: paid.length ? quote.totalTTC > 0 && paidTotal >= quote.totalTTC - 0.01 : r.balanceReceived,
+      balanceReceived: paid.length
+        ? quote.totalTTC > 0 && paidTotal >= rentDue(quote.totalTTC, r.agencyId ? r.agencyFeePercent : 0) - 0.01
+        : r.balanceReceived,
     },
   });
   await prisma.dateChange.update({

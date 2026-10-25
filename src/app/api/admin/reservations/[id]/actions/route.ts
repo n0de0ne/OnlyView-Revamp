@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { adminRoute, jsonError, jsonOk, jsonInvalid } from "@/lib/admin-api";
+import { rentDue } from "@/lib/payment-summary";
 import { audit } from "@/lib/audit";
 import { issueContract } from "@/lib/contracts";
 import { newPortalToken } from "@/lib/guest-auth";
@@ -173,7 +174,9 @@ export const POST = adminRoute<Ctx>("manager", async (req, { params }, user) => 
         where: { id },
         data: {
           depositReceived: paid > 0,
-          balanceReceived: reservation.priceTTC > 0 && paid >= reservation.priceTTC - 0.01,
+          balanceReceived:
+            reservation.priceTTC > 0 &&
+            paid >= rentDue(reservation.priceTTC, reservation.agencyId ? reservation.agencyFeePercent : 0) - 0.01,
         },
       });
       await afterPayment(id);
