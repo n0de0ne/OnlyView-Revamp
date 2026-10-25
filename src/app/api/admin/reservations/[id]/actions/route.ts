@@ -6,6 +6,7 @@ import { audit } from "@/lib/audit";
 import { issueContract } from "@/lib/contracts";
 import { newPortalToken } from "@/lib/guest-auth";
 import { sendMail } from "@/lib/mailer";
+import { emailButton, emailTexts, renderEmail } from "@/lib/email-templates";
 import { SITE_URL } from "@/lib/seo";
 import { earnForReservation } from "@/lib/loyalty";
 import { sendBookingConfirmation } from "@/lib/booking-emails";
@@ -125,24 +126,18 @@ export const POST = adminRoute<Ctx>("manager", async (req, { params }, user) => 
         const name =
           reservation.clientName ??
           `${reservation.client?.firstname ?? ""} ${reservation.client?.lastname ?? ""}`.trim();
+        // wording: Admin → Textes du site → Emails
+        const L = fr ? "fr" : "en";
+        const t = await emailTexts("portalAccess", L);
+        const mail = await renderEmail("portalAccess", L, { name }, { button: emailButton(portalUrl, t.button, "#1B4965") });
         const res = await sendMail({
           to,
           toName: name,
           templateSlug: "guest_portal_access",
           reservationId: id,
           clientId: reservation.clientId ?? undefined,
-          subject: fr
-            ? "Votre Espace Client est prêt — Villa ONLY VIEW"
-            : "Your Guest Portal is ready — Villa ONLY VIEW",
-          html: fr
-            ? `<p>Bonjour <strong>${name}</strong>,</p>
-<p>Votre espace client Villa ONLY VIEW est prêt : détails de votre séjour, contrat, points de fidélité.</p>
-<p style="text-align:center;margin:24px 0;"><a href="${portalUrl}" style="background:#1B4965;color:#fff;padding:13px 26px;text-decoration:none;letter-spacing:0.1em;">ACCÉDER À MON ESPACE</a></p>
-<p style="font-size:12px;color:#8a8a8a;">Ce lien est personnel — merci de ne pas le partager.</p>`
-            : `<p>Hello <strong>${name}</strong>,</p>
-<p>Your Villa ONLY VIEW guest portal is ready: stay details, contract, loyalty points.</p>
-<p style="text-align:center;margin:24px 0;"><a href="${portalUrl}" style="background:#1B4965;color:#fff;padding:13px 26px;text-decoration:none;letter-spacing:0.1em;">OPEN MY PORTAL</a></p>
-<p style="font-size:12px;color:#8a8a8a;">This link is personal — please don't share it.</p>`,
+          subject: mail.subject,
+          html: mail.html,
         });
         emailSent = res.sent;
         await prisma.reservation.update({ where: { id }, data: { portalEmailSent: true } });

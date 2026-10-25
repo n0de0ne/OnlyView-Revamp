@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { createMagicLink } from "@/lib/guest-auth";
 import { sendMail } from "@/lib/mailer";
+import { emailButton, emailTexts, renderEmail } from "@/lib/email-templates";
 import { SITE_URL } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -30,23 +31,21 @@ export async function POST(req: NextRequest) {
   const token = await createMagicLink(client.id);
   const url = `${SITE_URL}/api/account/login?token=${token}&locale=${locale}`;
 
+  // wording: Admin → Textes du site → Emails
+  const t = await emailTexts("magicLink", fr ? "fr" : "en");
+  const { subject, html } = await renderEmail(
+    "magicLink",
+    fr ? "fr" : "en",
+    { name: client.firstname },
+    { button: emailButton(url, t.button) }
+  );
   const { sent } = await sendMail({
     to: client.email!,
     toName: `${client.firstname} ${client.lastname}`,
     templateSlug: "guest_magic_link",
     clientId: client.id,
-    subject: fr
-      ? "Votre lien de connexion — Villa ONLY VIEW"
-      : "Your sign-in link — Villa ONLY VIEW",
-    html: fr
-      ? `<p>Bonjour <strong>${client.firstname}</strong>,</p>
-<p>Voici votre lien de connexion à votre espace client Villa ONLY VIEW :</p>
-<p style="text-align:center;margin:24px 0;"><a href="${url}" style="background:#C9A962;color:#fff;padding:13px 26px;text-decoration:none;letter-spacing:0.1em;">ACCÉDER À MON ESPACE</a></p>
-<p style="font-size:12px;color:#8a8a8a;">Ce lien est valable 7 jours et ne peut être utilisé qu'une fois.</p>`
-      : `<p>Hello <strong>${client.firstname}</strong>,</p>
-<p>Here is your sign-in link for your Villa ONLY VIEW guest portal:</p>
-<p style="text-align:center;margin:24px 0;"><a href="${url}" style="background:#C9A962;color:#fff;padding:13px 26px;text-decoration:none;letter-spacing:0.1em;">OPEN MY PORTAL</a></p>
-<p style="font-size:12px;color:#8a8a8a;">This link is valid for 7 days and can only be used once.</p>`,
+    subject,
+    html,
   });
 
   // Development convenience: when SMTP is not configured, surface the link

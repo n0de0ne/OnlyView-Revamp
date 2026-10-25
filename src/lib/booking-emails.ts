@@ -1,6 +1,7 @@
 import "server-only";
 import { prisma } from "./db";
 import { sendMail } from "./mailer";
+import { emailTable, renderEmail } from "./email-templates";
 import { formatDate, toISODate, nightsBetween } from "./dates";
 
 const money = (n: number) => "$" + Math.round(n).toLocaleString("en-US") + " USD";
@@ -34,38 +35,17 @@ export async function sendBookingConfirmation(
   const checkOut = toISODate(r.endDate);
   const nights = nightsBetween(checkIn, checkOut);
 
-  const row = (k: string, v: string) =>
-    `<tr><td style="padding:6px 10px;color:#64748b;">${k}</td><td style="padding:6px 10px;font-weight:600;">${v}</td></tr>`;
-  const details =
-    lang === "fr"
-      ? row("Arrivée", formatDate(checkIn, "fr")) +
-        row("Départ", formatDate(checkOut, "fr")) +
-        row("Durée", `${nights} nuits`) +
-        row("Chambres", String(r.bedrooms)) +
-        row("Personnes", String(r.guests)) +
-        (r.priceTTC > 0 ? row("Montant total", money(r.priceTTC)) : "")
-      : row("Arrival", formatDate(checkIn, "en")) +
-        row("Departure", formatDate(checkOut, "en")) +
-        row("Duration", `${nights} nights`) +
-        row("Bedrooms", String(r.bedrooms)) +
-        row("Guests", String(r.guests)) +
-        (r.priceTTC > 0 ? row("Total amount", money(r.priceTTC)) : "");
-  const table = `<table style="width:100%;border-collapse:collapse;background:#f8fafc;border-radius:8px;font-size:14px;margin:16px 0;">${details}</table>`;
-
-  const html =
-    lang === "fr"
-      ? `<p>Cher(e) <strong>${name}</strong>,</p>
-<p>Bonne nouvelle ! Votre réservation à la Villa ONLY VIEW est confirmée.</p>
-${table}
-<p>Nous avons hâte de vous accueillir dans notre belle villa à Saint-Barthélemy.</p>
-<p>Si vous avez des questions, n'hésitez pas à nous contacter.</p>
-<p>Cordialement,<br>L'équipe Villa ONLY VIEW</p>`
-      : `<p>Dear <strong>${name}</strong>,</p>
-<p>Great news! Your reservation at Villa ONLY VIEW has been confirmed.</p>
-${table}
-<p>We look forward to welcoming you to our beautiful villa in Saint-Barthélemy.</p>
-<p>If you have any questions, please don't hesitate to contact us.</p>
-<p>Warm regards,<br>The Villa ONLY VIEW Team</p>`;
+  const L = lang === "fr";
+  const details = emailTable([
+    [L ? "Arrivée" : "Arrival", formatDate(checkIn, lang)],
+    [L ? "Départ" : "Departure", formatDate(checkOut, lang)],
+    [L ? "Durée" : "Duration", `${nights} ${L ? "nuits" : "nights"}`],
+    [L ? "Chambres" : "Bedrooms", String(r.bedrooms)],
+    [L ? "Personnes" : "Guests", String(r.guests)],
+    ...(r.priceTTC > 0 ? [[L ? "Montant total" : "Total amount", money(r.priceTTC)] as [string, string]] : []),
+  ]);
+  // wording: Admin → Textes du site → Emails
+  const { subject, html } = await renderEmail("bookingConfirmed", lang, { name }, { details });
 
   const res = await sendMail({
     to,
@@ -73,10 +53,7 @@ ${table}
     templateSlug: "booking_confirmed",
     reservationId: r.id,
     clientId: r.clientId ?? undefined,
-    subject:
-      lang === "fr"
-        ? "Votre réservation à la Villa ONLY VIEW est confirmée !"
-        : "Your booking at Villa ONLY VIEW is confirmed!",
+    subject,
     html,
   });
 

@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { sendMail } from "@/lib/mailer";
-import { todayISO } from "@/lib/dates";
+import { renderEmail } from "@/lib/email-templates";
+import { formatDate, todayISO } from "@/lib/dates";
 import { siteUrl } from "@/lib/seo";
 import { ownerNotifyEmail } from "@/lib/contact";
 import { maxGuestsFor } from "@/lib/site-facts";
@@ -98,24 +99,21 @@ ${d.message ? `<p style="background:#f6f4ef;padding:12px;border-radius:8px;">${d
 <p><a href="${siteUrl("/admin/requests")}">Open in admin</a></p>`,
   });
 
-  // acknowledge to the guest
-  const fr = d.locale === "fr";
+  // acknowledge to the guest (wording: Admin → Textes du site → Emails)
+  const locale = d.locale === "fr" ? "fr" : "en";
+  const ack = await renderEmail("bookingRequestAck", locale, {
+    name: d.name,
+    checkIn: formatDate(d.startDate, locale),
+    checkOut: formatDate(d.endDate, locale),
+    bedrooms: d.bedrooms,
+    guests: d.guests,
+  });
   await sendMail({
     to: d.email,
     toName: d.name,
     templateSlug: "booking_request_ack",
-    subject: fr
-      ? "Votre demande de réservation — Villa ONLY VIEW"
-      : "Your booking request — Villa ONLY VIEW",
-    html: fr
-      ? `<p>Bonjour <strong>${d.name}</strong>,</p>
-<p>Nous avons bien reçu votre demande pour un séjour du <strong>${d.startDate}</strong> au <strong>${d.endDate}</strong> (${d.bedrooms} chambres, ${d.guests} personnes).</p>
-<p>Annie revient vers vous personnellement sous 24&nbsp;heures pour confirmer la disponibilité et la suite.</p>
-<p>À très vite,<br>Villa ONLY VIEW</p>`
-      : `<p>Hello <strong>${d.name}</strong>,</p>
-<p>We received your request for a stay from <strong>${d.startDate}</strong> to <strong>${d.endDate}</strong> (${d.bedrooms} bedrooms, ${d.guests} guests).</p>
-<p>Annie will come back to you personally within 24&nbsp;hours to confirm availability and next steps.</p>
-<p>Talk soon,<br>Villa ONLY VIEW</p>`,
+    subject: ack.subject,
+    html: ack.html,
   });
 
   return NextResponse.json({ success: true, id: request.id });

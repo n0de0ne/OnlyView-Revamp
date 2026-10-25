@@ -39,7 +39,12 @@ export const CONTENT_GROUPS: Array<{ id: string; label: string }> = [
   { id: "guide", label: "Guide" },
   { id: "contact", label: "Contact & avis" },
   { id: "seo", label: "Google (titres & descriptions)" },
+  { id: "emails", label: "Emails aux clients" },
+  { id: "contract", label: "Contrat" },
 ];
+
+const EMAIL_HELP =
+  "Entre accolades : rempli automatiquement pour chaque client. Un paragraphe qui ne contient que {button}, {details}, {bank}… est remplacé par le bouton ou le tableau correspondant.";
 
 export const CONTENT_BLOCKS: ContentBlockDef[] = [
   // home
@@ -102,6 +107,32 @@ export const CONTENT_BLOCKS: ContentBlockDef[] = [
   { key: "reviews", group: "contact", label: "Page avis", pick: ["title", "intro"] },
   // SEO
   { key: "meta", group: "seo", label: "Titres et descriptions des pages" },
+  // guest emails
+  ...(
+    [
+      ["bookingRequestAck", "Demande de réservation reçue", "{name} {checkIn} {checkOut} {bedrooms} {guests}"],
+      ["bookingConfirmed", "Réservation confirmée", "{name} · {details} = tableau du séjour"],
+      ["magicLink", "Lien de connexion à l'espace client", "{name} · {button}"],
+      ["portalAccess", "Accès à l'espace client (envoyé depuis la réservation)", "{name} · {button}"],
+      ["contractRequest", "Contrat à signer", "{name} {checkIn} {checkOut} · {button}"],
+      ["amendmentRequest", "Avenant à signer (changement de dates)", "{name} {checkIn} {checkOut} {previousCheckIn} {previousCheckOut} · {button}"],
+      ["contractSigned", "Contrat signé (copie au client)", "{name} {checkIn} {checkOut} · {summary} = tableau des montants. Le client reçoit les deux langues."],
+      ["optionExpiring", "Rappel : l'option expire", "{name} {stay} {expires} · {button}"],
+      ["balanceReminder", "Rappel du solde", "{name} {stay} {amount} {due} · {bank} = coordonnées bancaires · {button}"],
+      ["preArrival", "Avant l'arrivée", "{name} {stay} · {arrivalDetails} = l'un des deux textes ci-dessous · {practical} = adresse, WhatsApp, horaires · {button}"],
+      ["reviewRequest", "Demande d'avis après le séjour", "{name} · {button}"],
+      ["dateChangeApproved", "Changement de dates accepté", "{name} {from} {to} {amount} · {note} = votre message · {amendment} = texte + bouton de l'avenant · {button}"],
+      ["dateChangeRejected", "Changement de dates refusé", "{name} {from} {to} · {note} = votre message · {button}"],
+      ["conciergeAnswer", "Réponse à une demande de conciergerie", "{name} {verdict} {status} · {request} = la demande · {note} = votre message · {otherOption} si non confirmée · {button}"],
+    ] as const
+  ).map(([k, label, vars]) => ({ key: `emails.${k}`, group: "emails", label, help: `${vars}. ${EMAIL_HELP}` })),
+  // the rental agreement
+  {
+    key: "contractText",
+    group: "contract",
+    label: "Texte du contrat de location",
+    help: "Entre accolades : {owner} {tenant} {checkIn} {checkOut} {nights} {bedrooms} {guests} {totalAmount} {depositAmount} {balanceAmount} {date}. Les montants, l'échéancier et les coordonnées bancaires sont ajoutés automatiquement. Un contrat déjà envoyé ou signé garde le texte avec lequel il a été émis.",
+  },
 ];
 
 /** Values the copy can quote, filled from Réglages and the villa's facts. */
@@ -349,6 +380,17 @@ export async function saveContentBlock(key: string, locale: string, value: unkno
   });
   invalidateContent();
   return null;
+}
+
+/**
+ * A draft value as the site would use it (shape checked, Réglages filled in),
+ * for the admin's preview before saving. Null when the shape is wrong.
+ */
+export async function previewContentBlock(key: string, locale: string, value: unknown): Promise<Json | null> {
+  const block = findBlock(key);
+  if (!block || !blockLocales(block).includes(locale)) return null;
+  if (!conforms(value, localeDefault(block, locale))) return null;
+  return fill(value as Json, (await load()).vars);
 }
 
 /**

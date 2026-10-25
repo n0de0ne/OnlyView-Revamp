@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { audit } from "@/lib/audit";
 import { sendMail } from "@/lib/mailer";
+import { renderEmail } from "@/lib/email-templates";
 import { SITE_URL } from "@/lib/seo";
 import { renderContractPdfFor, formatDateTime } from "@/lib/contract-render";
 import { formatDate, toISODate, nightsBetween } from "@/lib/dates";
@@ -124,24 +125,26 @@ ${table(
           : row(lang === "fr" ? "Acompte" : "Deposit", money(signed.depositAmount)) +
             row(lang === "fr" ? "Solde (30 j. avant l'arrivée)" : "Balance (30 days before arrival)", money(signed.totalPrice - signed.depositAmount)))
     );
-    const en = `<p>Dear <strong>${signed.clientName}</strong>,</p>
-<p>Thank you for signing your rental agreement for Villa ONLY VIEW. A copy of the signed contract is attached for your records.</p>
-${summary}
-<p>We look forward to welcoming you to Saint-Barthélemy!</p>`;
-    const fr = `<p>Cher(e) <strong>${signed.clientName}</strong>,</p>
-<p>Merci d'avoir signé votre contrat de location pour la Villa ONLY VIEW. Vous trouverez ci-joint une copie de votre contrat signé.</p>
-${summary}
-<p>Au plaisir de vous accueillir à Saint-Barthélemy !</p>`;
+    // wording: Admin → Textes du site → Emails (the guest gets both languages)
+    const short = (iso: string, L: "en" | "fr", year = false) =>
+      formatDate(iso, L, { day: "numeric", month: "short", ...(year ? { year: "numeric" as const } : {}) });
+    const mailIn = async (L: "en" | "fr") =>
+      renderEmail(
+        "contractSigned",
+        L,
+        { name: signed.clientName, checkIn: short(checkIn, L), checkOut: short(checkOut, L, true) },
+        { summary }
+      );
+    const [enMail, frMail] = await Promise.all([mailIn("en"), mailIn("fr")]);
+    const en = enMail.html;
+    const fr = frMail.html;
     const other = (label: string, body: string) =>
       `<div style="background:#f8fafc;padding:20px;border-radius:8px;margin-top:24px;"><p style="font-size:11px;color:#64748b;letter-spacing:0.1em;margin:0 0 10px;">${label}</p>${body}</div>`;
 
     await sendMail({
       to,
       toName: signed.clientName,
-      subject:
-        lang === "fr"
-          ? `Votre contrat signé — Villa ONLY VIEW (${formatDate(checkIn, "fr", { day: "numeric", month: "short" })} → ${formatDate(checkOut, "fr", { day: "numeric", month: "short", year: "numeric" })})`
-          : `Your signed contract — Villa ONLY VIEW (${formatDate(checkIn, "en", { day: "numeric", month: "short" })} → ${formatDate(checkOut, "en", { day: "numeric", month: "short", year: "numeric" })})`,
+      subject: lang === "fr" ? frMail.subject : enMail.subject,
       templateSlug: "contract_signed_client",
       reservationId: r.id,
       clientId: r.clientId ?? undefined,

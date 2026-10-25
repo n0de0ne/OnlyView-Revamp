@@ -9,6 +9,13 @@
  * {minStayFestive}, {balanceDays}, {checkin} and {checkout}, filled from
  * Réglages.
  */
+/** A clause of the rental agreement (heading, paragraphs, bullet points). */
+export interface ContractClause {
+  heading: string;
+  paragraphs: string[];
+  bullets: string[];
+}
+
 export const en = {
   meta: {
     siteName: "Villa ONLY VIEW",
@@ -1014,6 +1021,166 @@ export const en = {
     rights: "All rights reserved.",
     whyDirect: "Why book direct",
     directBadge: "Book direct — no agency fees",
+  },
+  /** Guest emails (Admin → Textes du site → Emails). {name}, {checkIn}…
+      are filled per email; a paragraph that is only {details}, {button}…
+      is the matching block (table, button), dropped when it has none. */
+  emails: {
+    bookingRequestAck: {
+      subject: "Your booking request — Villa ONLY VIEW",
+      body: "Hello **{name}**,\n\nWe received your request for a stay from **{checkIn}** to **{checkOut}** ({bedrooms} bedrooms, {guests} guests).\n\nAnnie will come back to you personally within 24 hours to confirm availability and next steps.\n\nTalk soon,\nVilla ONLY VIEW",
+    },
+    bookingConfirmed: {
+      subject: "Your booking at Villa ONLY VIEW is confirmed!",
+      body: "Dear **{name}**,\n\nGreat news! Your reservation at Villa ONLY VIEW has been confirmed.\n\n{details}\n\nWe look forward to welcoming you to our beautiful villa in Saint-Barthélemy.\n\nIf you have any questions, please don't hesitate to contact us.\n\nWarm regards,\nThe Villa ONLY VIEW Team",
+    },
+    magicLink: {
+      subject: "Your sign-in link — Villa ONLY VIEW",
+      body: "Hello **{name}**,\n\nHere is your sign-in link for your Villa ONLY VIEW guest portal:\n\n{button}\n\nThis link is valid for 7 days and can only be used once.",
+      button: "OPEN MY PORTAL",
+    },
+    portalAccess: {
+      subject: "Your Guest Portal is ready — Villa ONLY VIEW",
+      body: "Hello **{name}**,\n\nYour Villa ONLY VIEW guest portal is ready: stay details, contract, loyalty points.\n\n{button}\n\nThis link is personal — please don't share it.",
+      button: "OPEN MY PORTAL",
+    },
+    contractRequest: {
+      subject: "Your rental agreement — Villa ONLY VIEW",
+      body: "Hello **{name}**,\n\nYour rental agreement for Villa ONLY VIEW ({checkIn} → {checkOut}) is ready to sign online:\n\n{button}\n\nThis link is valid for 30 days.",
+      button: "REVIEW & SIGN",
+    },
+    amendmentRequest: {
+      subject: "Amendment to your rental agreement — Villa ONLY VIEW",
+      body: "Hello **{name}**,\n\nThe amendment to your rental agreement for Villa ONLY VIEW (new dates: {checkIn} to {checkOut}) is ready to sign online. It releases {previousCheckIn} to {previousCheckOut} and carries over the amounts already paid.\n\n{button}\n\nThis link is valid for 30 days.",
+      button: "REVIEW & SIGN",
+    },
+    contractSigned: {
+      subject: "Your signed contract — Villa ONLY VIEW ({checkIn} → {checkOut})",
+      body: "Dear **{name}**,\n\nThank you for signing your rental agreement for Villa ONLY VIEW. A copy of the signed contract is attached for your records.\n\n{summary}\n\nWe look forward to welcoming you to Saint-Barthélemy!",
+    },
+    optionExpiring: {
+      subject: "Your hold on Villa ONLY VIEW expires soon",
+      body: "Hello **{name}**,\n\nWe are holding the villa for your stay **{stay}** until **{expires}**.\n\nTo confirm, simply sign the agreement and send the deposit. After that date the dates will be offered to other travellers again.\n\n{button}\n\nAny question? Just reply to this email.",
+      button: "OPEN MY PORTAL",
+    },
+    balanceReminder: {
+      subject: "Your stay balance — due by {due}",
+      body: "Hello **{name}**,\n\nYour stay **{stay}** is getting close! The balance of **{amount}** is due by **{due}**, by bank transfer:\n\n{bank}\n\nPlease quote your name and dates as the reference. If the transfer is already on its way, simply ignore this message.\n\n{button}",
+      button: "OPEN MY PORTAL",
+    },
+    preArrival: {
+      subject: "See you soon in St Barth! Let's prepare your arrival",
+      body: "Hello **{name}**,\n\nOnly a few days to go before your stay at Villa ONLY VIEW (**{stay}**).\n\n{arrivalDetails}\n\n{button}\n\n{practical}\n\nSee you very soon,\nVilla ONLY VIEW",
+      askDetails: "To welcome you properly, could you share your **flights and arrival time**, who is coming and any special requests? You can also book **extras** there (private chef, car, boat…).",
+      thanksDetails: "Thank you for your arrival details! You can still book **extras** (private chef, car, boat…) from your portal.",
+      button: "OPEN MY PORTAL",
+    },
+    reviewRequest: {
+      subject: "Thank you for staying at Villa ONLY VIEW",
+      body: "Hello **{name}**,\n\nThank you for choosing Villa ONLY VIEW — we hope you had a wonderful time in St Barth.\n\nYour review means a lot to us and helps future guests: would you have two minutes to share your experience?\n\n{button}\n\nWe hope to welcome you back soon,\nVilla ONLY VIEW",
+      button: "LEAVE A REVIEW",
+    },
+    dateChangeApproved: {
+      subject: "Change of dates approved — Villa ONLY VIEW",
+      body: "Hello **{name}**,\n\nGood news: your change of dates is approved. Your stay at Villa ONLY VIEW moves from **{from}** to **{to}**.\n\nNew rental amount: **{amount}**. Everything you have already paid is carried over to the new dates.\n\n{note}\n\n{amendment}\n\n{button}",
+      amendment: "The amendment to your agreement — releasing your previous dates and recording what you have already paid — is ready to sign:",
+      amendmentButton: "REVIEW & SIGN THE AMENDMENT",
+      button: "OPEN MY GUEST PORTAL",
+    },
+    dateChangeRejected: {
+      subject: "Your change of dates request — Villa ONLY VIEW",
+      body: "Hello **{name}**,\n\nUnfortunately we can't move your stay to **{to}**. Your booking stays as it was (**{from}**).\n\n{note}\n\n{button}",
+      button: "OPEN MY GUEST PORTAL",
+    },
+    conciergeAnswer: {
+      subject: "Concierge: {request} — {status}",
+      body: "Hello **{name}**,\n\nYour concierge request {verdict}:\n\n{request}\n\n{note}\n\n{otherOption}\n\n{button}",
+      verdictConfirmed: "is confirmed",
+      verdictDeclined: "unfortunately could not be confirmed",
+      verdictCancelled: "has been cancelled",
+      statusConfirmed: "Confirmed",
+      statusDeclined: "Unavailable",
+      statusCancelled: "Cancelled",
+      otherOption: "Just reply to this email if you would like another option.",
+      button: "MY CONCIERGE REQUESTS",
+    },
+  },
+  /** The rental agreement's wording (Admin → Textes du site → Contrat).
+      Amounts, dates, names, the payment schedule and the bank details are
+      filled in by the code; each agreement keeps the wording it was issued with. */
+  contractText: {
+    title: "SEASONAL RENTAL AGREEMENT",
+    amendmentTitle: "AMENDMENT TO THE RENTAL AGREEMENT",
+    subtitle: "VILLA ONLY VIEW",
+    intro: [
+      'This Agreement is entered between **{owner}** (hereinafter referred to as "Owner") and **{tenant}** (hereinafter referred to as "Tenant").',
+      'Whereas Owner has a 4 bedroom Villa located in Pointe Milou named "Villa Only View".',
+      "Whereas Tenant wishes to secure lodging on the island of Saint-Barthelemy for the period of time from **{checkIn}** to **{checkOut}** ({nights} nights) for **{bedrooms}** bedroom(s).",
+      "NOW THEREFORE, in consideration of the mutual covenants, agreements, representations and warranties contained herein, the parties agree as follows:",
+    ],
+    clausesBefore: [
+      {
+        heading: "AGENTS",
+        paragraphs: [
+          "It is acknowledged by each of the parties that no real estate or travel agent assisted in the securing of the rental and that the contact was direct in nature without the intervention of a third party who would be entitled to a commission or other form of payment in compensation for the securing of the rental.",
+        ],
+        bullets: [],
+      },
+      {
+        heading: "DESCRIPTION OF PROPERTY",
+        paragraphs: [
+          "The Tenant agrees to rent the following property, located in Pointe Milou, island of Saint-Barthelemy:",
+          "A 4 Bedroom Villa with 4 bathrooms, fully equipped kitchen, terrace, pool, and living room area.",
+        ],
+        bullets: [],
+      },
+      {
+        heading: "NUMBER OF TENANTS",
+        paragraphs: [
+          "This agreement permits **{guests}** people to occupy the premises during the duration of this contract and Tenant agrees that no others will be permitted to lodge on the premises.",
+        ],
+        bullets: [],
+      },
+    ] as ContractClause[],
+    paymentHeading: "PAYMENT OF RENT/DEPOSIT",
+    paymentIntro: "The total rent to be paid for the time period specified above shall be the sum of **{totalAmount}** (UNITED STATES DOLLARS){taxClause}, payable as follows:",
+    taxClause: " which includes the rental fee and {tax}% local tax",
+    paymentTerms: "Tenant agrees to pay to Owner the sum of **{totalAmount}**. A non-refundable deposit of **{depositAmount}** is due in order to secure the rental of the villa at time of the signing of the contract and the remaining balance (**{balanceAmount}**) is due {balanceDays} days prior to arrival.",
+    nonRefundable: "**All deposits and final payments are NON-REFUNDABLE.**",
+    scheduleHeading: "PAYMENT SCHEDULE",
+    bankHeading: "BANK DETAILS FOR WIRE TRANSFER",
+    clausesAfter: [
+      {
+        heading: "DUTIES OF OWNER",
+        paragraphs: [],
+        bullets: [
+          "Daily housekeeping is provided, except on Sundays and local holidays.",
+          "All linens and towels.",
+          "All electricity, water and local telephone charges are included in the rental amount paid.",
+          "All taxes, costs, amenities, service charges and other relating to the property are included in the above-stated price.",
+          "Owner shall be responsible for the maintenance of the pool, gardens, equipment, appliances and all other material and equipment on the property.",
+        ],
+      },
+      {
+        heading: "DUTIES OF TENANT",
+        paragraphs: [],
+        bullets: [
+          "Tenant shall be responsible for all damages to the property other than for ordinary wear and tear.",
+          "Tenant shall immediately advise Owner in the event of water leaks, fire or other damages and/or matters requiring immediate repair or attention.",
+        ],
+      },
+      {
+        heading: "ENTIRE AGREEMENT",
+        paragraphs: [
+          "This agreement constitutes the entire agreement between the parties pertaining to the subject matter contained herein and supersedes all prior or contemporaneous agreements, representations or understandings of the parties. No supplement, modification, or amendment of this agreement shall be binding unless executed in writing by the parties.",
+        ],
+        bullets: [],
+      },
+    ] as ContractClause[],
+    dated: "DATED: {date}",
+    signatureOwner: "Owner",
+    signatureTenant: "Tenant",
+    signatureDate: "Date",
   },
   common: {
     bedrooms: "bedrooms",

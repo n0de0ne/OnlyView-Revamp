@@ -2,6 +2,7 @@ import "server-only";
 import type { ReservationExtra } from "@prisma/client";
 import { prisma } from "./db";
 import { sendMail } from "./mailer";
+import { emailButton, emailNote, emailTexts, renderEmail } from "./email-templates";
 import { portalUrlFor } from "./guest-stay";
 import { formatDate, todayISO } from "./dates";
 
@@ -64,35 +65,33 @@ export async function notifyGuestOfConciergeAnswer(itemId: number): Promise<bool
   const portal = await portalUrlFor(r.id, L);
   const confirmed = item.status === "confirmed";
 
-  const verdict = fr
-    ? confirmed
-      ? "est confirmée"
-      : item.status === "declined"
-        ? "n'a malheureusement pas pu être confirmée"
-        : "a été annulée"
-    : confirmed
-      ? "is confirmed"
-      : item.status === "declined"
-        ? "unfortunately could not be confirmed"
-        : "has been cancelled";
+  // wording: Admin → Textes du site → Emails
+  const t = await emailTexts("conciergeAnswer", L);
+  const st = item.status as "confirmed" | "declined" | "cancelled";
+  const pick = ({ confirmed: "Confirmed", declined: "Declined", cancelled: "Cancelled" } as const)[st] ?? "Cancelled";
+  const status = t[`status${pick}` as const];
   const color = confirmed ? "#2e7d5b" : "#8a8a8a";
-  const note = item.adminNote
-    ? `<p style="background:#f8fafc;padding:14px 18px;border-left:3px solid #C9A962;">${esc(item.adminNote).replace(/\n/g, "<br>")}</p>`
-    : "";
-  const html = `<p>${fr ? "Bonjour" : "Hello"} <strong>${esc(name)}</strong>,</p>
-<p>${fr ? "Votre demande de conciergerie" : "Your concierge request"} ${verdict}&nbsp;:</p>
-<p style="border:1px solid #e5e5e5;padding:14px 18px;">
+  const request = `<p style="border:1px solid #e5e5e5;padding:14px 18px;">
 <strong>${esc(item.label)}</strong><br>
 ${esc(when)}<br>
-<span style="color:${color};font-weight:600;letter-spacing:0.08em;text-transform:uppercase;font-size:12px;">${
-    fr
-      ? { confirmed: "Confirmée", declined: "Non disponible", cancelled: "Annulée" }[item.status]
-      : { confirmed: "Confirmed", declined: "Unavailable", cancelled: "Cancelled" }[item.status]
-  }</span>
-</p>
-${note}
-${!confirmed ? `<p>${fr ? "Répondez simplement à cet email si vous souhaitez une autre option." : "Just reply to this email if you would like another option."}</p>` : ""}
-${portal ? `<p style="text-align:center;margin:24px 0;"><a href="${portal}" style="background:#1B4965;color:#fff;padding:13px 26px;text-decoration:none;letter-spacing:0.1em;">${fr ? "MES DEMANDES DE CONCIERGERIE" : "MY CONCIERGE REQUESTS"}</a></p>` : ""}`;
+<span style="color:${color};font-weight:600;letter-spacing:0.08em;text-transform:uppercase;font-size:12px;">${esc(status)}</span>
+</p>`;
+  const mail = await renderEmail(
+    "conciergeAnswer",
+    L,
+    {
+      name,
+      verdict: t[`verdict${pick}` as const],
+      status: status.toLowerCase(),
+      request: item.label.replace(/^Restaurant — /, ""),
+      otherOption: confirmed ? "" : t.otherOption,
+    },
+    {
+      request,
+      note: emailNote(item.adminNote),
+      button: portal ? emailButton(portal, t.button, "#1B4965") : "",
+    }
+  );
 
   const res = await sendMail({
     to,
@@ -100,12 +99,8 @@ ${portal ? `<p style="text-align:center;margin:24px 0;"><a href="${portal}" styl
     templateSlug: `concierge_${item.status}`,
     reservationId: r.id,
     clientId: r.clientId ?? undefined,
-    subject: `${fr ? "Conciergerie" : "Concierge"}: ${item.label.replace(/^Restaurant — /, "")} — ${
-      fr
-        ? { confirmed: "confirmé", declined: "non disponible", cancelled: "annulé" }[item.status]
-        : { confirmed: "confirmed", declined: "unavailable", cancelled: "cancelled" }[item.status]
-    }`,
-    html,
+    subject: mail.subject,
+    html: mail.html,
   });
   return res.sent;
 }
