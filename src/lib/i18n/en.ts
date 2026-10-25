@@ -701,6 +701,7 @@ export const en = {
     typeName: "Type your full name",
     nameMismatch: "Please type your name as it appears on the agreement.",
     agreeLabel: "I have read and agree to the terms of this rental agreement.",
+    ownerSignature: "Owner's signature",
   },
   contact: {
     title: "Contact",

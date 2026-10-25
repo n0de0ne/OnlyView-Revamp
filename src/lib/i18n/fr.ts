@@ -699,6 +699,7 @@ export const fr: Dict = {
     typeName: "Tapez votre nom complet",
     nameMismatch: "Merci de saisir votre nom tel qu'il figure au contrat.",
     agreeLabel: "J'ai lu et j'accepte les termes du présent contrat de location.",
+    ownerSignature: "Signature du Propriétaire",
   },
   contact: {
     title: "Contact",

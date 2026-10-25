@@ -2,7 +2,7 @@ import "server-only";
 import type { Contract, Reservation } from "@prisma/client";
 import { buildContract } from "./contract-content";
 import { contractTerms } from "./contracts";
-import { renderContractPdf } from "./contract-pdf";
+import { OWNER_SIGNATURE_KEY, renderContractPdf } from "./contract-pdf";
 import { getSettings } from "./settings";
 import { toISODate, nightsBetween, formatDate } from "./dates";
 
@@ -57,6 +57,7 @@ export async function renderContractPdfFor(
     ownerName,
     labels: content.signatureLabels,
     signaturePngDataUrl: signed ? contract.signatureData : null,
+    ownerSignaturePngDataUrl: s[OWNER_SIGNATURE_KEY] ?? null,
     signerName: signed ? contract.clientName : undefined,
     signedAtLabel: signed ? formatDate(contract.signedAt!, lang) : undefined,
     certification: signed
