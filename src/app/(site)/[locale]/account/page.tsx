@@ -10,6 +10,7 @@ import { isLoyaltyEnabled } from "@/lib/features";
 import { PageHero } from "@/components/site/PageHero";
 import { GuestLoginForm } from "@/components/site/GuestLoginForm";
 import { StayPlanner } from "@/components/site/StayPlanner";
+import { DateChangeRequest } from "@/components/site/DateChangeRequest";
 import { ConciergePanel } from "@/components/site/ConciergePanel";
 import { confirmedExtrasTotal } from "@/lib/extras";
 import { getConciergeCatalog } from "@/lib/concierge";
@@ -67,7 +68,8 @@ export default async function AccountPage({
         where: { status: { not: "blocked" } },
         orderBy: { startDate: "desc" },
         include: {
-          contracts: { orderBy: { createdAt: "desc" }, take: 1 },
+          contracts: { where: { status: { not: "void" } }, orderBy: { createdAt: "desc" } },
+          dateChanges: { where: { source: "guest" }, orderBy: { createdAt: "desc" }, take: 1 },
           extras: { orderBy: { createdAt: "asc" } },
         },
       },
@@ -118,6 +120,12 @@ export default async function AccountPage({
     r: (typeof client.reservations)[number];
   }) => {
     const contract = r.contracts[0];
+    // an amendment awaiting signature: the agreement it replaces stays downloadable
+    const signedBefore =
+      contract && contract.status !== "signed"
+        ? r.contracts.find((c) => c.status === "signed")
+        : undefined;
+    const dc = r.dateChanges[0];
     return (
       <div className="border border-ink/10 bg-white p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -157,10 +165,21 @@ export default async function AccountPage({
           <div>
             <div className="eyebrow !text-[0.6rem]">{t.account.contractTitle}</div>
             <div className="mt-2 text-sm">
+              {signedBefore && (
+                <div className="mb-1">
+                  <span className="text-st-free">✓ {signedBefore.kind === "amendment" ? t.account.amendmentSigned : t.account.contractSigned}</span>
+                  <a
+                    href={`/api/contracts/pdf/${signedBefore.token}`}
+                    className="ml-3 text-xs text-gold underline"
+                  >
+                    {t.account.downloadPdf}
+                  </a>
+                </div>
+              )}
               {contract ? (
                 contract.status === "signed" ? (
                   <div>
-                    <span className="text-st-free">✓ {t.account.contractSigned}</span>
+                    <span className="text-st-free">✓ {contract.kind === "amendment" ? t.account.amendmentSigned : t.account.contractSigned}</span>
                     <a
                       href={`/api/contracts/pdf/${contract.token}`}
                       className="ml-3 text-xs text-gold underline"
@@ -173,7 +192,7 @@ export default async function AccountPage({
                     href={localePath(locale, `/contracts/sign/${contract.token}`)}
                     className="text-gold underline"
                   >
-                    → {t.account.contractSign}
+                    → {contract.kind === "amendment" ? t.account.amendmentSign : t.account.contractSign}
                   </Link>
                 )
               ) : (
@@ -211,6 +230,29 @@ export default async function AccountPage({
             }))}
           />
         )}
+        {["option", "confirmed"].includes(r.status) &&
+          !r.isArchived &&
+          toISODate(r.startDate) > today && (
+            <DateChangeRequest
+              reservationId={r.id}
+              locale={locale}
+              t={t.account.dateChange}
+              start={toISODate(r.startDate)}
+              end={toISODate(r.endDate)}
+              latest={
+                dc
+                  ? {
+                      status: dc.status,
+                      fromStart: toISODate(dc.fromStart),
+                      fromEnd: toISODate(dc.fromEnd),
+                      toStart: toISODate(dc.toStart),
+                      toEnd: toISODate(dc.toEnd),
+                      adminNote: dc.adminNote,
+                    }
+                  : null
+              }
+            />
+          )}
         {concierge &&
           ["option", "confirmed"].includes(r.status) &&
           !r.isArchived &&
