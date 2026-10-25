@@ -193,7 +193,7 @@ export const fr: Dict = {
     package: [
       [
         "Commerces et boulangeries",
-        "Le U Express L'Oasis de Lorient est en rénovation et s'agrandit, et il y a un nouveau Monoprix. Pour le pain et les croissants du matin, La Petite Colombe et Choisy sont juste en bas de la route.",
+        "Le U Express L'Oasis de Lorient vient d'être rénové et agrandi, et il y a un nouveau Monoprix. Pour le pain et les croissants du matin, La Petite Colombe et Choisy sont juste en bas de la route.",
       ],
       [
         "Les grands hôtels",

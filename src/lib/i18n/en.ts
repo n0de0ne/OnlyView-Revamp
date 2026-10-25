@@ -194,7 +194,7 @@ export const en = {
     package: [
       [
         "Shops and bakeries",
-        "The U Express L'Oasis in Lorient is being renovated and enlarged, and there is a new Monoprix. For the morning bread and croissants, La Petite Colombe and Choisy are just down the road.",
+        "The U Express L'Oasis in Lorient has just been renovated and enlarged, and there is a new Monoprix. For the morning bread and croissants, La Petite Colombe and Choisy are just down the road.",
       ],
       [
         "The great hotels",
