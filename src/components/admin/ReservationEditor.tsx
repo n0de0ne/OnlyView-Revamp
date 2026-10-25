@@ -19,6 +19,7 @@ import {
   useToast,
 } from "./ui";
 import { ReservationStayPanel } from "./ReservationStayPanel";
+import { ReservationDateChanges } from "./ReservationDateChanges";
 
 interface AgencyOpt {
   id: number;
@@ -166,6 +167,8 @@ export function ReservationEditor({
   const [payModal, setPayModal] = useState(false);
   // opt-in, like the legacy "envoyer l'email de confirmation" checkbox
   const [sendConfirmation, setSendConfirmation] = useState(false);
+  // amendment: the next contract releases these dates (detected, or set by hand)
+  const [amend, setAmend] = useState({ on: false, startDate: "", endDate: "" });
   const [payForm, setPayForm] = useState({
     kind: "deposit",
     amount: "",
@@ -205,6 +208,11 @@ export function ReservationEditor({
     if (res.success && res.reservation) {
       const r = res.reservation;
       setLoaded(r);
+      setAmend({
+        on: r.releasedDates != null,
+        startDate: r.releasedDates?.startDate ?? "",
+        endDate: r.releasedDates?.endDate ?? "",
+      });
       const [first, ...rest] = (r.clientName ?? "").split(" ");
       setForm({
         status: r.status,
@@ -525,8 +533,20 @@ export function ReservationEditor({
     }
   };
 
-  const generateContract = async (lang: "fr" | "en", send: boolean) => {
-    const res = await doAction(send ? "send-contract" : "generate-contract", { lang });
+  const amendmentParam = () =>
+    amend.on && amend.startDate && amend.endDate
+      ? { startDate: amend.startDate, endDate: amend.endDate }
+      : null;
+
+  const generateContract = async (lang: "fr" | "en" | undefined, send: boolean) => {
+    if (amend.on && !amendmentParam()) {
+      push("Indiquez les dates libérées de l'avenant", "error");
+      return;
+    }
+    const res = await doAction(send ? "send-contract" : "generate-contract", {
+      lang,
+      previous: amendmentParam(),
+    });
     if (res?.success) {
       const url = res.signUrl as string;
       if (!send) {
@@ -1422,6 +1442,17 @@ export function ReservationEditor({
         />
       )}
 
+      {/* Change of dates — guest requests and history */}
+      {reservationId && loaded && (
+        <ReservationDateChanges
+          changes={loaded.dateChanges}
+          hasPeriods={loaded.periods.length > 0}
+          manualPrice={loaded.finalPriceOverride != null}
+          amendmentDue={loaded.releasedDates != null}
+          onChanged={load}
+        />
+      )}
+
       {/* Documents & actions */}
       {reservationId && (
         <Card title="📄 Contrat & espace client">
@@ -1433,18 +1464,8 @@ export function ReservationEditor({
               Contrat FR — lien
             </button>
             <button
-              onClick={async () => {
-                // language defaults to the linked client's language server-side
-                const res = await doAction("send-contract", {});
-                if (res?.success) {
-                  push(
-                    res.emailSent
-                      ? "Contrat envoyé par email"
-                      : "Contrat généré (email en file — SMTP non configuré)"
-                  );
-                  load();
-                }
-              }}
+              // language defaults to the linked client's language server-side
+              onClick={() => generateContract(undefined, true)}
               className="abtn-primary"
             >
               ✍️ Envoyer pour signature
@@ -1457,10 +1478,46 @@ export function ReservationEditor({
               ✉️ Envoyer l&apos;accès client
             </button>
           </div>
+          <div className="mt-4 rounded-xl border border-slate-200 px-4 py-3 text-sm">
+            <label className="flex items-center gap-2 font-medium text-slate-700">
+              <input
+                type="checkbox"
+                checked={amend.on}
+                onChange={(e) => setAmend({ ...amend, on: e.target.checked })}
+              />
+              Avenant — changement de dates
+            </label>
+            <p className="mt-1 text-xs text-slate-500">
+              {loaded?.releasedDates
+                ? "Les dates ont changé depuis le contrat signé : le prochain contrat sera un avenant."
+                : "À cocher quand ce contrat remplace un contrat signé pour d'autres dates."}{" "}
+              Il mentionne les dates libérées, les sommes déjà reçues (paiements enregistrés) et le solde restant.
+            </p>
+            {amend.on && (
+              <div className="mt-3 grid max-w-md grid-cols-2 gap-3">
+                <div className="afield">
+                  <label>Arrivée libérée</label>
+                  <input
+                    type="date"
+                    value={amend.startDate}
+                    onChange={(e) => setAmend({ ...amend, startDate: e.target.value })}
+                  />
+                </div>
+                <div className="afield">
+                  <label>Départ libéré</label>
+                  <input
+                    type="date"
+                    value={amend.endDate}
+                    onChange={(e) => setAmend({ ...amend, endDate: e.target.value })}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
           {latestContract && (
             <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl bg-slate-50 px-4 py-3 text-sm">
               <span>
-                Contrat {latestContract.language.toUpperCase()} ·{" "}
+                {latestContract.kind === "amendment" ? "Avenant" : "Contrat"} {latestContract.language.toUpperCase()} ·{" "}
                 {latestContract.status === "signed" ? (
                   <span className="font-semibold text-emerald-600">
                     ✓ signé le {latestContract.signedAt ? fmtDate(latestContract.signedAt) : ""}

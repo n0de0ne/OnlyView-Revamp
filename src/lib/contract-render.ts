@@ -1,6 +1,7 @@
 import "server-only";
 import type { Contract, Reservation } from "@prisma/client";
 import { buildContract } from "./contract-content";
+import { contractTerms } from "./contracts";
 import { renderContractPdf } from "./contract-pdf";
 import { getSettings } from "./settings";
 import { toISODate, nightsBetween, formatDate } from "./dates";
@@ -28,7 +29,9 @@ export async function renderContractPdfFor(
   const lang = contract.language === "fr" ? "fr" : "en";
   const ownerName = s.owner_name ?? "Annie CHRIQUI";
 
-  const content = buildContract({
+  // contracts carry the terms they were issued with; older rows are rebuilt
+  // from the stay as it is now
+  const content = buildContract(contractTerms(contract) ?? {
     clientName: contract.clientName,
     checkIn: toISODate(r.startDate),
     checkOut: toISODate(r.endDate),
@@ -46,6 +49,7 @@ export async function renderContractPdfFor(
       iban: s.bank_iban ?? "",
       bic: s.bank_bic ?? "",
     },
+    issuedOn: toISODate(contract.createdAt),
   });
 
   const signed = contract.status === "signed" && !!contract.signedAt;
@@ -68,6 +72,6 @@ export async function renderContractPdfFor(
   return {
     pdf,
     lang,
-    filename: `onlyview-contract-${r.id}${signed ? "-signed" : ""}.pdf`,
+    filename: `onlyview-${contract.kind === "amendment" ? "amendment" : "contract"}-${r.id}${signed ? "-signed" : ""}.pdf`,
   };
 }

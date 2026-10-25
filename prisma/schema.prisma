@@ -219,6 +219,7 @@ model Reservation {
   bookingRequest     BookingRequest?
   extras             ReservationExtra[]
   reminders          ReminderLog[]
+  dateChanges        DateChange[]
 
   @@index([startDate, endDate])
   @@index([status])
@@ -306,6 +307,41 @@ model ReservationExtra {
   updatedAt        DateTime    @updatedAt
 
   @@index([reservationId])
+}
+
+/// A change of dates on a stay: asked by the guest from the portal (pending
+/// until the owner approves or rejects it) or made by the owner in the editor.
+/// The next contract issued for the stay becomes an amendment that releases
+/// the previous dates.
+model DateChange {
+  id            Int         @id @default(autoincrement())
+  reservationId Int
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  /// guest | admin
+  source        String      @default("guest")
+  /// pending | approved | rejected | cancelled
+  status        String      @default("pending")
+  /// the stay's dates when the change was asked
+  fromStart     DateTime
+  fromEnd       DateTime
+  toStart       DateTime
+  toEnd         DateTime
+  /// rent TTC (USD) before the change
+  previousTTC   Float       @default(0)
+  /// estimated rent TTC for the new dates (null when it can't be estimated)
+  quotedTTC     Float?
+  message       String?
+  /// owner's reply, shown to the guest
+  adminNote     String?
+  decidedAt     DateTime?
+  decidedBy     String?
+  /// the amendment issued for this change
+  contractId    Int?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([reservationId])
+  @@index([status])
 }
 
 // ─────────────────────────────────────────────────────────────── Automations
@@ -398,8 +434,14 @@ model Contract {
   clientEmail   String?
   totalPrice    Float
   depositAmount Float
+  /// contract | amendment (replaces an earlier agreement after a change of dates)
+  kind          String      @default("contract")
   /// contract body snapshot (HTML) at generation time
   bodyHtml      String
+  /// JSON snapshot of the terms the contract was issued with (dates, price,
+  /// amounts received, released dates) — the PDF is rebuilt from it, so a
+  /// later change to the stay never rewrites an agreement already issued
+  termsJson     String?
   signatureData String? // data-URL PNG drawn by the client
   signedAt      DateTime?
   signerIp      String?
