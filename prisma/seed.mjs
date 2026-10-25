@@ -258,6 +258,7 @@ async function seedBase() {
     await prisma.mapPlace.createMany({ data: places, skipDuplicates: true });
     console.log(`Seeded ${places.length} map places`);
   }
+  await applyMapBatches();
 
   // A visible promotion example
   if ((await prisma.promotion.count()) === 0) {
@@ -273,6 +274,61 @@ async function seedBase() {
         priority: 1,
       },
     });
+  }
+}
+
+// Pins added to map-places.json after a database was first seeded. The table
+// is only seeded when empty, so each batch is applied once per database (a
+// Setting row marks it done): later deletes and edits in Admin → Carte stick.
+const MAP_BATCHES = [
+  {
+    key: "map_batch_2026_10_restaurants",
+    add: [
+      "eddys-ghetto", "le-diamant", "le-jardin-sbh", "le-portugal", "les-bananiers", "la-guerite-gustavia",
+      "burger-palace", "caribbean-to-go", "creage-to-go", "heiko", "koi-sushi-bar", "lenvol",
+      "la-cantine-anse-caraibes", "la-creperie", "la-pizzetta", "la-saintoise", "le-bouchon",
+      "papas-pizza", "so-cuisine", "st-barth-burger",
+      "martini-bar", "modjo", "le-glacier", "le-petit-deauville", "natural-delights",
+    ],
+    // copy these fields from map-places.json onto an existing pin, unless the
+    // owner already changed it (it no longer matches `when`)
+    update: [
+      // the restaurant at Hotel Le Christopher reopened as Solis
+      {
+        slug: "christo",
+        when: { name: "La Plage du Christo - Hotel Christopher" },
+        fields: ["name", "kind", "descriptionEn", "descriptionFr", "website", "phone"],
+      },
+      // a sit-down restaurant, not a snack
+      { slug: "fish-corner", when: { kind: "snack" }, fields: ["kind"] },
+    ],
+  },
+];
+
+async function applyMapBatches() {
+  const placesPath = path.join(__dirname, "..", "src", "data", "map-places.json");
+  if (!fs.existsSync(placesPath)) return;
+  const bySlug = new Map(JSON.parse(fs.readFileSync(placesPath, "utf8")).map((p) => [p.slug, p]));
+  for (const batch of MAP_BATCHES) {
+    if (await prisma.setting.findUnique({ where: { key: batch.key } })) continue;
+    let added = 0;
+    for (const slug of batch.add ?? []) {
+      const place = bySlug.get(slug);
+      if (!place || (await prisma.mapPlace.findUnique({ where: { slug } }))) continue;
+      await prisma.mapPlace.create({ data: place });
+      added++;
+    }
+    for (const { slug, when, fields } of batch.update ?? []) {
+      const place = bySlug.get(slug);
+      const row = await prisma.mapPlace.findUnique({ where: { slug } });
+      if (!place || !row || Object.entries(when).some(([k, v]) => row[k] !== v)) continue;
+      await prisma.mapPlace.update({
+        where: { slug },
+        data: Object.fromEntries(fields.map((f) => [f, place[f]])),
+      });
+    }
+    await prisma.setting.create({ data: { key: batch.key, value: new Date().toISOString() } });
+    console.log(`Map batch ${batch.key}: ${added} pin(s) added`);
   }
 }
 

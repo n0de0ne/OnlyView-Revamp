@@ -317,7 +317,7 @@ export const GUIDES: GuideArticle[] = [
         {
           h: "Plenty more to discover",
           p: [
-            "Right next door to the villa, the beach club at Hotel Le Christopher in Pointe Milou is lovely for a sunset drink. On St Jean and Shell Beach, Gyp Sea, La Guérite, Shellona and Nikki Beach each have their own crowd, from relaxed to very lively. The island map shows every restaurant we know, with the drive time from the villa.",
+            "Right next door to the villa, Solis, the beach restaurant at Hotel Le Christopher in Pointe Milou, is lovely for a sunset drink. On St Jean and Shell Beach, Gyp Sea, La Guérite, Shellona and Nikki Beach each have their own crowd, from relaxed to very lively. The island map shows every restaurant we know, with the drive time from the villa.",
           ],
           places: ["christo", "shellona", "gypsea", "la-guerite", "nikki-beach"],
         },
@@ -369,7 +369,7 @@ export const GUIDES: GuideArticle[] = [
         {
           h: "Bien d'autres adresses à découvrir",
           p: [
-            "Juste à côté de la villa, le beach club de l'Hôtel Le Christopher à Pointe Milou est parfait pour un verre au coucher du soleil. À St Jean et sur Shell Beach, Gyp Sea, La Guérite, Shellona et Nikki Beach ont chacun leur ambiance, de la plus détendue à la plus festive. La carte de l'île recense tous les restaurants que nous connaissons, avec le temps de route depuis la villa.",
+            "Juste à côté de la villa, Solis, le restaurant de plage de l'Hôtel Le Christopher à Pointe Milou, est parfait pour un verre au coucher du soleil. À St Jean et sur Shell Beach, Gyp Sea, La Guérite, Shellona et Nikki Beach ont chacun leur ambiance, de la plus détendue à la plus festive. La carte de l'île recense tous les restaurants que nous connaissons, avec le temps de route depuis la villa.",
           ],
           places: ["christo", "shellona", "gypsea", "la-guerite", "nikki-beach"],
         },
