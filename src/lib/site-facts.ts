@@ -59,7 +59,7 @@ export const VILLA = {
 
 /** Date the content was last materially revised — surfaced as lastmod /
     dateModified. Bump it when the copy changes, not on every deploy. */
-export const CONTENT_UPDATED = "2026-10-23";
+export const CONTENT_UPDATED = "2026-10-24";
 
 export const OWNER_EMAIL = "annaerick971@gmail.com";
 export const OWNER_PHONE = "+590 690 39 90 47";

@@ -6,6 +6,10 @@ import { breadcrumbJsonLd, jsonLd, organizationJsonLd, ownerJsonLd, pageMetadata
 import { CONTENT_UPDATED } from "@/lib/site-facts";
 import { GUIDES, getGuide } from "@/data/guides";
 import { PageHero } from "@/components/site/PageHero";
+import { FlightSearch } from "@/components/site/FlightSearch";
+import mapPlaces from "@/data/map-places.json";
+
+const PLACE_NAMES = new Map(mapPlaces.map((p) => [p.slug, p.name]));
 
 export const revalidate = 3600;
 
@@ -90,6 +94,29 @@ export default async function GuidePage({
                 {p}
               </p>
             ))}
+            {s.places && s.places.length > 0 && (
+              <p className="mt-5 flex flex-wrap items-center gap-2 text-sm">
+                <span className="text-xs font-semibold uppercase tracking-wider text-ink/50">
+                  {fr ? "Sur la carte" : "On the map"}
+                </span>
+                {s.places
+                  .filter((slug) => PLACE_NAMES.has(slug))
+                  .map((slug) => (
+                    <Link
+                      key={slug}
+                      href={`${localePath(locale, "/map")}#${slug}`}
+                      className="rounded-full border border-ink/15 px-3 py-1 text-ink/80 transition hover:border-gold hover:text-ink"
+                    >
+                      📍 {PLACE_NAMES.get(slug)}
+                    </Link>
+                  ))}
+              </p>
+            )}
+            {s.flightSearch && (
+              <div className="mt-8">
+                <FlightSearch locale={locale} />
+              </div>
+            )}
           </section>
         ))}
         <div className="border-t border-ink/10 pt-10 text-center">
