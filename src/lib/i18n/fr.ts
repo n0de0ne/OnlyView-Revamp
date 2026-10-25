@@ -447,6 +447,7 @@ export const fr: Dict = {
     onRequest: "Prix sur demande",
     yourExtras: "Vos demandes",
     withdraw: "Retirer",
+    directions: "Itinéraire",
     extraStatuses: { requested: "Demandé", confirmed: "Confirmé", cancelled: "Indisponible" } as Record<string, string>,
     units: { stay: "par séjour", night: "par nuit", person: "par personne", unit: "l'unité" } as Record<string, string>,
     dateChange: {
@@ -488,6 +489,7 @@ export const fr: Dict = {
       intro: "Envoyez-nous une demande : nous réservons auprès du lieu ou du prestataire et la confirmons ici. Prix indicatifs.",
       bookTable: "Réserver une table",
       bookOnline: "Réserver en ligne",
+      directions: "Itinéraire",
       walkIn: "Sans réservation — il suffit d'y aller",
       bookBoat: "Demander ce bateau",
       bookChef: "Demander ce menu",

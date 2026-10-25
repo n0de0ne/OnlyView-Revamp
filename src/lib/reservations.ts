@@ -215,7 +215,7 @@ export function serializeReservation(r: ReservationWithRelations) {
       specialRequests: r.specialRequests,
       updatedAt: r.guestDetailsUpdatedAt?.toISOString() ?? null,
     },
-    extras: r.extras.map(serializeReservationExtra),
+    extras: r.extras.map((i) => serializeReservationExtra(i)),
     portalToken: r.portalToken,
     isArchived: r.isArchived,
     confirmationEmailSent: r.confirmationEmailSent,

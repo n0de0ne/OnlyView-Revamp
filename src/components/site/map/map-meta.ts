@@ -118,3 +118,8 @@ export function formatWaypoints(points: LatLng[]): string | null {
 export function isValidLatLng(lat: number, lng: number) {
   return Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180;
 }
+
+/** The island map opened on a place with the itinerary to it already drawn
+ *  (the concierge's and the guest's bookings link here). */
+export const directionsHref = (locale: "en" | "fr", slug: string) =>
+  `${locale === "fr" ? "/fr" : ""}/map?route=1#${encodeURIComponent(slug)}`;

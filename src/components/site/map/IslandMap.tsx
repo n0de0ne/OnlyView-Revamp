@@ -9,7 +9,8 @@
  *
  * The list, the filters and the search render on the server (that text is
  * what crawlers and answer engines read); only the Leaflet canvas waits for
- * the browser. `#slug` in the URL opens that place.
+ * the browser. `#slug` in the URL opens that place; `?route=1#slug` also
+ * draws the itinerary to it.
  */
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -169,12 +170,24 @@ export function IslandMap({
     if (p) open(p);
   };
 
-  // #slug → that place, on load and when the hash changes
+  // #slug → that place, on load and when the hash changes; with ?route=1
+  // (a "Directions" link from the guest portal) its itinerary too
   useEffect(() => {
     const fromHash = () => {
       const slug = decodeURIComponent(window.location.hash.slice(1));
       const p = slug && places.find((x) => x.slug === slug);
-      if (p) setTimeout(() => open(p), 600);
+      if (!p) return;
+      const withRoute = new URLSearchParams(window.location.search).has("route");
+      setTimeout(() => {
+        open(p);
+        if (withRoute) {
+          // the route fits itself in view, so it replaces open()'s fly-to
+          startRoute(p);
+          // the browser's own jump to #slug leaves the frame half under the top bar
+          if (window.innerWidth >= 1024) frameRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+          else frameIntoView();
+        }
+      }, 600);
     };
     fromHash();
     window.addEventListener("hashchange", fromHash);

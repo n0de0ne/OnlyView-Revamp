@@ -48,12 +48,15 @@ export async function POST(req: NextRequest, { params }: Ctx) {
   const time = "time" in d && d.time ? d.time : null;
   let label: string;
   let subject: string;
+  /** a table request remembers its restaurant, for the guest's "Directions" link */
+  let venue: { id: number; slug: string } | null = null;
   const facts: string[] = [];
   const ownerLines: string[] = [];
 
   if (d.type === "restaurant") {
     const place = await prisma.mapPlace.findUnique({ where: { id: d.id } });
     if (!place || !place.isActive || place.category !== "restaurant" || !place.bookingMode) return bad("not_found", 404);
+    venue = place;
     label = `Restaurant — ${place.name}`;
     subject = `Table requested: ${place.name}`;
     const contact = contactLine(place);
@@ -102,6 +105,7 @@ export async function POST(req: NextRequest, { params }: Ctx) {
       serviceDate: dateOrNull(d.date),
       notes: d.notes ? `${notes}\n${d.notes}` : notes,
       requestedByGuest: true,
+      placeId: venue?.id ?? null,
     },
   });
   await notifyOwnerOfGuestUpdate(r.id, {
@@ -114,5 +118,5 @@ export async function POST(req: NextRequest, { params }: Ctx) {
       "Confirm or cancel it in the reservation (Extras).",
     ],
   });
-  return NextResponse.json({ success: true, item: serializeReservationExtra(item) });
+  return NextResponse.json({ success: true, item: serializeReservationExtra(item, venue?.slug ?? null) });
 }

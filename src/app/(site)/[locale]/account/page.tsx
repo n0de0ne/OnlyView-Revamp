@@ -70,7 +70,7 @@ export default async function AccountPage({
         include: {
           contracts: { where: { status: { not: "void" } }, orderBy: { createdAt: "desc" } },
           dateChanges: { where: { source: "guest" }, orderBy: { createdAt: "desc" }, take: 1 },
-          extras: { orderBy: { createdAt: "asc" } },
+          extras: { orderBy: { createdAt: "asc" }, include: { place: { select: { slug: true } } } },
         },
       },
       loyalty: {
@@ -109,6 +109,9 @@ export default async function AccountPage({
     unit: x.unit,
   }));
   const concierge = upcoming.length ? await getConciergeCatalog(locale) : null;
+  // table requests sent before they were linked to their place: find it by name
+  const restaurantSlug = (label: string) =>
+    concierge?.restaurants.find((p) => label === `Restaurant — ${p.name}`)?.slug ?? null;
   const points = client.loyalty?.points ?? 0;
   const lifetime = client.loyalty?.lifetimePoints ?? 0;
   const tier = tierFor(lifetime);
@@ -227,6 +230,7 @@ export default async function AccountPage({
               status: i.status,
               serviceDate: i.serviceDate ? toISODate(i.serviceDate) : null,
               requestedByGuest: i.requestedByGuest,
+              placeSlug: i.place?.slug ?? restaurantSlug(i.label),
             }))}
           />
         )}
