@@ -186,38 +186,38 @@ export const fr: Dict = {
         "La partie honnête : on va à la plage en voiture. Lorient est à 5 minutes, Marigot et St Jean à 8. Toutes les plages de St Barth sont publiques, et la plupart de nos hôtes en changent chaque jour de toute façon.",
       ],
     ] as Array<[string, string]>,
-    packageLabel: "Tout est là",
-    packageTitle: "Tout ce qu'il faut, à quelques minutes",
+    packageLabel: "Tout près de tout",
+    packageTitle: "Le calme en haut, et tout le reste à quelques minutes",
     packageIntro:
-      "Pointe Milou est un quartier calme, mais rien n'y est loin. C'est ce qui en fait l'un des endroits les plus demandés de l'île pour une villa : on dort au calme, et tout le reste est à côté.",
+      "C'est vraiment pour ça que Pointe Milou est si recherché. On dort au calme, et l'île est là dès qu'on en a envie.",
     package: [
       [
-        "Courses et boulangeries",
-        "Le U Express L'Oasis de Lorient est en rénovation et s'agrandit, et il y a aussi le nouveau Monoprix. Pour le pain et les croissants du matin, La Petite Colombe et Choisy sont tout près.",
+        "Commerces et boulangeries",
+        "Le U Express L'Oasis de Lorient est en rénovation et s'agrandit, et il y a un nouveau Monoprix. Pour le pain et les croissants du matin, La Petite Colombe et Choisy sont juste en bas de la route.",
       ],
       [
-        "Hôtels",
-        "Quelques-uns des plus beaux hôtels de l'île sont autour de vous : Le Toiny, Le Sereno, le Barthélemy et Les Airelles, qui vient d'ouvrir. Chacun a une table qui vaut la réservation.",
+        "Les grands hôtels",
+        "Le Toiny, Le Sereno, Le Barthélemy et les tout nouveaux Airelles sont tout autour de la pointe. Leurs bars, leurs spas et leurs restaurants vous sont ouverts aussi.",
       ],
       [
-        "Restaurants",
-        "L'Esprit, Grain de Sel, Tamarin, et les restaurants de ces hôtels. Où que vous dîniez, vous n'êtes jamais loin de la villa.",
+        "Là où nous mangeons",
+        "L'Esprit, Grain de Sel et Tamarin sont nos habitudes, avec les tables des hôtels. On sort dîner et on est rentré en dix minutes.",
       ],
       [
-        "Plages",
-        "Lorient, Marigot, Grand Cul-de-Sac, Saline : une plage différente chaque jour, et aucune n'est loin.",
+        "Une plage par jour",
+        "Lorient, Marigot, Grand Cul-de-Sac, Saline. Chacune a son ambiance, et aucune n'est loin.",
       ],
       [
-        "Gustavia et les soirées",
-        "Gustavia est à 15-20 minutes de la villa, et le Nikki Beach, le grand beach club festif, à une dizaine. Assez près pour sortir, assez loin pour ne pas l'entendre.",
+        "Gustavia et la fête",
+        "Gustavia est à 15-20 minutes, le Nikki Beach à une dizaine. Assez près pour une grande soirée, assez loin pour que la musique n'arrive jamais jusqu'à la terrasse.",
       ],
       [
-        "Marcher, au calme",
-        "Pointe Milou est un quartier où l'on marche volontiers : des routes calmes, peu de voitures, idéal pour une balade le matin ou au coucher du soleil. Et sans travaux de novembre au 15 avril, la haute saison reste tranquille.",
+        "Un quartier où l'on marche",
+        "Pointe Milou est calme, presque sans circulation : une marche le matin, une balade au coucher du soleil. Et de novembre au 15 avril, aucun chantier n'est autorisé, donc toute la saison reste paisible.",
       ],
     ] as Array<[string, string]>,
     packageOutro:
-      "Au calme, près de tout, dans l'un des meilleurs quartiers de l'île : voilà pourquoi Pointe Milou est si recherché, et pourquoi nos clients reviennent.",
+      "Le calme, le centre de l'île, et le meilleur de St Barth à quelques minutes. C'est ça le package, et c'est pour ça que nos clients reviennent à Pointe Milou année après année.",
     whatsTitle: "Ce qu'il y a à Pointe Milou",
     whats: [
       [

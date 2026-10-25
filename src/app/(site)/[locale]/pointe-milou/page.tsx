@@ -105,22 +105,22 @@ export default async function PointeMilouPage({
       </section>
 
       {/* The whole package — shops, hotels, tables, beaches, all close by */}
-      <section className="bg-navy text-white" aria-labelledby="pm-package">
+      <section className="bg-sand-dark" aria-labelledby="pm-package">
         <div className="mx-auto max-w-7xl px-5 py-16 lg:px-8 lg:py-24">
           <p className="eyebrow mb-4">{pm.packageLabel}</p>
-          <h2 id="pm-package" className="section-title mb-5 !text-white">
+          <h2 id="pm-package" className="section-title mb-5">
             {pm.packageTitle}
           </h2>
-          <p className="mb-12 max-w-3xl leading-relaxed text-white/75">{pm.packageIntro}</p>
-          <div className="grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
+          <p className="mb-12 max-w-3xl leading-relaxed text-ink/70">{pm.packageIntro}</p>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {pm.package.map(([title, text]) => (
-              <div key={title} className="reveal border-t border-gold/40 pt-5">
-                <h3 className="font-display text-2xl text-gold">{title}</h3>
-                <p className="mt-3 text-sm leading-relaxed text-white/75">{text}</p>
+              <div key={title} className="reveal border-t-2 border-gold bg-white p-7">
+                <h3 className="font-display text-2xl text-ink">{title}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-ink/70">{text}</p>
               </div>
             ))}
           </div>
-          <p className="mt-14 max-w-3xl font-display text-2xl leading-snug text-white">{pm.packageOutro}</p>
+          <p className="mt-14 max-w-3xl font-display text-2xl leading-snug text-navy">{pm.packageOutro}</p>
         </div>
       </section>
 
