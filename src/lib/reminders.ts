@@ -2,6 +2,7 @@ import "server-only";
 import { Prisma } from "@prisma/client";
 import { prisma } from "./db";
 import { sendMail } from "./mailer";
+import { emailTexts, renderEmail } from "./email-templates";
 import { getSettings } from "./settings";
 import { getContact, ownerNotifyEmail } from "./contact";
 import { portalUrlFor } from "./guest-stay";
@@ -91,7 +92,8 @@ function guestOf(r: Res) {
     r.client?.firstname ||
     r.clientName?.split(" ")[0] ||
     (fr ? "cher client" : "dear guest");
-  return { email, fr, name: esc(name) };
+  // raw: the email templates escape what they insert
+  return { email, fr, name };
 }
 
 /** What is still owed on the stay (rental + confirmed extras − money received). */
@@ -150,26 +152,21 @@ async function jobsFor(r: Res, today: string, cfg: ReminderConfig): Promise<Job[
         to: "guest",
         description: `Rappel au client : option valable jusqu'au ${exp}`,
         run: async () => {
-          const portal = await portalUrlFor(r.id, g.fr ? "fr" : "en");
+          const L = g.fr ? "fr" : "en";
+          const [portal, t] = await Promise.all([portalUrlFor(r.id, L), emailTexts("optionExpiring", L)]);
+          const mail = await renderEmail(
+            "optionExpiring",
+            L,
+            { name: g.name, stay: stayLine(g.fr), expires: formatDate(exp, L) },
+            { button: portal ? button(portal, t.button) : "" }
+          );
           await sendMail({
             to: g.email!,
             templateSlug: "option_expiring",
             reservationId: r.id,
             clientId: r.clientId ?? undefined,
-            subject: g.fr
-              ? "Votre option à la Villa ONLY VIEW expire bientôt"
-              : "Your hold on Villa ONLY VIEW expires soon",
-            html: g.fr
-              ? `<p>Bonjour <strong>${g.name}</strong>,</p>
-<p>Nous vous gardons la villa pour le séjour du <strong>${stayLine(true)}</strong> jusqu'au <strong>${formatDate(exp, "fr")}</strong>.</p>
-<p>Pour confirmer, il suffit de signer le contrat et de régler l'acompte. Passé cette date, les dates seront de nouveau proposées à d'autres voyageurs.</p>
-${portal ? button(portal, "MON ESPACE CLIENT") : ""}
-<p>Une question ? Répondez simplement à cet email.</p>`
-              : `<p>Hello <strong>${g.name}</strong>,</p>
-<p>We are holding the villa for your stay <strong>${stayLine(false)}</strong> until <strong>${formatDate(exp, "en")}</strong>.</p>
-<p>To confirm, simply sign the agreement and send the deposit. After that date the dates will be offered to other travellers again.</p>
-${portal ? button(portal, "OPEN MY PORTAL") : ""}
-<p>Any question? Just reply to this email.</p>`,
+            subject: mail.subject,
+            html: mail.html,
           });
         },
       });
@@ -218,27 +215,21 @@ ${portal ? button(portal, "OPEN MY PORTAL") : ""}
         to: "guest",
         description: `Rappel du solde au client : ${money(remaining)} avant le ${due}`,
         run: async () => {
-          const portal = await portalUrlFor(r.id, g.fr ? "fr" : "en");
+          const L = g.fr ? "fr" : "en";
+          const [portal, t, bank] = await Promise.all([portalUrlFor(r.id, L), emailTexts("balanceReminder", L), bankBlock(g.fr)]);
+          const mail = await renderEmail(
+            "balanceReminder",
+            L,
+            { name: g.name, stay: stayLine(g.fr), amount: money(remaining), due: formatDate(due, L) },
+            { bank, button: portal ? button(portal, t.button) : "" }
+          );
           await sendMail({
             to: g.email!,
             templateSlug: "balance_reminder",
             reservationId: r.id,
             clientId: r.clientId ?? undefined,
-            subject: g.fr
-              ? `Solde de votre séjour — à régler avant le ${formatDate(due, "fr")}`
-              : `Your stay balance — due by ${formatDate(due, "en")}`,
-            html:
-              (g.fr
-                ? `<p>Bonjour <strong>${g.name}</strong>,</p>
-<p>Votre séjour du <strong>${stayLine(true)}</strong> approche ! Le solde de <strong>${money(remaining)}</strong> est à régler avant le <strong>${formatDate(due, "fr")}</strong>, par virement :</p>`
-                : `<p>Hello <strong>${g.name}</strong>,</p>
-<p>Your stay <strong>${stayLine(false)}</strong> is getting close! The balance of <strong>${money(remaining)}</strong> is due by <strong>${formatDate(due, "en")}</strong>, by bank transfer:</p>`) +
-              (await bankBlock(g.fr)) +
-              (g.fr
-                ? `<p>Merci d'indiquer votre nom et vos dates en référence. Si le virement est déjà parti, ignorez simplement ce message.</p>
-${portal ? button(portal, "MON ESPACE CLIENT") : ""}`
-                : `<p>Please quote your name and dates as the reference. If the transfer is already on its way, simply ignore this message.</p>
-${portal ? button(portal, "OPEN MY PORTAL") : ""}`),
+            subject: mail.subject,
+            html: mail.html,
           });
         },
       });
@@ -290,28 +281,24 @@ ${portal ? button(portal, "OPEN MY PORTAL") : ""}`),
           contact.whatsappUrl &&
             `WhatsApp : <a href="${contact.whatsappUrl}">${esc(contact.whatsapp)}</a>`,
         ].filter(Boolean);
-        const missingDetails = !r.guestDetailsUpdatedAt;
+        const L = g.fr ? "fr" : "en";
+        const t = await emailTexts("preArrival", L);
+        const mail = await renderEmail(
+          "preArrival",
+          L,
+          { name: g.name, stay: stayLine(g.fr), arrivalDetails: r.guestDetailsUpdatedAt ? t.thanksDetails : t.askDetails },
+          {
+            button: portal ? button(portal, t.button) : "",
+            practical: practical.length ? `<ul>${practical.map((p) => `<li>${p}</li>`).join("")}</ul>` : "",
+          }
+        );
         await sendMail({
           to: g.email!,
           templateSlug: "pre_arrival",
           reservationId: r.id,
           clientId: r.clientId ?? undefined,
-          subject: g.fr
-            ? `Bientôt à Saint-Barth ! Préparons votre arrivée`
-            : `See you soon in St Barth! Let's prepare your arrival`,
-          html: g.fr
-            ? `<p>Bonjour <strong>${g.name}</strong>,</p>
-<p>Plus que quelques jours avant votre séjour à la Villa ONLY VIEW (<strong>${stayLine(true)}</strong>).</p>
-${missingDetails ? "<p>Pour bien vous accueillir, pourriez-vous nous indiquer vos <strong>vols et heures d'arrivée</strong>, les participants et vos éventuelles demandes particulières ? Vous pouvez aussi y réserver des <strong>extras</strong> (chef, voiture, bateau…).</p>" : "<p>Merci pour vos informations d'arrivée ! Vous pouvez encore réserver des <strong>extras</strong> (chef, voiture, bateau…) depuis votre espace.</p>"}
-${portal ? button(portal, "MON ESPACE CLIENT") : ""}
-${practical.length ? `<ul>${practical.map((p) => `<li>${p}</li>`).join("")}</ul>` : ""}
-<p>À très bientôt,<br>Villa ONLY VIEW</p>`
-            : `<p>Hello <strong>${g.name}</strong>,</p>
-<p>Only a few days to go before your stay at Villa ONLY VIEW (<strong>${stayLine(false)}</strong>).</p>
-${missingDetails ? "<p>To welcome you properly, could you share your <strong>flights and arrival time</strong>, who is coming and any special requests? You can also book <strong>extras</strong> there (private chef, car, boat…).</p>" : "<p>Thank you for your arrival details! You can still book <strong>extras</strong> (private chef, car, boat…) from your portal.</p>"}
-${portal ? button(portal, "OPEN MY PORTAL") : ""}
-${practical.length ? `<ul>${practical.map((p) => `<li>${p}</li>`).join("")}</ul>` : ""}
-<p>See you very soon,<br>Villa ONLY VIEW</p>`,
+          subject: mail.subject,
+          html: mail.html,
         });
       },
     });
@@ -326,23 +313,16 @@ ${practical.length ? `<ul>${practical.map((p) => `<li>${p}</li>`).join("")}</ul>
       description: `Demande d'avis (départ ${end})`,
       run: async () => {
         const url = siteUrl(g.fr ? "/fr/reviews" : "/reviews");
+        const L = g.fr ? "fr" : "en";
+        const t = await emailTexts("reviewRequest", L);
+        const mail = await renderEmail("reviewRequest", L, { name: g.name }, { button: button(url, t.button) });
         await sendMail({
           to: g.email!,
           templateSlug: "review_request",
           reservationId: r.id,
           clientId: r.clientId ?? undefined,
-          subject: g.fr ? "Merci pour votre séjour à la Villa ONLY VIEW" : "Thank you for staying at Villa ONLY VIEW",
-          html: g.fr
-            ? `<p>Bonjour <strong>${g.name}</strong>,</p>
-<p>Merci d'avoir choisi la Villa ONLY VIEW. Nous espérons que vous avez passé un séjour merveilleux à Saint-Barth.</p>
-<p>Votre avis compte énormément pour nous et aide les futurs voyageurs : auriez-vous deux minutes pour partager votre expérience ?</p>
-${button(url, "LAISSER UN AVIS")}
-<p>Au plaisir de vous accueillir à nouveau,<br>Villa ONLY VIEW</p>`
-            : `<p>Hello <strong>${g.name}</strong>,</p>
-<p>Thank you for choosing Villa ONLY VIEW — we hope you had a wonderful time in St Barth.</p>
-<p>Your review means a lot to us and helps future guests: would you have two minutes to share your experience?</p>
-${button(url, "LEAVE A REVIEW")}
-<p>We hope to welcome you back soon,<br>Villa ONLY VIEW</p>`,
+          subject: mail.subject,
+          html: mail.html,
         });
       },
     });

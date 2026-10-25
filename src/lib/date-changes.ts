@@ -7,6 +7,7 @@ import { getRateConfig } from "./settings";
 import { isRangeAvailable } from "./availability";
 import { formatDate, nightsBetween, toISODate, todayISO } from "./dates";
 import { sendMail } from "./mailer";
+import { emailButton, emailNote, emailTexts, renderEmail, renderEmailText } from "./email-templates";
 import { hasPriorAgreement, issueContract, loadReservationForContract } from "./contracts";
 import { portalUrlFor } from "./guest-stay";
 
@@ -235,27 +236,18 @@ async function emailGuestDecision(changeId: number, signUrl: string | null = nul
   const to = `${formatDate(c.toStart, L)} – ${formatDate(c.toEnd, L)}`;
   const approved = c.status === "approved";
   const portal = await portalUrlFor(r.id, L);
-  const btn = (href: string, label: string, color = "#C9A962") =>
-    `<p style="text-align:center;margin:24px 0;"><a href="${href}" style="background:${color};color:#fff;padding:13px 26px;text-decoration:none;letter-spacing:0.1em;">${label}</a></p>`;
-  const note = c.adminNote ? `<p style="background:#f8fafc;padding:14px 18px;border-left:3px solid #C9A962;">${esc(c.adminNote).replace(/\n/g, "<br>")}</p>` : "";
-
-  const html = g.fr
-    ? `<p>Bonjour <strong>${esc(g.name)}</strong>,</p>
-${approved
-  ? `<p>Bonne nouvelle : votre changement de dates est accepté. Votre séjour à la Villa ONLY VIEW passe du <strong>${from}</strong> au <strong>${to}</strong>.</p>
-<p>Nouveau montant de la location : <strong>${money(r.priceTTC)}</strong>. Les sommes déjà versées sont reportées sur les nouvelles dates.</p>`
-  : `<p>Nous ne pouvons malheureusement pas déplacer votre séjour au <strong>${to}</strong>. Votre réservation reste inchangée (<strong>${from}</strong>).</p>`}
-${note}
-${signUrl ? `<p>L'avenant à votre contrat, qui libère vos anciennes dates et reprend les sommes déjà reçues, est prêt à être signé :</p>${btn(signUrl, "RELIRE & SIGNER L'AVENANT")}` : ""}
-${portal ? btn(portal, "MON ESPACE CLIENT", "#1B4965") : ""}`
-    : `<p>Hello <strong>${esc(g.name)}</strong>,</p>
-${approved
-  ? `<p>Good news: your change of dates is approved. Your stay at Villa ONLY VIEW moves from <strong>${from}</strong> to <strong>${to}</strong>.</p>
-<p>New rental amount: <strong>${money(r.priceTTC)}</strong>. Everything you have already paid is carried over to the new dates.</p>`
-  : `<p>Unfortunately we can't move your stay to <strong>${to}</strong>. Your booking stays as it was (<strong>${from}</strong>).</p>`}
-${note}
-${signUrl ? `<p>The amendment to your agreement — releasing your previous dates and recording what you have already paid — is ready to sign:</p>${btn(signUrl, "REVIEW & SIGN THE AMENDMENT")}` : ""}
-${portal ? btn(portal, "OPEN MY GUEST PORTAL", "#1B4965") : ""}`;
+  // wording: Admin → Textes du site → Emails
+  const key = approved ? "dateChangeApproved" : "dateChangeRejected";
+  const t = await emailTexts(key, L);
+  const blocks: Record<string, string> = {
+    note: emailNote(c.adminNote),
+    button: portal ? emailButton(portal, t.button, "#1B4965") : "",
+  };
+  if (approved) {
+    const a = t as Awaited<ReturnType<typeof emailTexts<"dateChangeApproved">>>;
+    blocks.amendment = signUrl ? renderEmailText(a.amendment, {}) + emailButton(signUrl, a.amendmentButton) : "";
+  }
+  const mail = await renderEmail(key, L, { name: g.name, from, to, amount: money(r.priceTTC) }, blocks);
 
   const res = await sendMail({
     to: g.to,
@@ -263,14 +255,8 @@ ${portal ? btn(portal, "OPEN MY GUEST PORTAL", "#1B4965") : ""}`;
     templateSlug: approved ? "date_change_approved" : "date_change_rejected",
     reservationId: r.id,
     clientId: r.clientId ?? undefined,
-    subject: g.fr
-      ? approved
-        ? "Changement de dates accepté — Villa ONLY VIEW"
-        : "Votre demande de changement de dates — Villa ONLY VIEW"
-      : approved
-        ? "Change of dates approved — Villa ONLY VIEW"
-        : "Your change of dates request — Villa ONLY VIEW",
-    html,
+    subject: mail.subject,
+    html: mail.html,
   });
   return res.sent;
 }

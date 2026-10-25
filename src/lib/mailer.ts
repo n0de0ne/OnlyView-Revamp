@@ -100,7 +100,7 @@ export async function sendMail(input: MailInput): Promise<{ sent: boolean }> {
   }
 }
 
-function wrapEmail(subject: string, content: string): string {
+export function wrapEmail(subject: string, content: string): string {
   return `<!doctype html><html><head><meta charset="utf-8"><title>${subject}</title></head>
 <body style="margin:0;padding:0;background:#f4f2ee;font-family:Georgia,'Times New Roman',serif;">
   <div style="max-width:600px;margin:0 auto;padding:32px 16px;">

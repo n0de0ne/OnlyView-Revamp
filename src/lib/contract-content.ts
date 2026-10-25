@@ -4,6 +4,9 @@
  * signing page and the PDF renderer.
  */
 import { addDays, formatDate, nightsBetween, todayISO } from "./dates";
+import { getDict, type Dict } from "./i18n";
+
+export type ContractTemplate = Dict["contractText"];
 
 /** Deposit share for agreements issued before the rate was stored with them. */
 export const DEPOSIT_RATE = 0.3;
@@ -28,6 +31,8 @@ export interface ContractParams {
   noTax?: boolean;
   /** deposit share of the rent (Réglages → Tarifs) when the agreement was issued */
   depositRate?: number;
+  /** the wording (Admin → Textes du site → Contrat) when the agreement was issued */
+  template?: ContractTemplate;
   /** day the agreement is dated (ISO) — defaults to today */
   issuedOn?: string;
   /** money already received toward the rent, oldest first (refunds negative) */
@@ -190,209 +195,82 @@ function amendmentSection(p: ContractParams): ContractSection | null {
       };
 }
 
+/** Fill a clause's {placeholders}; an unknown one stays as written. */
+const fillIn = (s: string, vars: Record<string, string | number>) =>
+  s.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? String(vars[k]) : m));
+
+/**
+ * The wording an agreement was issued with, else the original wording of the
+ * code (agreements issued before it was editable), with the tax and balance
+ * deadline those agreements quoted.
+ */
+function templateOf(p: ContractParams): ContractTemplate {
+  if (p.template) return p.template;
+  const raw = getDict(p.lang).contractText;
+  return JSON.parse(fillIn(JSON.stringify(raw), { tax: 5, balanceDays: 30 })) as ContractTemplate;
+}
+
 export function buildContract(p: ContractParams): ContractContent {
   const deposit = depositFor(p.totalPrice, p.depositRate);
   const balance = p.totalPrice - deposit;
+  const fr = p.lang === "fr";
   const ci = formatDate(p.checkIn, p.lang);
   const co = formatDate(p.checkOut, p.lang);
   const today = formatDate(p.issuedOn ?? todayISO(), p.lang);
   const amendment = amendmentSection(p);
   const paid = totalReceived(p.received) !== 0 ? paymentTerms(p, deposit) : null;
-
-  if (p.lang === "fr") {
-    return {
-      title: amendment ? "AVENANT AU CONTRAT DE LOCATION" : "CONTRAT DE LOCATION SAISONNIÈRE",
-      subtitle: "VILLA ONLY VIEW",
-      intro: [
-        `Le présent contrat est conclu entre **${p.ownerName}** (ci-après « le Propriétaire ») et **${p.clientName}** (ci-après « le Locataire »).`,
-        `Le Propriétaire dispose d'une villa de 4 chambres située à Pointe Milou, dénommée « Villa Only View ».`,
-        `Le Locataire souhaite louer un hébergement sur l'île de Saint-Barthélemy pour la période du **${ci}** au **${co}** (${p.nights} nuits) pour **${p.bedrooms}** chambre(s).`,
-        `EN CONSÉQUENCE, compte tenu des engagements mutuels contenus dans le présent contrat, les parties conviennent de ce qui suit :`,
-      ],
-      sections: [
-        ...(amendment ? [amendment] : []),
-        {
-          heading: "AGENTS",
-          paragraphs: [
-            "Chacune des parties reconnaît qu'aucun agent immobilier ou agent de voyage n'est intervenu dans la conclusion de la présente location et que le contact a été direct, sans l'intervention d'un tiers qui aurait droit à une commission ou à toute autre forme de rémunération.",
-          ],
-        },
-        {
-          heading: "DESCRIPTION DU BIEN",
-          paragraphs: [
-            "Le Locataire s'engage à louer le bien suivant, situé à Pointe Milou, île de Saint-Barthélemy :",
-            "Une villa de 4 chambres avec 4 salles de bain, cuisine entièrement équipée, terrasse, piscine et espace de vie.",
-          ],
-        },
-        {
-          heading: "NOMBRE DE LOCATAIRES",
-          paragraphs: [
-            `Le présent contrat autorise **${p.guests}** personne(s) à occuper les lieux pendant la durée du contrat. Le Locataire s'engage à ce qu'aucune autre personne ne soit autorisée à séjourner sur place.`,
-          ],
-        },
-        {
-          heading: "PAIEMENT DU LOYER/ACOMPTE",
-          paragraphs: [
-            `Le loyer total à payer pour la période indiquée ci-dessus s'élève à **${money(p.totalPrice)}**${p.noTax ? "" : ", incluant le loyer et la taxe de séjour locale de 5 %"}, payable comme suit :`,
-            ...(paid
-              ? [paid.carried]
-              : [
-                  `Le Locataire s'engage à verser au Propriétaire la somme de **${money(p.totalPrice)}**. Un acompte non remboursable de **${money(deposit)}** est dû à la signature du contrat afin de garantir la location de la villa, et le solde (**${money(balance)}**) est dû 30 jours avant l'arrivée.`,
-                  "**Tous les acomptes et paiements finaux sont NON REMBOURSABLES.**",
-                ]),
-          ],
-          ...(paid ? { table: paid.table } : {}),
-        },
-        ...(paid
-          ? [
-              {
-                heading: "ÉCHÉANCIER",
-                paragraphs: [paid.schedule, "**Tous les acomptes et paiements finaux sont NON REMBOURSABLES.**"],
-              },
-            ]
-          : []),
-        {
-          heading: "COORDONNÉES BANCAIRES POUR VIREMENT",
-          paragraphs: [],
-          table: [
-            ["Titulaire du compte", p.bank.accountName],
-            ["Numéro de compte", p.bank.accountNumber],
-            ["Banque", p.bank.bankName],
-            ["IBAN", p.bank.iban],
-            ["BIC/SWIFT", p.bank.bic],
-            ["Référence", `ONLY VIEW - ${p.clientName} - ${ci}`],
-          ],
-        },
-        {
-          heading: "OBLIGATIONS DU PROPRIÉTAIRE",
-          paragraphs: [],
-          bullets: [
-            "Le ménage quotidien est assuré, sauf le dimanche et les jours fériés locaux.",
-            "Tout le linge de maison et les serviettes sont fournis.",
-            "L'électricité, l'eau et les communications téléphoniques locales sont incluses dans le montant de la location.",
-            "Toutes les taxes, charges et prestations relatives au bien sont incluses dans le prix indiqué ci-dessus.",
-            "Le Propriétaire est responsable de l'entretien de la piscine, des jardins, des équipements et de tout le matériel de la propriété.",
-          ],
-        },
-        {
-          heading: "OBLIGATIONS DU LOCATAIRE",
-          paragraphs: [],
-          bullets: [
-            "Le Locataire est responsable de tous les dommages causés au bien, au-delà de l'usure normale.",
-            "Le Locataire informera immédiatement le Propriétaire en cas de fuite d'eau, d'incendie ou de tout autre dommage nécessitant une réparation ou une attention immédiate.",
-          ],
-        },
-        {
-          heading: "INTÉGRALITÉ DE L'ACCORD",
-          paragraphs: [
-            "Le présent contrat constitue l'intégralité de l'accord entre les parties concernant son objet et remplace tous les accords, déclarations ou ententes antérieurs ou concomitants. Aucun avenant ni aucune modification du présent contrat ne saurait engager les parties sans un écrit signé par celles-ci.",
-          ],
-        },
-      ],
-      dated: `FAIT LE : ${today}`,
-      signatureLabels: {
-        owner: "Le Propriétaire",
-        tenant: "Le Locataire",
-        date: "Date",
-      },
-      deposit,
-      balance,
-      received: paid?.received ?? 0,
-      remaining: paid?.remaining ?? p.totalPrice,
-    };
-  }
+  const T = templateOf(p);
+  const vars = {
+    owner: p.ownerName,
+    tenant: p.clientName,
+    checkIn: ci,
+    checkOut: co,
+    nights: p.nights,
+    bedrooms: p.bedrooms,
+    guests: p.guests,
+    totalAmount: money(p.totalPrice),
+    depositAmount: money(deposit),
+    balanceAmount: money(balance),
+    date: today,
+    taxClause: p.noTax ? "" : T.taxClause,
+  };
+  const f = (s: string) => fillIn(fillIn(s, vars), vars);
+  const clauses = (list: ContractTemplate["clausesBefore"]): ContractSection[] =>
+    list.map((c) => ({
+      heading: f(c.heading),
+      paragraphs: c.paragraphs.map(f),
+      ...(c.bullets.length ? { bullets: c.bullets.map(f) } : {}),
+    }));
 
   return {
-    title: amendment ? "AMENDMENT TO THE RENTAL AGREEMENT" : "SEASONAL RENTAL AGREEMENT",
-    subtitle: "VILLA ONLY VIEW",
-    intro: [
-      `This Agreement is entered between **${p.ownerName}** (hereinafter referred to as "Owner") and **${p.clientName}** (hereinafter referred to as "Tenant").`,
-      `Whereas Owner has a 4 bedroom Villa located in Pointe Milou named "Villa Only View".`,
-      `Whereas Tenant wishes to secure lodging on the island of Saint-Barthelemy for the period of time from **${ci}** to **${co}** (${p.nights} nights) for **${p.bedrooms}** bedroom(s).`,
-      `NOW THEREFORE, in consideration of the mutual covenants, agreements, representations and warranties contained herein, the parties agree as follows:`,
-    ],
+    title: f(amendment ? T.amendmentTitle : T.title),
+    subtitle: f(T.subtitle),
+    intro: T.intro.map(f),
     sections: [
       ...(amendment ? [amendment] : []),
+      ...clauses(T.clausesBefore),
       {
-        heading: "AGENTS",
-        paragraphs: [
-          "It is acknowledged by each of the parties that no real estate or travel agent assisted in the securing of the rental and that the contact was direct in nature without the intervention of a third party who would be entitled to a commission or other form of payment in compensation for the securing of the rental.",
-        ],
-      },
-      {
-        heading: "DESCRIPTION OF PROPERTY",
-        paragraphs: [
-          "The Tenant agrees to rent the following property, located in Pointe Milou, island of Saint-Barthelemy:",
-          "A 4 Bedroom Villa with 4 bathrooms, fully equipped kitchen, terrace, pool, and living room area.",
-        ],
-      },
-      {
-        heading: "NUMBER OF TENANTS",
-        paragraphs: [
-          `This agreement permits **${p.guests}** people to occupy the premises during the duration of this contract and Tenant agrees that no others will be permitted to lodge on the premises.`,
-        ],
-      },
-      {
-        heading: "PAYMENT OF RENT/DEPOSIT",
-        paragraphs: [
-          `The total rent to be paid for the time period specified above shall be the sum of **${money(p.totalPrice)}** (UNITED STATES DOLLARS)${p.noTax ? "" : " which includes the rental fee and 5% local tax"}, payable as follows:`,
-          ...(paid
-            ? [paid.carried]
-            : [
-                `Tenant agrees to pay to Owner the sum of **${money(p.totalPrice)}**. A non-refundable deposit of **${money(deposit)}** is due in order to secure the rental of the villa at time of the signing of the contract and the remaining balance (**${money(balance)}**) is due 30 days prior to arrival.`,
-                "**All deposits and final payments are NON-REFUNDABLE.**",
-              ]),
-        ],
+        heading: f(T.paymentHeading),
+        paragraphs: [f(T.paymentIntro), ...(paid ? [paid.carried] : [f(T.paymentTerms), f(T.nonRefundable)])],
         ...(paid ? { table: paid.table } : {}),
       },
-      ...(paid
-        ? [
-            {
-              heading: "PAYMENT SCHEDULE",
-              paragraphs: [paid.schedule, "**All deposits and final payments are NON-REFUNDABLE.**"],
-            },
-          ]
-        : []),
+      ...(paid ? [{ heading: f(T.scheduleHeading), paragraphs: [paid.schedule, f(T.nonRefundable)] }] : []),
       {
-        heading: "BANK DETAILS FOR WIRE TRANSFER",
+        heading: f(T.bankHeading),
         paragraphs: [],
         table: [
-          ["Account Name", p.bank.accountName],
-          ["Account Number", p.bank.accountNumber],
-          ["Bank", p.bank.bankName],
+          [fr ? "Titulaire du compte" : "Account Name", p.bank.accountName],
+          [fr ? "Numéro de compte" : "Account Number", p.bank.accountNumber],
+          [fr ? "Banque" : "Bank", p.bank.bankName],
           ["IBAN", p.bank.iban],
           ["BIC/SWIFT", p.bank.bic],
-          ["Reference", `ONLY VIEW - ${p.clientName} - ${ci}`],
+          [fr ? "Référence" : "Reference", `ONLY VIEW - ${p.clientName} - ${ci}`],
         ],
       },
-      {
-        heading: "DUTIES OF OWNER",
-        paragraphs: [],
-        bullets: [
-          "Daily housekeeping is provided, except on Sundays and local holidays.",
-          "All linens and towels.",
-          "All electricity, water and local telephone charges are included in the rental amount paid.",
-          "All taxes, costs, amenities, service charges and other relating to the property are included in the above-stated price.",
-          "Owner shall be responsible for the maintenance of the pool, gardens, equipment, appliances and all other material and equipment on the property.",
-        ],
-      },
-      {
-        heading: "DUTIES OF TENANT",
-        paragraphs: [],
-        bullets: [
-          "Tenant shall be responsible for all damages to the property other than for ordinary wear and tear.",
-          "Tenant shall immediately advise Owner in the event of water leaks, fire or other damages and/or matters requiring immediate repair or attention.",
-        ],
-      },
-      {
-        heading: "ENTIRE AGREEMENT",
-        paragraphs: [
-          "This agreement constitutes the entire agreement between the parties pertaining to the subject matter contained herein and supersedes all prior or contemporaneous agreements, representations or understandings of the parties. No supplement, modification, or amendment of this agreement shall be binding unless executed in writing by the parties.",
-        ],
-      },
+      ...clauses(T.clausesAfter),
     ],
-    dated: `DATED: ${today}`,
-    signatureLabels: { owner: "Owner", tenant: "Tenant", date: "Date" },
+    dated: f(T.dated),
+    signatureLabels: { owner: f(T.signatureOwner), tenant: f(T.signatureTenant), date: f(T.signatureDate) },
     deposit,
     balance,
     received: paid?.received ?? 0,

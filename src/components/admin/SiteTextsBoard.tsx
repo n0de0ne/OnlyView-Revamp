@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { api, Card, ConfirmButton, fmtDate, Spinner, useToast } from "./ui";
+import { api, Card, ConfirmButton, fmtDate, Modal, Spinner, useToast } from "./ui";
 
 type Json = string | number | boolean | null | Json[] | { [k: string]: Json };
 
@@ -371,6 +371,18 @@ function BlockEditor({ block, locale, onSaved }: { block: Block; locale: string;
   useEffect(() => setDraft(v.value), [v.value]);
   const dirty = !same(draft, v.value);
   const isOriginal = same(draft, v.original);
+  // guest emails and the contract: see them filled with a made-up stay before saving
+  const canPreview = block.group === "emails" || block.group === "contract";
+  const [preview, setPreview] = useState<{ subject: string; html: string; kind: string } | null>(null);
+
+  const showPreview = async () => {
+    const res = await api<{ subject: string; html: string; kind: string }>("/api/admin/site-texts/preview", {
+      method: "POST",
+      json: { key: block.key, locale, value: draft },
+    });
+    if (res.success) setPreview(res);
+    else push(res.error === "invalid_shape" ? "Un champ est vide ou mal rempli" : `Erreur : ${res.error}`, "error");
+  };
 
   const save = async () => {
     setSaving(true);
@@ -390,6 +402,11 @@ function BlockEditor({ block, locale, onSaved }: { block: Block; locale: string;
         <button className="abtn-gold" disabled={!dirty || saving} onClick={save}>
           {saving ? "…" : "Enregistrer"}
         </button>
+        {canPreview && (
+          <button className="abtn-ghost" onClick={showPreview}>
+            Aperçu
+          </button>
+        )}
         {dirty && (
           <button className="abtn-ghost" onClick={() => setDraft(v.value)}>
             Annuler
@@ -407,6 +424,28 @@ function BlockEditor({ block, locale, onSaved }: { block: Block; locale: string;
           </span>
         )}
       </div>
+      <Modal
+        open={!!preview}
+        onClose={() => setPreview(null)}
+        wide
+        title={preview?.kind === "email" ? `Objet : ${preview.subject}` : "Aperçu du contrat"}
+      >
+        <p className="mb-3 text-xs text-slate-500">
+          Exemple avec un séjour fictif{dirty ? " — texte non enregistré" : ""}.
+        </p>
+        {preview && (
+          <iframe
+            title="Aperçu"
+            sandbox=""
+            className="h-[70svh] w-full rounded-lg border border-slate-200"
+            srcDoc={
+              preview.kind === "email"
+                ? preview.html
+                : `<!doctype html><meta charset="utf-8"><body style="font-family:Georgia,serif;font-size:14px;line-height:1.6;color:#333;max-width:720px;margin:24px auto;padding:0 20px;">${preview.html}</body>`
+            }
+          />
+        )}
+      </Modal>
     </div>
   );
 }

@@ -6,7 +6,9 @@ import { buildContract, contractToHtml, type ContractParams } from "./contract-c
 import { getRateConfig, getSettings } from "./settings";
 import { formatDate, nightsBetween, toISODate } from "./dates";
 import { sendMail } from "./mailer";
+import { emailButton, emailTexts, renderEmail } from "./email-templates";
 import { SITE_URL } from "./seo";
+import { getContent } from "./site-content";
 
 /** Released dates an amendment must mention. */
 export interface ReleasedDates {
@@ -204,7 +206,7 @@ export async function issueContract(
     };
   }
 
-  const [s, rates] = await Promise.all([getSettings(), getRateConfig()]);
+  const [s, rates, copy] = await Promise.all([getSettings(), getRateConfig(), getContent(lang)]);
   const checkIn = toISODate(r.startDate);
   const checkOut = toISODate(r.endDate);
   const params: ContractParams = {
@@ -219,6 +221,8 @@ export async function issueContract(
     ownerName: s.owner_name ?? "Annie CHRIQUI",
     noTax: r.noTax,
     depositRate: rates.depositPercent,
+    // the wording as it stands today, kept with the agreement (Admin → Textes du site → Contrat)
+    template: copy.contractText,
     bank: {
       accountName: s.bank_account_name ?? "",
       accountNumber: s.bank_account_number ?? "",
@@ -268,35 +272,28 @@ export async function issueContract(
   const signUrl = `${SITE_URL}${lang === "fr" ? "/fr" : ""}/contracts/sign/${contract.token}`;
   let emailSent = false;
   if (opts.send && clientEmail) {
-    const fr = lang === "fr";
-    const what = released
-      ? fr
-        ? `L'avenant à votre contrat de location pour la Villa ONLY VIEW (nouvelles dates : du ${formatDate(checkIn, "fr")} au ${formatDate(checkOut, "fr")}) est prêt à être signé en ligne. Il libère les dates du ${formatDate(released.startDate, "fr")} au ${formatDate(released.endDate, "fr")} et reprend les sommes déjà versées.`
-        : `The amendment to your rental agreement for Villa ONLY VIEW (new dates: ${formatDate(checkIn, "en")} to ${formatDate(checkOut, "en")}) is ready to sign online. It releases ${formatDate(released.startDate, "en")} to ${formatDate(released.endDate, "en")} and carries over the amounts already paid.`
-      : fr
-        ? `Votre contrat de location pour la Villa ONLY VIEW (du ${checkIn} au ${checkOut}) est prêt à être signé en ligne :`
-        : `Your rental agreement for Villa ONLY VIEW (${checkIn} → ${checkOut}) is ready to sign online:`;
+    // wording: Admin → Textes du site → Emails
+    const key = released ? "amendmentRequest" : "contractRequest";
+    const t = await emailTexts(key, lang);
+    const mail = await renderEmail(
+      key,
+      lang,
+      {
+        name: clientName,
+        checkIn: formatDate(checkIn, lang),
+        checkOut: formatDate(checkOut, lang),
+        previousCheckIn: released ? formatDate(released.startDate, lang) : "",
+        previousCheckOut: released ? formatDate(released.endDate, lang) : "",
+      },
+      { button: emailButton(signUrl, t.button) }
+    );
     const res = await sendMail({
       to: clientEmail,
       toName: clientName,
       templateSlug: released ? "contract_amendment_request" : "contract_signature_request",
       reservationId,
-      subject: released
-        ? fr
-          ? "Avenant à votre contrat — Villa ONLY VIEW"
-          : "Amendment to your rental agreement — Villa ONLY VIEW"
-        : fr
-          ? "Votre contrat de location — Villa ONLY VIEW"
-          : "Your rental agreement — Villa ONLY VIEW",
-      html: fr
-        ? `<p>Bonjour <strong>${clientName}</strong>,</p>
-<p>${what}</p>
-<p style="text-align:center;margin:24px 0;"><a href="${signUrl}" style="background:#C9A962;color:#fff;padding:13px 26px;text-decoration:none;letter-spacing:0.1em;">RELIRE & SIGNER</a></p>
-<p style="font-size:12px;color:#8a8a8a;">Ce lien est valable 30 jours.</p>`
-        : `<p>Hello <strong>${clientName}</strong>,</p>
-<p>${what}</p>
-<p style="text-align:center;margin:24px 0;"><a href="${signUrl}" style="background:#C9A962;color:#fff;padding:13px 26px;text-decoration:none;letter-spacing:0.1em;">REVIEW & SIGN</a></p>
-<p style="font-size:12px;color:#8a8a8a;">This link is valid for 30 days.</p>`,
+      subject: mail.subject,
+      html: mail.html,
     });
     emailSent = res.sent;
   }

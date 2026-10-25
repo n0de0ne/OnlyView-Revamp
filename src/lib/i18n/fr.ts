@@ -999,6 +999,160 @@ export const fr: Dict = {
     whyDirect: "Pourquoi réserver en direct",
     directBadge: "Réservation directe — sans frais d'agence",
   },
+  emails: {
+    bookingRequestAck: {
+      subject: "Votre demande de réservation — Villa ONLY VIEW",
+      body: "Bonjour **{name}**,\n\nNous avons bien reçu votre demande pour un séjour du **{checkIn}** au **{checkOut}** ({bedrooms} chambres, {guests} personnes).\n\nAnnie revient vers vous personnellement sous 24 heures pour confirmer la disponibilité et la suite.\n\nÀ très vite,\nVilla ONLY VIEW",
+    },
+    bookingConfirmed: {
+      subject: "Votre réservation à la Villa ONLY VIEW est confirmée !",
+      body: "Cher(e) **{name}**,\n\nBonne nouvelle ! Votre réservation à la Villa ONLY VIEW est confirmée.\n\n{details}\n\nNous avons hâte de vous accueillir dans notre belle villa à Saint-Barthélemy.\n\nSi vous avez des questions, n'hésitez pas à nous contacter.\n\nCordialement,\nL'équipe Villa ONLY VIEW",
+    },
+    magicLink: {
+      subject: "Votre lien de connexion — Villa ONLY VIEW",
+      body: "Bonjour **{name}**,\n\nVoici votre lien de connexion à votre espace client Villa ONLY VIEW :\n\n{button}\n\nCe lien est valable 7 jours et ne peut être utilisé qu'une fois.",
+      button: "ACCÉDER À MON ESPACE",
+    },
+    portalAccess: {
+      subject: "Votre Espace Client est prêt — Villa ONLY VIEW",
+      body: "Bonjour **{name}**,\n\nVotre espace client Villa ONLY VIEW est prêt : détails de votre séjour, contrat, points de fidélité.\n\n{button}\n\nCe lien est personnel — merci de ne pas le partager.",
+      button: "ACCÉDER À MON ESPACE",
+    },
+    contractRequest: {
+      subject: "Votre contrat de location — Villa ONLY VIEW",
+      body: "Bonjour **{name}**,\n\nVotre contrat de location pour la Villa ONLY VIEW (du {checkIn} au {checkOut}) est prêt à être signé en ligne :\n\n{button}\n\nCe lien est valable 30 jours.",
+      button: "RELIRE & SIGNER",
+    },
+    amendmentRequest: {
+      subject: "Avenant à votre contrat — Villa ONLY VIEW",
+      body: "Bonjour **{name}**,\n\nL'avenant à votre contrat de location pour la Villa ONLY VIEW (nouvelles dates : du {checkIn} au {checkOut}) est prêt à être signé en ligne. Il libère les dates du {previousCheckIn} au {previousCheckOut} et reprend les sommes déjà versées.\n\n{button}\n\nCe lien est valable 30 jours.",
+      button: "RELIRE & SIGNER",
+    },
+    contractSigned: {
+      subject: "Votre contrat signé — Villa ONLY VIEW ({checkIn} → {checkOut})",
+      body: "Cher(e) **{name}**,\n\nMerci d'avoir signé votre contrat de location pour la Villa ONLY VIEW. Vous trouverez ci-joint une copie de votre contrat signé.\n\n{summary}\n\nAu plaisir de vous accueillir à Saint-Barthélemy !",
+    },
+    optionExpiring: {
+      subject: "Votre option à la Villa ONLY VIEW expire bientôt",
+      body: "Bonjour **{name}**,\n\nNous vous gardons la villa pour le séjour du **{stay}** jusqu'au **{expires}**.\n\nPour confirmer, il suffit de signer le contrat et de régler l'acompte. Passé cette date, les dates seront de nouveau proposées à d'autres voyageurs.\n\n{button}\n\nUne question ? Répondez simplement à cet email.",
+      button: "MON ESPACE CLIENT",
+    },
+    balanceReminder: {
+      subject: "Solde de votre séjour — à régler avant le {due}",
+      body: "Bonjour **{name}**,\n\nVotre séjour du **{stay}** approche ! Le solde de **{amount}** est à régler avant le **{due}**, par virement :\n\n{bank}\n\nMerci d'indiquer votre nom et vos dates en référence. Si le virement est déjà parti, ignorez simplement ce message.\n\n{button}",
+      button: "MON ESPACE CLIENT",
+    },
+    preArrival: {
+      subject: "Bientôt à Saint-Barth ! Préparons votre arrivée",
+      body: "Bonjour **{name}**,\n\nPlus que quelques jours avant votre séjour à la Villa ONLY VIEW (**{stay}**).\n\n{arrivalDetails}\n\n{button}\n\n{practical}\n\nÀ très bientôt,\nVilla ONLY VIEW",
+      askDetails: "Pour bien vous accueillir, pourriez-vous nous indiquer vos **vols et heures d'arrivée**, les participants et vos éventuelles demandes particulières ? Vous pouvez aussi y réserver des **extras** (chef, voiture, bateau…).",
+      thanksDetails: "Merci pour vos informations d'arrivée ! Vous pouvez encore réserver des **extras** (chef, voiture, bateau…) depuis votre espace.",
+      button: "MON ESPACE CLIENT",
+    },
+    reviewRequest: {
+      subject: "Merci pour votre séjour à la Villa ONLY VIEW",
+      body: "Bonjour **{name}**,\n\nMerci d'avoir choisi la Villa ONLY VIEW. Nous espérons que vous avez passé un séjour merveilleux à Saint-Barth.\n\nVotre avis compte énormément pour nous et aide les futurs voyageurs : auriez-vous deux minutes pour partager votre expérience ?\n\n{button}\n\nAu plaisir de vous accueillir à nouveau,\nVilla ONLY VIEW",
+      button: "LAISSER UN AVIS",
+    },
+    dateChangeApproved: {
+      subject: "Changement de dates accepté — Villa ONLY VIEW",
+      body: "Bonjour **{name}**,\n\nBonne nouvelle : votre changement de dates est accepté. Votre séjour à la Villa ONLY VIEW passe du **{from}** au **{to}**.\n\nNouveau montant de la location : **{amount}**. Les sommes déjà versées sont reportées sur les nouvelles dates.\n\n{note}\n\n{amendment}\n\n{button}",
+      amendment: "L'avenant à votre contrat, qui libère vos anciennes dates et reprend les sommes déjà reçues, est prêt à être signé :",
+      amendmentButton: "RELIRE & SIGNER L'AVENANT",
+      button: "MON ESPACE CLIENT",
+    },
+    dateChangeRejected: {
+      subject: "Votre demande de changement de dates — Villa ONLY VIEW",
+      body: "Bonjour **{name}**,\n\nNous ne pouvons malheureusement pas déplacer votre séjour au **{to}**. Votre réservation reste inchangée (**{from}**).\n\n{note}\n\n{button}",
+      button: "MON ESPACE CLIENT",
+    },
+    conciergeAnswer: {
+      subject: "Conciergerie : {request} — {status}",
+      body: "Bonjour **{name}**,\n\nVotre demande de conciergerie {verdict} :\n\n{request}\n\n{note}\n\n{otherOption}\n\n{button}",
+      verdictConfirmed: "est confirmée",
+      verdictDeclined: "n'a malheureusement pas pu être confirmée",
+      verdictCancelled: "a été annulée",
+      statusConfirmed: "Confirmée",
+      statusDeclined: "Non disponible",
+      statusCancelled: "Annulée",
+      otherOption: "Répondez simplement à cet email si vous souhaitez une autre option.",
+      button: "MES DEMANDES DE CONCIERGERIE",
+    },
+  },
+  contractText: {
+    title: "CONTRAT DE LOCATION SAISONNIÈRE",
+    amendmentTitle: "AVENANT AU CONTRAT DE LOCATION",
+    subtitle: "VILLA ONLY VIEW",
+    intro: [
+      "Le présent contrat est conclu entre **{owner}** (ci-après « le Propriétaire ») et **{tenant}** (ci-après « le Locataire »).",
+      "Le Propriétaire dispose d'une villa de 4 chambres située à Pointe Milou, dénommée « Villa Only View ».",
+      "Le Locataire souhaite louer un hébergement sur l'île de Saint-Barthélemy pour la période du **{checkIn}** au **{checkOut}** ({nights} nuits) pour **{bedrooms}** chambre(s).",
+      "EN CONSÉQUENCE, compte tenu des engagements mutuels contenus dans le présent contrat, les parties conviennent de ce qui suit :",
+    ],
+    clausesBefore: [
+      {
+        heading: "AGENTS",
+        paragraphs: [
+          "Chacune des parties reconnaît qu'aucun agent immobilier ou agent de voyage n'est intervenu dans la conclusion de la présente location et que le contact a été direct, sans l'intervention d'un tiers qui aurait droit à une commission ou à toute autre forme de rémunération.",
+        ],
+        bullets: [],
+      },
+      {
+        heading: "DESCRIPTION DU BIEN",
+        paragraphs: [
+          "Le Locataire s'engage à louer le bien suivant, situé à Pointe Milou, île de Saint-Barthélemy :",
+          "Une villa de 4 chambres avec 4 salles de bain, cuisine entièrement équipée, terrasse, piscine et espace de vie.",
+        ],
+        bullets: [],
+      },
+      {
+        heading: "NOMBRE DE LOCATAIRES",
+        paragraphs: [
+          "Le présent contrat autorise **{guests}** personne(s) à occuper les lieux pendant la durée du contrat. Le Locataire s'engage à ce qu'aucune autre personne ne soit autorisée à séjourner sur place.",
+        ],
+        bullets: [],
+      },
+    ],
+    paymentHeading: "PAIEMENT DU LOYER/ACOMPTE",
+    paymentIntro: "Le loyer total à payer pour la période indiquée ci-dessus s'élève à **{totalAmount}**{taxClause}, payable comme suit :",
+    taxClause: ", incluant le loyer et la taxe de séjour locale de {tax} %",
+    paymentTerms: "Le Locataire s'engage à verser au Propriétaire la somme de **{totalAmount}**. Un acompte non remboursable de **{depositAmount}** est dû à la signature du contrat afin de garantir la location de la villa, et le solde (**{balanceAmount}**) est dû {balanceDays} jours avant l'arrivée.",
+    nonRefundable: "**Tous les acomptes et paiements finaux sont NON REMBOURSABLES.**",
+    scheduleHeading: "ÉCHÉANCIER",
+    bankHeading: "COORDONNÉES BANCAIRES POUR VIREMENT",
+    clausesAfter: [
+      {
+        heading: "OBLIGATIONS DU PROPRIÉTAIRE",
+        paragraphs: [],
+        bullets: [
+          "Le ménage quotidien est assuré, sauf le dimanche et les jours fériés locaux.",
+          "Tout le linge de maison et les serviettes sont fournis.",
+          "L'électricité, l'eau et les communications téléphoniques locales sont incluses dans le montant de la location.",
+          "Toutes les taxes, charges et prestations relatives au bien sont incluses dans le prix indiqué ci-dessus.",
+          "Le Propriétaire est responsable de l'entretien de la piscine, des jardins, des équipements et de tout le matériel de la propriété.",
+        ],
+      },
+      {
+        heading: "OBLIGATIONS DU LOCATAIRE",
+        paragraphs: [],
+        bullets: [
+          "Le Locataire est responsable de tous les dommages causés au bien, au-delà de l'usure normale.",
+          "Le Locataire informera immédiatement le Propriétaire en cas de fuite d'eau, d'incendie ou de tout autre dommage nécessitant une réparation ou une attention immédiate.",
+        ],
+      },
+      {
+        heading: "INTÉGRALITÉ DE L'ACCORD",
+        paragraphs: [
+          "Le présent contrat constitue l'intégralité de l'accord entre les parties concernant son objet et remplace tous les accords, déclarations ou ententes antérieurs ou concomitants. Aucun avenant ni aucune modification du présent contrat ne saurait engager les parties sans un écrit signé par celles-ci.",
+        ],
+        bullets: [],
+      },
+    ],
+    dated: "FAIT LE : {date}",
+    signatureOwner: "Le Propriétaire",
+    signatureTenant: "Le Locataire",
+    signatureDate: "Date",
+  },
   common: {
     bedrooms: "chambres",
     guestsWord: "personnes",
