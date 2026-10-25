@@ -254,6 +254,10 @@ else {
 }
 const llms = await get(`${BASE}/llms.txt`);
 if (llms.status !== 200) warn("/llms.txt", "missing (AI answer engines read it when present)");
+else if (!llms.body.includes("/llms-full.txt")) warn("/llms.txt", "does not point at /llms-full.txt");
+const llmsFull = await get(`${BASE}/llms-full.txt`);
+if (llmsFull.status !== 200) warn("/llms-full.txt", "missing (the full-text companion of llms.txt)");
+else if (llmsFull.body.length < 10_000) warn("/llms-full.txt", `only ${llmsFull.body.length} bytes — the guides should be in it`);
 const mf = await get(`${BASE}/manifest.webmanifest`);
 if (mf.status !== 200) warn("/manifest.webmanifest", `HTTP ${mf.status}`);
 
@@ -263,9 +267,15 @@ const expectLd = {
   "/faq": ["FAQPage"],
   "/reviews": ["Review"],
   "/rates": ["AggregateOffer", "Offer", "Product", "VacationRental"],
-  "/location": ["LodgingBusiness", "VacationRental"],
+  "/pointe-milou": ["Place", "VacationRental"],
   "/map": ["TouristDestination"],
+  "/guide/getting-here": ["Article"],
 };
+// the pages written to be quoted carry their questions as FAQPage too
+for (const p of ["/pointe-milou", "/map"]) {
+  const i = seen.get(p);
+  if (i?.ldTypes && !i.ldTypes.flat().includes("FAQPage")) fail(p, "no FAQPage JSON-LD");
+}
 for (const [p, wanted] of Object.entries(expectLd)) {
   const i = seen.get(p);
   if (!i?.ldTypes) continue;

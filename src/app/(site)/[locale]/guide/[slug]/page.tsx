@@ -3,8 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getDict, isLocale, localePath, LOCALES, type Locale } from "@/lib/i18n";
 import { breadcrumbJsonLd, jsonLd, organizationJsonLd, ownerJsonLd, pageMetadata, SITE_URL } from "@/lib/seo";
-import { CONTENT_UPDATED } from "@/lib/site-facts";
 import { GUIDES, getGuide } from "@/data/guides";
+import { formatDate } from "@/lib/dates";
 import { PageHero } from "@/components/site/PageHero";
 import { FlightSearch } from "@/components/site/FlightSearch";
 import { getMapPlaces, slugify } from "@/lib/map-places";
@@ -25,12 +25,16 @@ export async function generateMetadata({
   const guide = getGuide(slug);
   if (!guide) return {};
   const fr = locale === "fr";
+  // the article's own <title>, without the "| Villa ONLY VIEW" suffix: the
+  // query is "St Barth …", and engines cut titles at about 60 characters
   return pageMetadata({
     locale,
     path: `/guide/${slug}`,
-    title: fr ? guide.title.fr : guide.title.en,
-    description: fr ? guide.description.fr : guide.description.en,
+    title: fr ? guide.meta.title.fr : guide.meta.title.en,
+    description: fr ? guide.meta.description.fr : guide.meta.description.en,
+    absoluteTitle: true,
     type: "article",
+    image: "/media/photos/exterior/exterior-01.webp",
   });
 }
 
@@ -67,8 +71,9 @@ export default async function GuidePage({
     mainEntityOfPage: `${SITE_URL}${fr ? "/fr" : ""}/guide/${slug}`,
     image: [`${SITE_URL}/media/photos/exterior/exterior-01.webp`],
     inLanguage: fr ? "fr-FR" : "en-US",
-    datePublished: "2025-11-01",
-    dateModified: CONTENT_UPDATED,
+    datePublished: guide.published,
+    dateModified: guide.updated,
+    ...(guide.links?.length ? { citation: guide.links.map((l) => l.url) } : {}),
     about: { "@id": `${SITE_URL}/#villa` },
     isPartOf: { "@id": `${SITE_URL}/#website` },
   };
@@ -92,6 +97,13 @@ export default async function GuidePage({
       />
       <PageHero eyebrow={t.nav.guide} title={title} intro={fr ? guide.description.fr : guide.description.en} />
       <article className="mx-auto max-w-3xl px-5 py-16 lg:px-8">
+        {/* dated and signed: engines rank fresh, attributed guides; readers trust them */}
+        <p className="mb-10 text-xs uppercase tracking-[0.18em] text-ink/45">
+          {t.guideHub.updated}{" "}
+          <time dateTime={guide.updated}>{formatDate(guide.updated, locale, { month: "long", year: "numeric" })}</time>
+          {" · "}
+          {t.guideHub.byline}
+        </p>
         {sections.map((s, i) => (
           <section key={i} className="mb-12">
             <h2 className="font-display mb-4 text-3xl text-ink">{s.h}</h2>
@@ -126,6 +138,27 @@ export default async function GuidePage({
             )}
           </section>
         ))}
+        {guide.links && guide.links.length > 0 && (
+          <section className="mb-12 border-t border-ink/10 pt-8" aria-labelledby="guide-links">
+            <h2 id="guide-links" className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-ink/50">
+              {t.guideHub.linksTitle}
+            </h2>
+            <ul className="space-y-1.5 text-sm">
+              {guide.links.map((l) => (
+                <li key={l.url}>
+                  <a
+                    href={l.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-navy underline decoration-gold/50 underline-offset-4 hover:text-gold"
+                  >
+                    {fr ? l.label.fr : l.label.en}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
         <div className="border-t border-ink/10 pt-10 text-center">
           <p className="mb-5 font-display text-2xl italic text-ink/70">
             “{t.footer.tagline}”

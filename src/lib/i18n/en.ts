@@ -1,22 +1,22 @@
 export const en = {
   meta: {
     siteName: "Villa ONLY VIEW",
-    titleHome: "Villa ONLY VIEW St Barth (St Barts) — Official Site, Book Direct",
+    titleHome: "Villa ONLY VIEW — Luxury Villa Rental in Pointe Milou, St Barth",
     descHome:
-      "Official site of Villa ONLY VIEW, Pointe Milou, St Barts: 4-bedroom luxury villa, heated pool, 180° ocean view, concierge. Book direct with the owner — no agency fees.",
-    titleVilla: "The Villa — 4 Bedrooms, Heated Pool, Sea View",
+      "Official site of Villa ONLY VIEW: 4-bedroom luxury villa rental in Pointe Milou, St Barth (St Barts). Heated pool, 180° sea view, concierge. Book direct, no fees.",
+    titleVilla: "4-Bedroom Villa in St Barth: Heated Pool, Sea View",
     descVilla:
       "Inside Villa ONLY VIEW: 4 en-suite bedrooms, open living spaces, gourmet kitchen, heated pool and 180° Caribbean sea views above Pointe Milou, Saint-Barthélemy.",
     titleTour: "Virtual Tour — Room by Room",
     descTour:
       "Walk through Villa ONLY VIEW room by room: living room, gourmet kitchen, four en-suite bedrooms, pool terrace and the famous sunset view over Pointe Milou bay.",
-    titleGallery: "Photo Gallery",
+    titleGallery: "Photos — St Barth Villa with Pool & Sea View",
     descGallery:
       "Photo gallery of Villa ONLY VIEW, St Barth: pool terrace, ocean-view living spaces, 4 en-suite bedrooms, sunsets over Pointe Milou.",
-    titleRates: "Rates & Seasons",
+    titleRates: "St Barth Villa Rental Rates & Seasons",
     descRates:
       "Weekly rates for Villa ONLY VIEW, St Barth, by season and bedrooms in use — from $10,000/week in summer to the Christmas & New Year packages. No agency fees.",
-    titleBooking: "Availability & Booking",
+    titleBooking: "Book Direct — Availability & Instant Quote",
     descBooking:
       "Check live availability and get an instant quote for Villa ONLY VIEW, Pointe Milou, St Barth. Book direct with the owner — best rate guaranteed.",
     titleContact: "Contact the Owner",
@@ -25,23 +25,26 @@ export const en = {
     titleFaq: "Frequently Asked Questions",
     descFaq:
       "Everything about staying at Villa ONLY VIEW: check-in, housekeeping, payment terms, deposits, concierge services, and life in Pointe Milou, St Barth.",
-    titleReviews: "Guest Reviews",
+    titleReviews: "Guest Reviews — St Barth Villa, Pointe Milou",
     descReviews:
       "What our guests say about Villa ONLY VIEW, St Barth — verified reviews from stays in Pointe Milou.",
-    titleLocation: "Location — Pointe Milou, St Barth",
+    titleLocation: "Pointe Milou, St Barth — Guide & Villa to Rent",
     descLocation:
-      "Villa ONLY VIEW sits on the hillside of Pointe Milou, Saint-Barthélemy: 10 minutes from the airport, 5 minutes from Lorient beach, next to Christopher Hotel.",
-    titleMap: "St Barth Map — Beaches, Restaurants & Shops",
+      "Pointe Milou, St Barth: the quiet sunset headland next to Hotel Le Christopher, 10 min from the airport, 5 from Lorient beach. What's there, and the villa to rent.",
+    titleMap: "St Barth Map: Beaches, Neighbourhoods & Restaurants",
     descMap:
-      "Interactive map of St Barth from Villa ONLY VIEW: 15 beaches, restaurants, supermarkets, bakeries and pharmacies, with drive times and itineraries from the villa.",
+      "Map of St Barth (St Barts): 15 beaches, neighbourhoods, restaurants, supermarkets and pharmacies, with drive times and routes from Villa ONLY VIEW, Pointe Milou.",
     titleAccount: "My Stay — Guest Portal",
     descAccount: "Manage your reservations, contracts and loyalty points.",
     descAccountNoLoyalty: "Manage your reservations and contracts.",
-    titleWhyDirect: "Why Book Direct",
+    titleWhyDirect: "Book a St Barth Villa Direct with the Owner",
     descWhyDirect:
       "Booking Villa ONLY VIEW direct with the owner saves 15–25% in agency commissions, gives you a direct line to the house, and earns loyalty points on every stay.",
     descWhyDirectNoLoyalty:
       "Booking Villa ONLY VIEW direct with the owner saves 15–25% in agency commissions and gives you a direct line to the house.",
+    titleGuide: "St Barth Guide: Arriving, Beaches, Food, Seasons",
+    descGuide:
+      "A St Barth travel guide by villa owners in Pointe Milou: getting to the island, the best beaches, where to eat, the seasons, events and practical tips.",
   },
   nav: {
     villa: "The Villa",
@@ -55,6 +58,7 @@ export const en = {
     reviews: "Reviews",
     account: "My Stay",
     home: "Home",
+    pointeMilou: "Pointe Milou",
   },
   /** one-word labels for the mobile tab bar */
   navShort: {
@@ -147,6 +151,102 @@ export const en = {
     mapCta: "Getting here",
     islandMapCta: "Open the interactive island map",
   },
+  /** /pointe-milou — the neighbourhood page: what the place is, what is there,
+      the villa in it. Answer-first paragraphs, the way engines quote them. */
+  pointeMilou: {
+    label: "Pointe Milou, St Barth",
+    title: "Pointe Milou",
+    intro:
+      "Pointe Milou is a quiet residential headland on the north coast of St Barth (Saint-Barthélemy), between Lorient and Marigot. There is no beach on the point and no shops: just hillside villas, Hotel Le Christopher, the Ti St Barth cabaret and, every evening, a sunset over the bay that the whole island talks about. Villa ONLY VIEW is one of those villas, and we rent it ourselves.",
+    whyTitle: "Why stay in Pointe Milou",
+    whyIntro:
+      "People who know St Barth tend to choose a hillside over a beachfront, and Pointe Milou is the hillside with the view. Here is what you get, and what you don't.",
+    why: [
+      [
+        "The view and the sunset",
+        "From the villa the sun goes down in front of the terrace, over the bay, not behind the house: around 5:30–5:45 pm in December, closer to 7 pm in June. The golden hour before it is the reason people come back.",
+      ],
+      [
+        "Quiet, and central",
+        "A residential road with no through-traffic, yet 10 minutes from the airport, 5 from Lorient beach, 8 from St Jean and 12 from Gustavia. You are in the middle of the island without being in the middle of the noise.",
+      ],
+      [
+        "No construction in season",
+        "Pointe Milou has its own rule: no construction work from November to 15 April, the whole high season. No drilling, no cement mixer, no trucks on the lane while you are on the terrace; what you hear is the wind and the sea. It is one of the reasons the point has stayed what it is.",
+      ],
+      [
+        "Sheltered",
+        "The west side of the point turns its back on the Atlantic: the sea below the villa is the calm one, and the hillside still catches enough breeze to keep the evenings pleasant.",
+      ],
+      [
+        "Good neighbours",
+        "Hotel Le Christopher, a five-star hotel with a Sisley spa, a beach club and restaurants, is a short walk away: a drink or a massage without taking the car. Le Ti St Barth, the island's famous dinner-cabaret, is three minutes down the road.",
+      ],
+      [
+        "No beach of its own",
+        "The honest part: you drive to the beach. Lorient is 5 minutes away, Marigot and St Jean 8. All beaches in St Barth are public, and most guests go to a different one each day anyway.",
+      ],
+    ] as Array<[string, string]>,
+    whatsTitle: "What is in Pointe Milou",
+    whats: [
+      [
+        "Villas",
+        "Pointe Milou is mostly private villas on the hillside, many with a pool facing the bay. It has long been one of the island's most sought-after addresses for a rental, precisely because of the sunset.",
+      ],
+      [
+        "Hotel Le Christopher",
+        "The five-star hotel on the point: a large infinity pool above the sea, a Sisley spa, a beach club and restaurants that welcome outside guests. Like several hotels on the island, it closes for a few weeks in late summer.",
+      ],
+      [
+        "Le Ti St Barth",
+        "Dinner, cabaret and dancing on the tables, in the hills above the bay. It has been part of St Barth nights since the 1990s; book ahead in season.",
+      ],
+      [
+        "Lorient, five minutes away",
+        "The neighbourhood next door: a calm beach, the bakery, the Oasis supermarket, the gas station and the church. Everything you need for breakfast on the terrace.",
+      ],
+    ] as Array<[string, string]>,
+    villaTitle: "The villa we rent in Pointe Milou",
+    villaText:
+      "Villa ONLY VIEW is a 4-bedroom, 200 m² villa on the Pointe Milou hillside, next to Hotel Le Christopher, with a heated pool facing the sunset and a 180° view of the bay. It is our house and we rent it ourselves, with no agency in between. Four en-suite bedrooms (two king, two queen), up to 8 guests, daily housekeeping and a concierge are included; the rate depends on the season and on how many bedrooms you use.",
+    villaCta: "See the villa",
+    distancesTitle: "Distances from Pointe Milou",
+    faqTitle: "Pointe Milou, in questions",
+    faq: [
+      {
+        q: "Where is Pointe Milou in St Barth?",
+        a: "On the north coast of Saint-Barthélemy, on a headland between Lorient and Marigot, about 10 minutes by car from Gustaf III airport and 12 from Gustavia. Hotel Le Christopher sits on the point; Villa ONLY VIEW is next to it.",
+      },
+      {
+        q: "Is there a beach in Pointe Milou?",
+        a: "No. Pointe Milou is a rocky headland with villas and a hotel, not a beach. The nearest beaches are Lorient (5 minutes by car), Marigot (8 minutes) and St Jean (8 minutes). All beaches in St Barth are public.",
+      },
+      {
+        q: "What is Pointe Milou known for?",
+        a: "Its sunsets over the bay and its quiet. It is one of the island's classic villa neighbourhoods, home to Hotel Le Christopher and to Le Ti St Barth, the dinner-cabaret.",
+      },
+      {
+        q: "Is Pointe Milou quiet?",
+        a: "Yes. It is a residential road with no through-traffic, and the neighbourhood has a rule of no construction work from November to 15 April, so there is no building noise during the season. From the terrace you hear the wind and the sea.",
+      },
+      {
+        q: "Is Pointe Milou a good area to stay in St Barth?",
+        a: "If you want a view, quiet nights and a central base, yes: it is 5 to 12 minutes from every beach, restaurant and shop you will use. If you want to walk from your door to the sand, choose St Jean or Flamands instead.",
+      },
+      {
+        q: "Which villa can I rent in Pointe Milou?",
+        a: "Villa ONLY VIEW: 4 en-suite bedrooms, up to 8 guests, 200 m², heated pool facing the sunset, 180° sea view, daily housekeeping and concierge included, rented directly by its owner. Live availability and an instant quote are on the booking page.",
+      },
+      {
+        q: "Where can I eat in Pointe Milou?",
+        a: "At Hotel Le Christopher, whose restaurants and beach club welcome non-guests, and at Le Ti St Barth for a dinner show. Lorient, 5 minutes away, has casual places and a bakery; St Jean and Gustavia, 8 and 12 minutes away, have most of the island's tables.",
+      },
+      {
+        q: "How far is Pointe Milou from the airport?",
+        a: "About 10 minutes by car from Gustaf III airport (SBH), and 12 minutes from the ferry dock in Gustavia.",
+      },
+    ] as Array<{ q: string; a: string }>,
+  },
   map: {
     label: "Interactive map",
     title: "St Barth, from the villa's doorstep",
@@ -157,7 +257,7 @@ export const en = {
       "Pointe Milou is one of St Barth's most central addresses: from the terrace, the whole island is a short drive. Pick a place on the map or in the list — every pin shows its drive time from the villa and draws the itinerary through the right turn-offs, because St Barth's lanes rarely follow the shortest line. Some beaches end on foot from a car park; those legs are drawn in gold.",
     all: "All",
     villa: "Villa ONLY VIEW",
-    search: "Search a place, a village…",
+    search: "Search a place, a neighbourhood…",
     noResults: "No place matches",
     min: "min",
     route: "Itinerary",
@@ -220,6 +320,55 @@ export const en = {
       "Beach picnics, restaurant tables, a boat for the day, water sports — the concierge arranges everything, all within minutes of Villa ONLY VIEW.",
     ctaButton: "Contact the concierge",
     noscript: "JavaScript is required to display the interactive map; the list of places works without it.",
+    /* the island in words — what a map page needs to say to be the answer to "St Barth map" */
+    areasTitle: "St Barth, neighbourhood by neighbourhood",
+    areasIntro:
+      "St Barth is small: 25 km², 8 km from end to end, one main road and a lot of hills. Here is how the island is laid out, starting from Pointe Milou, with the drive time from the villa.",
+    areaFromVilla: "min from the villa",
+    areas: [
+      ["Pointe Milou", "The quiet headland on the north coast where the villa is: hillside villas, Hotel Le Christopher, Le Ti St Barth and the sunset over the bay. No beach of its own; Lorient is 5 minutes away."],
+      ["Lorient", "The neighbourhood next door: a calm beach with a surf break at the far end, the bakery, the Oasis supermarket, the gas station and the church. Where you shop for breakfast."],
+      ["Saint-Jean", "The island's busy bay: Eden Rock on its rock, Nikki Beach, boutiques, and the airport runway ending on the sand. Shallow, clear water."],
+      ["Gustavia", "The capital and harbour on the west coast: the yachts, the shops, most of the restaurants, the ferry dock, the hospital, and Shell Beach at the end of town."],
+      ["Marigot", "A small, calm bay east of Pointe Milou, good for a quiet swim and snorkelling."],
+      ["Grand Cul-de-Sac", "The lagoon, sheltered by the reef: kitesurf, paddle, kayak, turtles, Le Sereno and the beach restaurants, Ti'Corail among them."],
+      ["Petit Cul-de-Sac", "A tiny sheltered bay at the eastern end, for people who want nobody around."],
+      ["Toiny", "The Atlantic side: cliffs, wind, big rollers and almost nobody. Not for swimming, lovely for a walk and for lunch at the Le Toiny beach club."],
+      ["Saline", "The long wild beach of the south, reached on foot over a dune from the car park. No buildings, no shade, the best light of the day late in the afternoon."],
+      ["Gouverneur", "Saline's twin, down a steep road from Lurin, with a view worth a stop on the way. Wide, empty, and sometimes with surf."],
+      ["Lurin", "The hill above Gustavia and Gouverneur: villas, the road to the south beaches, and a few of the island's best dinner tables."],
+      ["Corossol", "The old fishermen's neighbourhood west of Gustavia, where the straw hats come from. A small beach and a slower pace."],
+      ["Flamands", "The wide beach of the north-west, good for a long swim, with Cheval Blanc at one end and the trail to Colombier at the other."],
+      ["Colombier", "The bay at the far north-west with no road: a boat, or a walk of about half an hour from Flamands. The most secluded beach on the island."],
+      ["Anse des Cayes", "A small cove between Flamands and St Jean, reached on foot from the car park; locals' surf when the swell comes in."],
+    ] as Array<[string, string]>,
+    faqTitle: "The island, in questions",
+    faq: [
+      {
+        q: "How big is St Barth?",
+        a: "About 25 km² (around 10 square miles), roughly 8 km long. Driving from one end to the other takes 25 to 30 minutes, and nothing is more than about 20 minutes from Pointe Milou.",
+      },
+      {
+        q: "Do I need a car in St Barth?",
+        a: "Yes, unless you plan to stay on one beach. Taxis are few and there is no ride-hailing app, so almost everyone rents a small car; the roads are narrow and steep and parking in Gustavia is tight. We can have a rental car delivered to the villa for your arrival.",
+      },
+      {
+        q: "How many beaches does St Barth have?",
+        a: "Our map shows 15. Depending on how the small coves are counted, the island claims anything from 14 to 22. Every one of them is public, including the beaches in front of the hotels.",
+      },
+      {
+        q: "Where is the airport?",
+        a: "Gustaf III airport (SBH) is in St Jean, in the middle of the north coast: 10 minutes from Pointe Milou, 10 from Gustavia. Its short runway and the approach over the hill are famous; there are no flights after dark.",
+      },
+      {
+        q: "Where do the ferries from St Maarten arrive?",
+        a: "In Gustavia harbour, 12 minutes from Pointe Milou. Great Bay Express sails from Philipsburg (Dutch side) and Voyager from Marigot (French side); the crossing takes 45 to 90 minutes.",
+      },
+      {
+        q: "Which side of the island is calm?",
+        a: "The north and west bays (Flamands, Colombier, Lorient, Marigot, Grand Cul-de-Sac) are the sheltered ones. The Atlantic side (Toiny) has wind and waves, and the south beaches (Saline, Gouverneur) can have surf.",
+      },
+    ] as Array<{ q: string; a: string }>,
   },
   cta: {
     title: "The view is waiting",
@@ -675,7 +824,7 @@ export const en = {
     minutes: "min",
     items: [
       ["Hotel Le Christopher", "next door — sunset cocktails and the spa on foot"],
-      ["Lorient beach & village", "5 min — the local beach, the bakery, the Oasis supermarket"],
+      ["Lorient beach & shops", "5 min — the local beach, the bakery, the Oasis supermarket"],
       ["St-Jean beach, Eden Rock & Nikki Beach", "8 min — the lively side of the island"],
       ["Grand Cul-de-Sac lagoon & Le Sereno", "7 min — kitesurf, paddle, the lagoon restaurants"],
       ["Gustaf III airport", "10 min"],
@@ -727,7 +876,29 @@ export const en = {
     ] as Array<[number, string]>,
   },
   guideIntro:
-    "Written from the terrace, not from a brochure: how to reach St Barth and the villa, which beaches to choose and when, where we eat, and what each season of the year is really like. Short, factual and kept up to date.",
+    "Written from the terrace, not from a brochure: how to reach St Barth and the villa, which beaches to choose and when, where we eat, what each season is really like, the island's events, and the practical things nobody tells you. Short, factual and kept up to date.",
+  guideHub: {
+    factsTitle: "St Barth in brief",
+    factsLabel: "The island",
+    facts: [
+      ["Where", "Saint-Barthélemy, a French overseas collectivity in the Leeward Islands, 25 km south-east of St Maarten. Known as St Barth, St Barts or St Barths."],
+      ["Size", "25 km², about 10,000 residents, one main road, 15 beaches on our map, all of them public."],
+      ["Getting there", "No direct long-haul flights. Via St Maarten (SXM), then a 10–15 minute flight or a 45–90 minute ferry, or via San Juan (SJU) with Tradewind in about an hour."],
+      ["Airport", "Gustaf III (SBH) in St Jean, one of the shortest commercial runways in the world. No flights after dark."],
+      ["Language", "French. English is spoken everywhere you will go."],
+      ["Money", "The euro. US dollars are accepted almost everywhere, cards too. No sales tax: Gustavia is a duty-free port."],
+      ["Time", "UTC−4 all year, with no daylight saving: one hour ahead of New York in winter, the same time in summer."],
+      ["Power", "220–230 V with European two-pin plugs (types C and E). Bring an adapter for US or UK devices."],
+      ["Getting around", "A small rental car. Roads are narrow and steep, you drive on the right, and gas stations close on Sundays."],
+      ["Weather", "27–30 °C all year. Dry and breezy from December to April, warmer and calmer in summer; hurricane season runs June to November."],
+      ["Our base", "Pointe Milou, on the north coast: 10 minutes from the airport, 5 from Lorient beach, 12 from Gustavia."],
+    ] as Array<[string, string]>,
+    linksTitle: "Useful links",
+    updated: "Updated",
+    byline: "by Annie, owner of Villa ONLY VIEW",
+    pointeMilouCard: "Pointe Milou, our neighbourhood",
+    pointeMilouText: "What the point is like, what is there, why people choose it, and the villa we rent in it.",
+  },
   whyDirect: {
     title: "Why book direct",
     items: [

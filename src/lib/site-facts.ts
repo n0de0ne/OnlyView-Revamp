@@ -59,7 +59,38 @@ export const VILLA = {
 
 /** Date the content was last materially revised — surfaced as lastmod /
     dateModified. Bump it when the copy changes, not on every deploy. */
-export const CONTENT_UPDATED = "2026-10-24";
+export const CONTENT_UPDATED = "2026-10-25";
+
+/**
+ * The island and the neighbourhood as entities — the anchors AI engines and
+ * Google use to tell *this* Pointe Milou from any other string of words.
+ * Wikidata/Wikipedia links give the island a stable identity; Pointe Milou
+ * has no public entity of its own, so the site's Place node is it.
+ */
+export const ISLAND = {
+  name: "Saint-Barthélemy",
+  aliases: ["St Barth", "St Barts", "St. Barths", "Saint Barth", "St Barthélemy", "Saint-Barth"],
+  /** overseas collectivity of France, Leeward Islands */
+  country: "FR",
+  areaKm2: 25,
+  airportIata: "SBH",
+  airportName: "Gustaf III Airport",
+  timezone: "UTC−4 (Atlantic Standard Time, no daylight saving)",
+  currency: "EUR",
+  wikidata: "https://www.wikidata.org/wiki/Q25362",
+  wikipedia: "https://en.wikipedia.org/wiki/Saint_Barth%C3%A9lemy",
+  tourismOffice: "https://www.saintbarth-tourisme.com",
+} as const;
+
+export const POINTE_MILOU = {
+  name: "Pointe Milou",
+  /** the headland's own point, a few hundred metres from the villa */
+  lat: 17.9155,
+  lng: -62.8165,
+  /** the beaches either side of the headland */
+  nearestBeach: "Lorient",
+  nearestBeachMinutes: 5,
+} as const;
 
 export const OWNER_EMAIL = "annaerick971@gmail.com";
 export const OWNER_PHONE = "+590 690 39 90 47";

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { api, Card, Spinner, useToast } from "./ui";
 import { RemindersPanel } from "./RemindersPanel";
+import { IndexNowPanel } from "./IndexNowPanel";
 
 const GROUPS: Array<{
   title: string;
@@ -212,6 +213,7 @@ export function SettingsBoard() {
         ))}
       </div>
       <RemindersPanel key={savedAt} />
+      <IndexNowPanel />
       <p className="text-xs text-slate-400">
         Les tarifs modifiés s&apos;appliquent aux nouveaux devis et aux réservations recalculées —
         jamais rétroactivement aux montants déjà enregistrés.

@@ -221,7 +221,7 @@ export async function analyticsReport(p: Period, seg: Segment) {
                EXISTS (SELECT 1 FROM "AnalyticsEvent" e WHERE e."sessionId" = s."id" AND e."name" = 'quote_view') AS quote,
                EXISTS (SELECT 1 FROM "AnalyticsPageview" pv WHERE pv."sessionId" = s."id" AND pv."path" IN ('/rates', '/booking')) AS rates,
                EXISTS (SELECT 1 FROM "AnalyticsPageview" pv WHERE pv."sessionId" = s."id"
-                 AND pv."path" IN ('/villa', '/tour', '/gallery', '/location', '/reviews')) AS explored,
+                 AND pv."path" IN ('/villa', '/tour', '/gallery', '/location', '/pointe-milou', '/reviews')) AS explored,
                EXISTS (SELECT 1 FROM "AnalyticsEvent" e WHERE e."sessionId" = s."id"
                  AND e."name" IN ('contact_submit', 'click_whatsapp', 'click_email', 'click_phone')) AS contact
         FROM "AnalyticsSession" s

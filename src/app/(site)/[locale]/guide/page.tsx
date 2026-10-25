@@ -4,6 +4,7 @@ import { getDict, isLocale, localePath, type Locale } from "@/lib/i18n";
 import { breadcrumbJsonLd, itemListJsonLd, jsonLd, pageMetadata, webPageJsonLd } from "@/lib/seo";
 import { GUIDES } from "@/data/guides";
 import { PageHero } from "@/components/site/PageHero";
+import { KeyFacts } from "@/components/site/KeyFacts";
 
 export const revalidate = 3600;
 
@@ -14,14 +15,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale: raw } = await params;
   const locale = (isLocale(raw) ? raw : "en") as Locale;
-  const fr = locale === "fr";
+  const t = getDict(locale);
   return pageMetadata({
     locale,
     path: "/guide",
-    title: fr ? "Guide St Barth — plages, restaurants, saisons" : "St Barth Guide — Beaches, Restaurants, Seasons",
-    description: fr
-      ? "Le guide St Barth de la Villa ONLY VIEW, écrit depuis Pointe Milou : venir sur l'île, les plus belles plages, où manger, quelle saison choisir."
-      : "Villa ONLY VIEW's St Barth guide, written from Pointe Milou: getting to the island, the best beaches, where to eat, and which season to choose.",
+    title: t.meta.titleGuide,
+    description: t.meta.descGuide,
+    image: "/media/photos/exterior/exterior-01.webp",
   });
 }
 
@@ -48,13 +48,19 @@ export default async function GuideIndex({
               description: t.guideIntro,
               type: "CollectionPage",
             }),
-            itemListJsonLd(
-              GUIDES.map((g) => ({
+            itemListJsonLd([
+              {
+                name: t.meta.titleLocation,
+                url: localePath(locale, "/pointe-milou"),
+                description: t.meta.descLocation,
+              },
+              { name: t.meta.titleMap, url: localePath(locale, "/map"), description: t.meta.descMap },
+              ...GUIDES.map((g) => ({
                 name: fr ? g.title.fr : g.title.en,
                 url: localePath(locale, `/guide/${g.slug}`),
                 description: fr ? g.description.fr : g.description.en,
-              }))
-            ),
+              })),
+            ]),
             breadcrumbJsonLd([
               { name: t.nav.home, url: fr ? "/fr" : "/" },
               { name: t.nav.guide, url: localePath(locale, "/guide") },
@@ -67,8 +73,30 @@ export default async function GuideIndex({
         title={fr ? "Guide St Barth" : "St Barth Guide"}
         intro={t.guideIntro}
       />
+      {/* the island in eleven lines — the block an answer engine quotes for "St Barth guide" */}
+      <KeyFacts
+        title={t.guideHub.factsTitle}
+        label={t.guideHub.factsLabel}
+        summary={t.guideHub.facts.slice(0, 4).map(([, d]) => d).join(" · ")}
+        toggle={t.seo.factsToggle}
+        facts={Object.fromEntries(t.guideHub.facts.map(([term, detail], i) => [String(i), [term, detail]]))}
+        className="border-b border-ink/10"
+      />
       <section className="mx-auto max-w-5xl px-5 py-16 lg:px-8">
         <div className="grid gap-6 sm:grid-cols-2">
+          <Link
+            href={localePath(locale, "/pointe-milou")}
+            className="group border border-gold/50 bg-sand p-8 transition hover:border-gold"
+          >
+            <p className="eyebrow mb-3">{t.pointeMilou.label}</p>
+            <h2 className="font-display text-2xl leading-snug transition group-hover:text-gold">
+              {t.guideHub.pointeMilouCard}
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-ink/65">{t.guideHub.pointeMilouText}</p>
+            <span className="mt-5 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-gold">
+              {t.common.readMore} →
+            </span>
+          </Link>
           <Link
             href={localePath(locale, "/map")}
             className="group border border-gold/50 bg-sand p-8 transition hover:border-gold"

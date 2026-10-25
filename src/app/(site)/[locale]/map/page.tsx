@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { getDict, isLocale, localePath, type Locale } from "@/lib/i18n";
-import { breadcrumbJsonLd, jsonLd, localeUrl, pageMetadata, webPageJsonLd } from "@/lib/seo";
+import { breadcrumbJsonLd, faqJsonLd, jsonLd, localeUrl, pageMetadata, webPageJsonLd } from "@/lib/seo";
 import { VILLA } from "@/lib/site-facts";
 import { getMapPlaces, getVillaPoint } from "@/lib/map-places";
 import { getPhotos, firstOf } from "@/lib/photos";
@@ -105,6 +105,15 @@ export default async function MapPage({
 
   const photo = firstOf(photos, "exterior");
 
+  // drive time of an area = its nearest pin, so the text and the map agree
+  const minutesByZone = new Map<string, number>();
+  for (const p of places) {
+    if (!p.zone || !p.driveMinutes) continue;
+    const prev = minutesByZone.get(p.zone);
+    if (prev == null || p.driveMinutes < prev) minutesByZone.set(p.zone, p.driveMinutes);
+  }
+  const areaMinutes = (zone: string) => minutesByZone.get(zone) ?? minutesByZone.get(zone.replace("Saint-", "St ")) ?? null;
+
   return (
     <>
       <script
@@ -113,9 +122,10 @@ export default async function MapPage({
           __html: jsonLd([
             webPageJsonLd({ locale, path: "/map", name: t.map.title, description: t.meta.descMap }),
             touristDestination,
+            faqJsonLd(t.map.faq),
             breadcrumbJsonLd([
               { name: t.nav.home, url: fr ? "/fr" : "/" },
-              { name: t.location.title, url: localePath(locale, "/location") },
+              { name: t.nav.pointeMilou, url: localePath(locale, "/pointe-milou") },
               { name: t.map.label, url: localePath(locale, "/map") },
             ]),
           ]),
@@ -166,6 +176,53 @@ export default async function MapPage({
               </div>
             ))}
           </dl>
+        </div>
+      </section>
+
+      {/* The island in words — what "St Barth map" has to answer in text */}
+      <section className="mx-auto max-w-7xl px-5 py-16 lg:px-8 lg:py-20" aria-labelledby="map-areas">
+        <p className="eyebrow mb-4">{t.map.label}</p>
+        <h2 id="map-areas" className="section-title mb-5 !text-4xl">
+          {t.map.areasTitle}
+        </h2>
+        <p className="mb-10 max-w-3xl leading-relaxed text-ink/70">{t.map.areasIntro}</p>
+        <dl className="grid gap-x-10 border-t border-ink/10 sm:grid-cols-2 lg:grid-cols-3">
+          {t.map.areas.map(([zone, detail]) => {
+            const min = zone === "Pointe Milou" ? null : areaMinutes(zone);
+            return (
+              <div key={zone} className="border-b border-ink/10 py-4">
+                <dt className="flex items-baseline justify-between gap-3">
+                  <span className="font-semibold text-ink">{zone}</span>
+                  {min != null && (
+                    <span className="shrink-0 text-xs font-semibold tabular-nums text-gold">
+                      {min} {t.map.areaFromVilla}
+                    </span>
+                  )}
+                </dt>
+                <dd className="mt-1 text-sm leading-relaxed text-ink/70">{detail}</dd>
+              </div>
+            );
+          })}
+        </dl>
+      </section>
+
+      {/* Questions people ask before they rent the car */}
+      <section className="border-y border-ink/10 bg-white" aria-labelledby="map-faq">
+        <div className="mx-auto max-w-3xl px-5 py-16 lg:px-8">
+          <h2 id="map-faq" className="section-title mb-8 !text-3xl">
+            {t.map.faqTitle}
+          </h2>
+          <div className="divide-y divide-ink/10">
+            {t.map.faq.map((item, i) => (
+              <details key={i} className="group py-5" open={i === 0}>
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-display text-xl text-ink transition hover:text-gold [&::-webkit-details-marker]:hidden">
+                  {item.q}
+                  <span className="text-gold transition-transform group-open:rotate-45">+</span>
+                </summary>
+                <p className="mt-3 leading-relaxed text-ink/70">{item.a}</p>
+              </details>
+            ))}
+          </div>
         </div>
       </section>
 
