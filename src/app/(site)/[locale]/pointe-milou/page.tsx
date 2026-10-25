@@ -104,24 +104,24 @@ export default async function PointeMilouPage({
         </div>
       </section>
 
-      {/* The whole package — shops, hotels, tables, beaches, all close by */}
-      <section className="bg-sand-dark" aria-labelledby="pm-package">
-        <div className="mx-auto max-w-7xl px-5 py-16 lg:px-8 lg:py-24">
-          <p className="eyebrow mb-4">{pm.packageLabel}</p>
-          <h2 id="pm-package" className="section-title mb-5">
-            {pm.packageTitle}
-          </h2>
-          <p className="mb-12 max-w-3xl leading-relaxed text-ink/70">{pm.packageIntro}</p>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {pm.package.map(([title, text]) => (
-              <div key={title} className="reveal border-t-2 border-gold bg-white p-7">
-                <h3 className="font-display text-2xl text-ink">{title}</h3>
-                <p className="mt-3 text-sm leading-relaxed text-ink/70">{text}</p>
-              </div>
-            ))}
-          </div>
-          <p className="mt-14 max-w-3xl font-display text-2xl leading-snug text-navy">{pm.packageOutro}</p>
+      {/* The whole package — shops, hotels, tables, beaches, all close by.
+          Same cards as "Why stay", numbered on from it. */}
+      <section className="mx-auto max-w-7xl px-5 pb-16 lg:px-8 lg:pb-24" aria-labelledby="pm-package">
+        <p className="eyebrow mb-4">{pm.packageLabel}</p>
+        <h2 id="pm-package" className="section-title mb-5">
+          {pm.packageTitle}
+        </h2>
+        <p className="mb-10 max-w-3xl leading-relaxed text-ink/70">{pm.packageIntro}</p>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {pm.package.map(([title, text], i) => (
+            <div key={title} className="reveal border border-ink/10 bg-white p-7">
+              <div className="font-display text-3xl text-gold/40">{String(pm.why.length + i + 1).padStart(2, "0")}</div>
+              <h3 className="mt-2 font-display text-2xl text-ink">{title}</h3>
+              <p className="mt-3 text-sm leading-relaxed text-ink/70">{text}</p>
+            </div>
+          ))}
         </div>
+        <p className="mt-12 max-w-3xl font-display text-2xl leading-snug text-ink">{pm.packageOutro}</p>
       </section>
 
       {/* What is there */}
