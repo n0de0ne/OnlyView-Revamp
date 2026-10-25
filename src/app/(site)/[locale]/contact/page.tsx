@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { getDict, isLocale, localePath, type Locale } from "@/lib/i18n";
+import { isLocale, localePath, type Locale } from "@/lib/i18n";
+import { getContent } from "@/lib/site-content";
 import { breadcrumbJsonLd, jsonLd, ownerJsonLd, pageMetadata, webPageJsonLd } from "@/lib/seo";
 import { getContact } from "@/lib/contact";
 import { PageHero } from "@/components/site/PageHero";
@@ -14,7 +15,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale: raw } = await params;
   const locale = (isLocale(raw) ? raw : "en") as Locale;
-  const t = getDict(locale);
+  const t = await getContent(locale);
   return pageMetadata({
     locale,
     path: "/contact",
@@ -30,7 +31,7 @@ export default async function ContactPage({
 }) {
   const { locale: raw } = await params;
   const locale = (isLocale(raw) ? raw : "en") as Locale;
-  const t = getDict(locale);
+  const t = await getContent(locale);
   const { email, whatsappUrl } = await getContact();
 
   return (

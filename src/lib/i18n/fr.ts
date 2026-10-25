@@ -480,8 +480,8 @@ export const fr: Dict = {
   },
   rates: {
     title: "Tarifs & saisons",
-    intro: "Tarifs hebdomadaires en USD, selon le nombre de chambres utilisées. Taxe de séjour locale de 5 %. En direct : pas de frais d'agence, des points de fidélité à chaque séjour.",
-    introNoLoyalty: "Tarifs hebdomadaires en USD, selon le nombre de chambres utilisées. Taxe de séjour locale de 5 %. En direct : pas de frais d'agence, aucune commission.",
+    intro: "Tarifs hebdomadaires en USD, selon le nombre de chambres utilisées. Taxe de séjour locale de {tax} %. En direct : pas de frais d'agence, des points de fidélité à chaque séjour.",
+    introNoLoyalty: "Tarifs hebdomadaires en USD, selon le nombre de chambres utilisées. Taxe de séjour locale de {tax} %. En direct : pas de frais d'agence, aucune commission.",
     season: "Saison",
     dates: "Dates",
     br2: "2 chambres",
@@ -489,14 +489,14 @@ export const fr: Dict = {
     br4: "4 chambres",
     weekly: "par semaine",
     holidayTitle: "Semaines festives",
-    holidayNote: "Noël et le Nouvel An se réservent à la semaine complète (7 nuits minimum).",
+    holidayNote: "Noël et le Nouvel An se réservent à la semaine complète ({minStayFestive} nuits minimum).",
     specialTitle: "Semaines spéciales",
     specialFixed: "par semaine",
     specialPercent: "{pct} sur le tarif de la saison",
     specialMinStay: "{n} nuits minimum",
     minStay: "Séjour minimum : {n} nuits ({p} nuits en période festive)",
-    tax: "Une taxe de séjour locale de 5 % s'ajoute à tous les tarifs.",
-    deposit: "Un acompte de 30 % garantit vos dates ; le solde est dû 30 jours avant l'arrivée.",
+    tax: "Une taxe de séjour locale de {tax} % s'ajoute à tous les tarifs.",
+    deposit: "Un acompte de {deposit} % garantit vos dates ; le solde est dû {balanceDays} jours avant l'arrivée.",
     quote: "Obtenir un devis exact",
     seasonNames: {
       lowSeason: "Été",
@@ -519,9 +519,9 @@ export const fr: Dict = {
     nights: "nuits",
     rentalRate: "Loyer",
     promoApplied: "Promotion",
-    tax: "Taxe de séjour (5 %)",
+    tax: "Taxe de séjour ({tax} %)",
     total: "Total",
-    deposit: "Acompte pour garantir (30 %)",
+    deposit: "Acompte pour garantir ({deposit} %)",
     balance: "Solde 30 jours avant l'arrivée",
     loyaltyEarn: "Ce séjour vous rapporterait {points} points de fidélité",
     minStayWarning: "Le séjour minimum est de {n} nuits pour ces dates.",
@@ -751,7 +751,7 @@ export const fr: Dict = {
     items: [
       {
         q: "Comment réserver la villa ?",
-        a: "Envoyez une demande avec vos dates — Annie confirme la disponibilité personnellement sous 24 h. Un acompte de 30 % garantit vos dates ; le solde est dû 30 jours avant l'arrivée. Le contrat se signe en ligne en quelques minutes.",
+        a: "Envoyez une demande avec vos dates — Annie confirme la disponibilité personnellement sous 24 h. Un acompte de {deposit} % garantit vos dates ; le solde est dû {balanceDays} jours avant l'arrivée. Le contrat se signe en ligne en quelques minutes.",
       },
       {
         q: "Que comprend le tarif ?",
@@ -759,7 +759,7 @@ export const fr: Dict = {
       },
       {
         q: "Quel est le séjour minimum ?",
-        a: "4 nuits la majeure partie de l'année, 7 nuits pour les semaines de Noël et du Nouvel An, vendues en forfait semaine complète.",
+        a: "{minStay} nuits la majeure partie de l'année, {minStayFestive} nuits pour les semaines de Noël et du Nouvel An, vendues en forfait semaine complète.",
       },
       {
         q: "Peut-on utiliser moins de chambres et payer moins ?",
@@ -784,7 +784,7 @@ export const fr: Dict = {
       },
       {
         q: "Quelle est votre politique de paiement / annulation ?",
-        a: "Acompte de 30 % non remboursable à la signature, solde 30 jours avant l'arrivée, par virement bancaire. Nous recommandons une assurance voyage pour une tranquillité totale.",
+        a: "Acompte de {deposit} % non remboursable à la signature, solde {balanceDays} jours avant l'arrivée, par virement bancaire. Nous recommandons une assurance voyage pour une tranquillité totale.",
       },
       {
         q: "Où se trouve exactement la Villa ONLY VIEW ?",
@@ -846,7 +846,7 @@ export const fr: Dict = {
       airport: ["Aéroport", "Gustaf III (SBH) — 10 minutes en voiture"],
       beaches: ["Plages", "Lorient 5 min · St-Jean & Eden Rock 8 min · Saline 17 min"],
       rates: ["Tarifs", "Dès 10 000 $ la semaine ; tarifé selon les chambres utilisées (2, 3 ou 4)"],
-      booking: ["Réservation", "En direct avec Annie, la propriétaire — acompte de 30 %, solde 30 jours avant l'arrivée"],
+      booking: ["Réservation", "En direct avec Annie, la propriétaire — acompte de {deposit} %, solde {balanceDays} jours avant l'arrivée"],
     } as Record<string, [string, string]>,
   },
   nearby: {
@@ -873,7 +873,7 @@ export const fr: Dict = {
       ["Prix", "Le tarif de la villa", "Le même tarif, plus 10 à 15 % pour l'agence"],
       ["Négociation", "Vous en parlez avec la propriétaire, ce qui aboutit souvent à un meilleur tarif", "L'agence donne son prix, avec peu de marge"],
       ["Qui répond", "Annie, la propriétaire — qui connaît chaque recoin de la maison", "Un agent de réservation, puis un représentant local"],
-      ["Contrat & paiement", "Signé en ligne en quelques minutes, acompte de 30 % par virement", "Conditions de l'agence, souvent plus strictes"],
+      ["Contrat & paiement", "Signé en ligne en quelques minutes, acompte de {deposit} % par virement", "Conditions de l'agence, souvent plus strictes"],
       ["Early check-in, late check-out", "Demandés et confirmés par une personne, selon le calendrier", "Selon la politique"],
       ["Conciergerie", "Incluse, organisée avec la maison", "Souvent en supplément"],
       ["Clients fidèles", "Premier choix des dates, Noël et Nouvel An compris", "Les dates encore libres ensuite"],

@@ -2,7 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 import "../../globals.css";
 import { fontClasses } from "@/lib/fonts";
-import { getDict, isLocale, LOCALES, type Locale } from "@/lib/i18n";
+import { isLocale, type Locale } from "@/lib/i18n";
+import { getContent } from "@/lib/site-content";
 import { DEFAULT_OG_IMAGE, SITE_URL } from "@/lib/seo";
 import { getSettings } from "@/lib/settings";
 import { SiteHeader } from "@/components/site/SiteHeader";
@@ -12,8 +13,12 @@ import { SmoothScroll } from "@/components/motion/SmoothScroll";
 import { RevealObserver } from "@/components/motion/RevealObserver";
 import { Analytics } from "@/components/site/Analytics";
 
+// Nothing is prerendered when the image is built: the build has no database,
+// so a prerendered page would carry the code's initial copy instead of the
+// text edited in Admin → Textes du site until its first revalidation. Each
+// page renders on its first visit and is then cached (ISR) as before.
 export function generateStaticParams() {
-  return LOCALES.map((locale) => ({ locale }));
+  return [];
 }
 
 // viewport-fit=cover lets the hero run under the status bar and makes iOS
@@ -32,7 +37,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const t = getDict(locale);
+  const t = await getContent(locale);
   // Search Console / Bing Webmaster ownership tokens, pasted in Réglages —
   // ISR picks them up without a deploy
   let verification: Metadata["verification"] = undefined;

@@ -3,7 +3,7 @@ import { randomBytes } from "node:crypto";
 import type { Client, Contract, DateChange, Payment, Reservation } from "@prisma/client";
 import { prisma } from "./db";
 import { buildContract, contractToHtml, type ContractParams } from "./contract-content";
-import { getSettings } from "./settings";
+import { getRateConfig, getSettings } from "./settings";
 import { formatDate, nightsBetween, toISODate } from "./dates";
 import { sendMail } from "./mailer";
 import { SITE_URL } from "./seo";
@@ -204,7 +204,7 @@ export async function issueContract(
     };
   }
 
-  const s = await getSettings();
+  const [s, rates] = await Promise.all([getSettings(), getRateConfig()]);
   const checkIn = toISODate(r.startDate);
   const checkOut = toISODate(r.endDate);
   const params: ContractParams = {
@@ -218,6 +218,7 @@ export async function issueContract(
     lang,
     ownerName: s.owner_name ?? "Annie CHRIQUI",
     noTax: r.noTax,
+    depositRate: rates.depositPercent,
     bank: {
       accountName: s.bank_account_name ?? "",
       accountNumber: s.bank_account_number ?? "",

@@ -1,3 +1,14 @@
+/**
+ * English dictionary.
+ *
+ * Interface labels (navigation, forms, the booking widget, the guest portal…)
+ * live here. The site's *copy* — every section listed in CONTENT_BLOCKS
+ * (lib/site-content) — is only seeded from here: the live text is in the
+ * database, edited in Admin → Textes du site, so changing it below no longer
+ * changes the site. Copy may quote {deposit}, {tax}, {minStay},
+ * {minStayFestive}, {balanceDays}, {checkin} and {checkout}, filled from
+ * Réglages.
+ */
 export const en = {
   meta: {
     siteName: "Villa ONLY VIEW",
@@ -482,8 +493,8 @@ export const en = {
   },
   rates: {
     title: "Rates & seasons",
-    intro: "Weekly rates in USD, by number of bedrooms in use. Local 5% tourist tax applies. Book direct: no agency fees, loyalty points on every stay.",
-    introNoLoyalty: "Weekly rates in USD, by number of bedrooms in use. Local 5% tourist tax applies. Book direct: no agency fees, no commission.",
+    intro: "Weekly rates in USD, by number of bedrooms in use. Local {tax}% tourist tax applies. Book direct: no agency fees, loyalty points on every stay.",
+    introNoLoyalty: "Weekly rates in USD, by number of bedrooms in use. Local {tax}% tourist tax applies. Book direct: no agency fees, no commission.",
     season: "Season",
     dates: "Dates",
     br2: "2 bedrooms",
@@ -491,14 +502,14 @@ export const en = {
     br4: "4 bedrooms",
     weekly: "per week",
     holidayTitle: "Festive weeks",
-    holidayNote: "Christmas and New Year are booked as full weeks (7-night minimum).",
+    holidayNote: "Christmas and New Year are booked as full weeks ({minStayFestive}-night minimum).",
     specialTitle: "Event weeks",
     specialFixed: "per week",
     specialPercent: "{pct} on the season rate",
     specialMinStay: "{n}-night minimum",
     minStay: "Minimum stay: {n} nights ({p} nights over festive weeks)",
-    tax: "A 5% local tourist tax is added to all rates.",
-    deposit: "30% deposit secures your dates; balance due 30 days before arrival.",
+    tax: "A {tax}% local tourist tax is added to all rates.",
+    deposit: "{deposit}% deposit secures your dates; balance due {balanceDays} days before arrival.",
     quote: "Get an exact quote",
     seasonNames: {
       lowSeason: "Summer",
@@ -521,9 +532,9 @@ export const en = {
     nights: "nights",
     rentalRate: "Rental rate",
     promoApplied: "Promotion",
-    tax: "Tourist tax (5%)",
+    tax: "Tourist tax ({tax}%)",
     total: "Total",
-    deposit: "Deposit to secure (30%)",
+    deposit: "Deposit to secure ({deposit}%)",
     balance: "Balance 30 days before arrival",
     loyaltyEarn: "You would earn {points} loyalty points on this stay",
     minStayWarning: "Minimum stay is {n} nights for these dates.",
@@ -753,7 +764,7 @@ export const en = {
     items: [
       {
         q: "How do I book the villa?",
-        a: "Send a booking request with your dates — Annie confirms availability personally within 24 hours. A 30% deposit secures your dates; the balance is due 30 days before arrival. The rental agreement is signed online in minutes.",
+        a: "Send a booking request with your dates — Annie confirms availability personally within 24 hours. A {deposit}% deposit secures your dates; the balance is due {balanceDays} days before arrival. The rental agreement is signed online in minutes.",
       },
       {
         q: "What is included in the rate?",
@@ -761,7 +772,7 @@ export const en = {
       },
       {
         q: "What is the minimum stay?",
-        a: "4 nights most of the year, 7 nights over Christmas and New Year weeks, which are sold as full-week packages.",
+        a: "{minStay} nights most of the year, {minStayFestive} nights over Christmas and New Year weeks, which are sold as full-week packages.",
       },
       {
         q: "Can we use fewer bedrooms and pay less?",
@@ -786,7 +797,7 @@ export const en = {
       },
       {
         q: "What is your payment / cancellation policy?",
-        a: "30% non-refundable deposit at signature, balance 30 days before arrival, by bank transfer. We recommend travel insurance for full peace of mind.",
+        a: "{deposit}% non-refundable deposit at signature, balance {balanceDays} days before arrival, by bank transfer. We recommend travel insurance for full peace of mind.",
       },
       {
         q: "Where exactly is Villa ONLY VIEW?",
@@ -851,7 +862,7 @@ export const en = {
       airport: ["Airport", "Gustaf III (SBH) — 10 minutes by car"],
       beaches: ["Beaches", "Lorient 5 min · St-Jean & Eden Rock 8 min · Saline 17 min"],
       rates: ["Rates", "From $10,000 per week; priced by bedrooms in use (2, 3 or 4)"],
-      booking: ["Booking", "Direct with Annie, the owner — 30% deposit, balance 30 days before arrival"],
+      booking: ["Booking", "Direct with Annie, the owner — {deposit}% deposit, balance {balanceDays} days before arrival"],
     } as Record<string, [string, string]>,
   },
   nearby: {
@@ -878,7 +889,7 @@ export const en = {
       ["Price", "The villa's own rate", "The same rate plus 10–15% for the agency"],
       ["Negotiating", "You discuss it with the owner, which usually ends in a better rate", "The agency quotes its price, with little room to move"],
       ["Who answers", "Annie, the owner — who knows every corner of the house", "A booking agent, then a local rep"],
-      ["Contract & payment", "Signed online in minutes, 30% deposit by bank transfer", "Agency terms, often stricter"],
+      ["Contract & payment", "Signed online in minutes, {deposit}% deposit by bank transfer", "Agency terms, often stricter"],
       ["Early check-in, late check-out", "Asked and confirmed by a person, according to the calendar", "Subject to policy"],
       ["Concierge", "Included, arranged with the house", "Often an add-on"],
       ["Returning guests", "First pick of dates, Christmas and New Year included", "The dates still open after that"],

@@ -5,6 +5,7 @@
  */
 import { addDays, formatDate, nightsBetween, todayISO } from "./dates";
 
+/** Deposit share for agreements issued before the rate was stored with them. */
 export const DEPOSIT_RATE = 0.3;
 
 export interface ContractParams {
@@ -25,6 +26,8 @@ export interface ContractParams {
     bic: string;
   };
   noTax?: boolean;
+  /** deposit share of the rent (Réglages → Tarifs) when the agreement was issued */
+  depositRate?: number;
   /** day the agreement is dated (ISO) — defaults to today */
   issuedOn?: string;
   /** money already received toward the rent, oldest first (refunds negative) */
@@ -63,8 +66,10 @@ export interface ContractContent {
 const money = (n: number) =>
   (n < 0 ? "-$" : "$") + Math.abs(Math.round(n)).toLocaleString("en-US") + " USD";
 
-export function depositFor(total: number): number {
-  return Math.round(total * DEPOSIT_RATE);
+const pctOf = (rate = DEPOSIT_RATE) => Math.round(rate * 1000) / 10;
+
+export function depositFor(total: number, rate = DEPOSIT_RATE): number {
+  return Math.round(total * rate);
 }
 
 /** Sum of the money received toward the rent. */
@@ -106,7 +111,7 @@ function paymentTerms(p: ContractParams, deposit: number) {
   });
   table.push(
     [fr ? "Loyer total" : "Total rent", money(p.totalPrice)],
-    [fr ? "Acompte requis (30 %)" : "Deposit required (30%)", money(deposit)],
+    [fr ? `Acompte requis (${pctOf(p.depositRate)} %)` : `Deposit required (${pctOf(p.depositRate)}%)`, money(deposit)],
     [fr ? "Total déjà reçu" : "Total already received", money(received)],
     remaining >= 0
       ? [fr ? "Solde restant dû" : "Remaining balance", money(remaining)]
@@ -186,7 +191,7 @@ function amendmentSection(p: ContractParams): ContractSection | null {
 }
 
 export function buildContract(p: ContractParams): ContractContent {
-  const deposit = depositFor(p.totalPrice);
+  const deposit = depositFor(p.totalPrice, p.depositRate);
   const balance = p.totalPrice - deposit;
   const ci = formatDate(p.checkIn, p.lang);
   const co = formatDate(p.checkOut, p.lang);

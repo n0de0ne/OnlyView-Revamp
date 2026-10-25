@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { getDict, localePath, type Locale } from "@/lib/i18n";
+import { localePath, type Locale } from "@/lib/i18n";
+import { getContent } from "@/lib/site-content";
 
-export function SiteFooter({ locale }: { locale: Locale }) {
-  const t = getDict(locale);
+export async function SiteFooter({ locale }: { locale: Locale }) {
+  const t = await getContent(locale);
   const year = new Date().getFullYear();
 
   const explore: Array<[string, string]> = [

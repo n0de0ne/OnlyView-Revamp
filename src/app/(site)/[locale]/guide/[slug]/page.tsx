@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getDict, isLocale, localePath, LOCALES, type Locale } from "@/lib/i18n";
+import { isLocale, localePath, type Locale } from "@/lib/i18n";
+import { getContent } from "@/lib/site-content";
 import { breadcrumbJsonLd, jsonLd, organizationJsonLd, ownerJsonLd, pageMetadata, SITE_URL } from "@/lib/seo";
-import { GUIDES, getGuide } from "@/data/guides";
+import { getGuide } from "@/lib/guides";
 import { formatDate } from "@/lib/dates";
 import { PageHero } from "@/components/site/PageHero";
 import { FlightSearch } from "@/components/site/FlightSearch";
@@ -11,8 +12,9 @@ import { getMapPlaces, slugify } from "@/lib/map-places";
 
 export const revalidate = 3600;
 
+// articles live in the database (Admin → Guide): each renders on its first visit
 export function generateStaticParams() {
-  return LOCALES.flatMap((locale) => GUIDES.map((g) => ({ locale, slug: g.slug })));
+  return [];
 }
 
 export async function generateMetadata({
@@ -22,7 +24,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale: raw, slug } = await params;
   const locale = (isLocale(raw) ? raw : "en") as Locale;
-  const guide = getGuide(slug);
+  const [guide] = await Promise.all([getGuide(slug), getContent(locale)]);
   if (!guide) return {};
   const fr = locale === "fr";
   // the article's own <title>, without the "| Villa ONLY VIEW" suffix: the
@@ -45,9 +47,9 @@ export default async function GuidePage({
 }) {
   const { locale: raw, slug } = await params;
   const locale = (isLocale(raw) ? raw : "en") as Locale;
-  const t = getDict(locale);
+  const t = await getContent(locale);
   const fr = locale === "fr";
-  const guide = getGuide(slug);
+  const guide = await getGuide(slug);
   if (!guide) notFound();
 
   // live pins, so places added in Admin → Carte get their chip too; a guide

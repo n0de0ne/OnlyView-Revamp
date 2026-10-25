@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { getDict, isLocale, localePath, type Locale } from "@/lib/i18n";
+import { isLocale, localePath, type Locale } from "@/lib/i18n";
+import { getContent, villaFacts } from "@/lib/site-content";
 import { breadcrumbJsonLd, jsonLd, pageMetadata, schemaImages, vacationRentalJsonLd } from "@/lib/seo";
 import { getContact } from "@/lib/contact";
 import { KeyFacts } from "@/components/site/KeyFacts";
@@ -19,7 +20,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale: raw } = await params;
   const locale = (isLocale(raw) ? raw : "en") as Locale;
-  const t = getDict(locale);
+  const t = await getContent(locale);
   return pageMetadata({
     locale,
     path: "/villa",
@@ -36,7 +37,8 @@ export default async function VillaPage({
 }) {
   const { locale: raw } = await params;
   const locale = (isLocale(raw) ? raw : "en") as Locale;
-  const t = getDict(locale);
+  const t = await getContent(locale);
+  const VILLA = villaFacts();
   const [photos, { sameAs }] = await Promise.all([getPhotos(), getContact()]);
 
   const rooms: Array<{ cat: string; title: string; text: string }> = [
@@ -89,10 +91,10 @@ export default async function VillaPage({
       <section className="border-b border-ink/10 bg-white">
         <div className="mx-auto grid max-w-7xl grid-cols-2 divide-x divide-ink/10 px-5 text-center md:grid-cols-5 lg:px-8">
           {[
-            ["4", t.common.bedrooms],
-            ["4", locale === "fr" ? "salles de bain" : "bathrooms"],
-            ["8", t.common.guestsWord],
-            ["200 m²", locale === "fr" ? "surface" : "living space"],
+            [String(VILLA.bedrooms), t.common.bedrooms],
+            [String(VILLA.bathrooms), locale === "fr" ? "salles de bain" : "bathrooms"],
+            [String(VILLA.guests), t.common.guestsWord],
+            [`${VILLA.sizeM2} m²`, locale === "fr" ? "surface" : "living space"],
             ["180°", locale === "fr" ? "vue mer" : "ocean view"],
           ].map(([n, label]) => (
             <div key={label} className="px-4 py-8">

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getDict, isLocale, localePath, type Locale } from "@/lib/i18n";
+import { isLocale, localePath, type Locale } from "@/lib/i18n";
+import { getContent } from "@/lib/site-content";
 import { breadcrumbJsonLd, itemListJsonLd, jsonLd, pageMetadata, webPageJsonLd } from "@/lib/seo";
-import { GUIDES } from "@/data/guides";
+import { getGuides } from "@/lib/guides";
 import { PageHero } from "@/components/site/PageHero";
 import { KeyFacts } from "@/components/site/KeyFacts";
 
@@ -15,7 +16,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale: raw } = await params;
   const locale = (isLocale(raw) ? raw : "en") as Locale;
-  const t = getDict(locale);
+  const t = await getContent(locale);
   return pageMetadata({
     locale,
     path: "/guide",
@@ -32,7 +33,7 @@ export default async function GuideIndex({
 }) {
   const { locale: raw } = await params;
   const locale = (isLocale(raw) ? raw : "en") as Locale;
-  const t = getDict(locale);
+  const [t, GUIDES] = await Promise.all([getContent(locale), getGuides()]);
   const fr = locale === "fr";
 
   return (

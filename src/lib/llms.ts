@@ -1,7 +1,7 @@
 import { SITE_URL } from "./seo";
-import { CONTENT_UPDATED, ISLAND, OWNER_EMAIL, OWNER_PHONE, VILLA, VILLA_MAP_URL } from "./site-facts";
-import { GUIDES } from "@/data/guides";
-import { getDict } from "./i18n";
+import { CONTENT_UPDATED, ISLAND, OWNER_EMAIL, OWNER_PHONE, VILLA_MAP_URL } from "./site-facts";
+import { getGuides } from "./guides";
+import { contentUpdatedAt, getContent, getVilla } from "./site-content";
 import { getMapPlaces } from "./map-places";
 import { getRateConfig } from "./settings";
 import { publicRateTable } from "./pricing";
@@ -18,9 +18,22 @@ import { usd } from "./money";
  * must not guess stated once, plainly.
  */
 
-const d = (key: string) => VILLA.distances.find((x) => x.key === key)!;
+/** Facts, rates, guides and copy as stored in the database (admin-edited). */
+async function sources() {
+  const [VILLA, rates, GUIDES, edited] = await Promise.all([getVilla(), getRateConfig(), getGuides(), contentUpdatedAt()]);
+  const updated = edited && edited > CONTENT_UPDATED ? edited : CONTENT_UPDATED;
+  return { VILLA, rates, GUIDES, updated };
+}
 
-export function llmsBrief(): string {
+export async function llmsBrief(): Promise<string> {
+  const { VILLA, rates, GUIDES, updated } = await sources();
+  const pct = (n: number) => Math.round(n * 1000) / 10;
+  // a distance the owner removed in the admin just drops out of the sentence
+  const near = (key: string, withTime = true) => {
+    const x = VILLA.distances.find((v) => v.key === key);
+    return x ? (withTime ? `${x.en} (${x.minutes} min)` : x.en) : null;
+  };
+  const nearby = [near("christopher", false), near("stjean"), near("gustavia"), near("airport")].filter(Boolean).join(", ");
   return `# ${VILLA.name}
 
 > Private luxury villa in ${VILLA.neighbourhood}, ${VILLA.island} (St Barth / St Barts, French West Indies), rented directly by its owner, ${VILLA.ownerName} — no agency, no commission. ${VILLA.bedrooms} en-suite bedrooms, up to ${VILLA.guests} guests, heated pool facing the sunset, 180° Caribbean sea view, daily housekeeping and concierge included.
@@ -28,7 +41,7 @@ export function llmsBrief(): string {
 Also known as: ${VILLA.alternateNames.join(", ")}.
 Official website: ${SITE_URL} (English) · ${SITE_URL}/fr (French). St Barth rental agencies also list the villa under "Only View"; this is the owner's own site, with the direct rate and live availability.
 Full text of the site in one file: ${SITE_URL}/llms-full.txt
-Last content update: ${CONTENT_UPDATED}
+Last content update: ${updated}
 
 ## Facts
 
@@ -49,9 +62,9 @@ ${VILLA.distances.map((x) => `- ${x.en}: ${x.minutes} min`).join("\n")}
 ## Rates and booking
 
 - Priced per week by season and by bedrooms in use (2, 3 or 4); from about $10,000/week in summer (low season) to Christmas and New Year full-week packages
-- ${VILLA.touristTaxPercent}% tourist tax added; everything else is included
-- Minimum stay ${VILLA.minNights} nights, ${VILLA.minNightsFestive} nights over Christmas and New Year
-- Booking: direct with the owner — ${VILLA.depositPercent}% deposit at signature (online contract), balance ${VILLA.balanceDaysBefore} days before arrival, by bank transfer
+- ${pct(rates.taxRate)}% tourist tax added; everything else is included
+- Minimum stay ${rates.minStay} nights, ${rates.minStayPeak} nights over Christmas and New Year
+- Booking: direct with the owner — ${pct(rates.depositPercent)}% deposit at signature (online contract), balance ${VILLA.balanceDaysBefore} days before arrival, by bank transfer
 - Check-in ${VILLA.checkin}, check-out ${VILLA.checkout}; early/late on request
 - Live availability and instant quote: ${SITE_URL}/booking
 - Full rate table: ${SITE_URL}/rates
@@ -79,7 +92,7 @@ ${GUIDES.map((g) => `- [${g.title.en}](${SITE_URL}/guide/${g.slug}): ${g.descrip
 
 - [La villa](${SITE_URL}/fr/villa) · [Tarifs](${SITE_URL}/fr/rates) · [Réservation](${SITE_URL}/fr/booking) · [Pointe Milou](${SITE_URL}/fr/pointe-milou) · [Carte de l'île](${SITE_URL}/fr/map) · [Guide St Barth](${SITE_URL}/fr/guide) · [FAQ](${SITE_URL}/fr/faq) · [Contact](${SITE_URL}/fr/contact)
 
-Nearby: ${d("christopher").en}, ${d("stjean").en} (${d("stjean").minutes} min), ${d("gustavia").en} (${d("gustavia").minutes} min), ${d("airport").en} (${d("airport").minutes} min).
+${nearby ? `Nearby: ${nearby}.` : ""}
 `;
 }
 
@@ -87,9 +100,14 @@ const bullets = (items: ReadonlyArray<ReadonlyArray<string>>) => items.map(([k, 
 const qa = (items: ReadonlyArray<{ q: string; a: string }>) => items.map((i) => `**Q: ${i.q}**\n\n${i.a}`).join("\n\n");
 
 export async function llmsFull(): Promise<string> {
-  const en = getDict("en");
-  const fr = getDict("fr");
-  const [places, rates, reviews] = await Promise.all([getMapPlaces("en"), getRateConfig(), getApprovedTestimonials()]);
+  const [en, fr, { VILLA, rates, GUIDES, updated }, places, reviews, brief] = await Promise.all([
+    getContent("en"),
+    getContent("fr"),
+    sources(),
+    getMapPlaces("en"),
+    getApprovedTestimonials(),
+    llmsBrief(),
+  ]);
   const table = publicRateTable(rates, todayISO());
 
   const guideText = (locale: "en" | "fr") =>
@@ -122,12 +140,12 @@ export async function llmsFull(): Promise<string> {
     .join("\n");
   const holidayRows = table.holidays.map((h) => `| ${en.rates.seasonNames[h.key]} | ${h.datesEn} | ${usd(h.weekly)} (full villa, 7 nights) |`).join("\n");
 
-  return `${llmsBrief()}
+  return `${brief}
 ---
 
 # ${VILLA.name} — full text
 
-This file is the plain-text version of ${SITE_URL}: the villa, the neighbourhood, the island map, the guides, the rates and the reviews, in English, with the French pages summarised at the end. Content updated ${CONTENT_UPDATED}.
+This file is the plain-text version of ${SITE_URL}: the villa, the neighbourhood, the island map, the guides, the rates and the reviews, in English, with the French pages summarised at the end. Content updated ${updated}.
 
 ## The villa at a glance
 
@@ -165,7 +183,7 @@ ${qa(en.pointeMilou.faq)}
 
 ## Rates (${SITE_URL}/rates)
 
-Weekly rates in USD by bedrooms in use; a ${VILLA.touristTaxPercent}% tourist tax is added, everything else (housekeeping, concierge, Wi-Fi, linens) is included. Minimum stay ${rates.minStay} nights, ${rates.minStayPeak} over the festive weeks. ${Math.round(rates.depositPercent * 100)}% deposit at signature, balance ${VILLA.balanceDaysBefore} days before arrival.
+Weekly rates in USD by bedrooms in use; a ${Math.round(rates.taxRate * 1000) / 10}% tourist tax is added, everything else (housekeeping, concierge, Wi-Fi, linens) is included. Minimum stay ${rates.minStay} nights, ${rates.minStayPeak} over the festive weeks. ${Math.round(rates.depositPercent * 100)}% deposit at signature, balance ${VILLA.balanceDaysBefore} days before arrival.
 
 | Season | Dates | 2 bedrooms | 3 bedrooms | 4 bedrooms |
 |---|---|---|---|---|

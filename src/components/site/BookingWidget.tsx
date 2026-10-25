@@ -21,8 +21,10 @@ interface QuoteResponse {
     promoDiscount: number;
     subtotalHT: number;
     taxAmount: number;
+    taxPercent: number;
     totalTTC: number;
     depositAmount: number;
+    depositPercent: number;
     balanceAmount: number;
   };
   loyaltyPoints: number;
@@ -457,7 +459,7 @@ export function BookingWidget({
                   <span>{usd(quote.quote.subtotalHT)}</span>
                 </div>
                 <div className="flex justify-between text-white/70">
-                  <span>{t.booking.tax}</span>
+                  <span>{tpl(t.booking.tax, { tax: quote.quote.taxPercent })}</span>
                   <span>+{usd(quote.quote.taxAmount)}</span>
                 </div>
                 <div className="flex justify-between border-t border-gold/40 pt-3 font-display text-xl text-gold">
@@ -465,7 +467,7 @@ export function BookingWidget({
                   <span>{usd(quote.quote.totalTTC)}</span>
                 </div>
                 <div className="flex justify-between pt-2 text-xs text-white/55">
-                  <span>{t.booking.deposit}</span>
+                  <span>{tpl(t.booking.deposit, { deposit: quote.quote.depositPercent })}</span>
                   <span>{usd(quote.quote.depositAmount)}</span>
                 </div>
                 <div className="flex justify-between text-xs text-white/55">

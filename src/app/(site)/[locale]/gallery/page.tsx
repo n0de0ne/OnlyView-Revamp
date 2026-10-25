@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { getDict, isLocale, type Locale } from "@/lib/i18n";
+import { isLocale, type Locale } from "@/lib/i18n";
+import { getContent } from "@/lib/site-content";
 import { breadcrumbJsonLd, imageGalleryJsonLd, jsonLd, pageMetadata } from "@/lib/seo";
 import { getPhotos, PHOTO_CATEGORIES } from "@/lib/photos";
 import { GalleryGrid } from "@/components/site/gallery/GalleryGrid";
@@ -14,7 +15,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale: raw } = await params;
   const locale = (isLocale(raw) ? raw : "en") as Locale;
-  const t = getDict(locale);
+  const t = await getContent(locale);
   return pageMetadata({
     locale,
     path: "/gallery",
@@ -33,7 +34,7 @@ export default async function GalleryPage({
 }) {
   const [{ locale: raw }, { c }] = await Promise.all([params, searchParams]);
   const locale = (isLocale(raw) ? raw : "en") as Locale;
-  const t = getDict(locale);
+  const t = await getContent(locale);
   const photos = await getPhotos();
 
   return (

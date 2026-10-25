@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { getDict, isLocale, localePath, type Locale } from "@/lib/i18n";
+import { isLocale, localePath, type Locale } from "@/lib/i18n";
+import { getContent, villaFacts } from "@/lib/site-content";
 import { breadcrumbJsonLd, faqJsonLd, jsonLd, localeUrl, pageMetadata, webPageJsonLd } from "@/lib/seo";
-import { VILLA } from "@/lib/site-facts";
 import { getMapPlaces, getVillaPoint } from "@/lib/map-places";
 import { getPhotos, firstOf } from "@/lib/photos";
 import { PageHero } from "@/components/site/PageHero";
@@ -28,7 +28,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale: raw } = await params;
   const locale = (isLocale(raw) ? raw : "en") as Locale;
-  const t = getDict(locale);
+  const t = await getContent(locale);
   return pageMetadata({
     locale,
     path: "/map",
@@ -71,7 +71,8 @@ export default async function MapPage({
 }) {
   const { locale: raw } = await params;
   const locale = (isLocale(raw) ? raw : "en") as Locale;
-  const t = getDict(locale);
+  const t = await getContent(locale);
+  const VILLA = villaFacts();
   const fr = locale === "fr";
   const [places, villa, photos] = await Promise.all([getMapPlaces(locale), getVillaPoint(), getPhotos()]);
 

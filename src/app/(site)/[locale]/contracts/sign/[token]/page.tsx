@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { getDict, isLocale, tpl, type Locale } from "@/lib/i18n";
+import { isLocale, tpl, type Locale } from "@/lib/i18n";
+import { getContent } from "@/lib/site-content";
 import { prisma } from "@/lib/db";
 import { formatDate, formatDateShort } from "@/lib/dates";
 import { SignaturePad } from "@/components/site/SignaturePad";
@@ -15,7 +16,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const t = getDict(locale);
+  const t = await getContent(locale);
   return { title: t.contract.title, robots: { index: false } };
 }
 
@@ -26,7 +27,7 @@ export default async function SignContractPage({
 }) {
   const { locale: raw, token } = await params;
   const locale = (isLocale(raw) ? raw : "en") as Locale;
-  const t = getDict(locale);
+  const t = await getContent(locale);
 
   const contract = await prisma.contract.findUnique({
     where: { token },

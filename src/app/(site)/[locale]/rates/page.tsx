@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { isLoyaltyEnabled } from "@/lib/features";
-import { getDict, isLocale, localePath, tpl, type Locale } from "@/lib/i18n";
+import { isLocale, localePath, tpl, type Locale } from "@/lib/i18n";
+import { getContent } from "@/lib/site-content";
 import { breadcrumbJsonLd, jsonLd, pageMetadata, SITE_URL } from "@/lib/seo";
 import { getRateConfig } from "@/lib/settings";
 import { publicRateTable } from "@/lib/pricing";
@@ -19,7 +20,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale: raw } = await params;
   const locale = (isLocale(raw) ? raw : "en") as Locale;
-  const t = getDict(locale);
+  const t = await getContent(locale);
   return pageMetadata({
     locale,
     path: "/rates",
@@ -47,7 +48,7 @@ export default async function RatesPage({
 }) {
   const { locale: raw } = await params;
   const locale = (isLocale(raw) ? raw : "en") as Locale;
-  const t = getDict(locale);
+  const t = await getContent(locale);
   const fr = locale === "fr";
   const [rates, promos, loyalty] = await Promise.all([
     getRateConfig(),

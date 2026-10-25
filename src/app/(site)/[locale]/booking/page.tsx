@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { getDict, isLocale, type Locale } from "@/lib/i18n";
+import { isLocale, type Locale } from "@/lib/i18n";
+import { getContent } from "@/lib/site-content";
 import { breadcrumbJsonLd, jsonLd, pageMetadata } from "@/lib/seo";
 import { getBookedRanges } from "@/lib/availability";
 import { todayISO, addDays } from "@/lib/dates";
@@ -15,7 +16,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale: raw } = await params;
   const locale = (isLocale(raw) ? raw : "en") as Locale;
-  const t = getDict(locale);
+  const t = await getContent(locale);
   return pageMetadata({
     locale,
     path: "/booking",
@@ -31,7 +32,7 @@ export default async function BookingPage({
 }) {
   const { locale: raw } = await params;
   const locale = (isLocale(raw) ? raw : "en") as Locale;
-  const t = getDict(locale);
+  const t = await getContent(locale);
 
   let bookings: Array<{ start: string; end: string; status: "confirmed" | "option" }> = [];
   try {
