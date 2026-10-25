@@ -31,9 +31,8 @@ const contactLine = (c: { phone?: string | null; whatsapp?: string | null; email
 
 /**
  * Guest portal concierge: ask for a table, a boat or a private chef. The
- * request lands on the stay as an extra the owner confirms — at no price,
- * since these are usually paid to the provider; the owner sets one if the
- * villa bills it.
+ * request lands on the stay as a concierge request (not an extra: it is paid
+ * to the provider) that the owner confirms or declines from the admin inbox.
  */
 export async function POST(req: NextRequest, { params }: Ctx) {
   const r = await guestEditableReservation(parseInt((await params).id, 10));
@@ -89,21 +88,24 @@ export async function POST(req: NextRequest, { params }: Ctx) {
     if (offer.partner) ownerLines.push(`${offer.partner.name}: ${contactLine(offer.partner)}`);
   }
 
-  // notes are for the owner, who reads the admin in French
-  const notes = [time, `${d.guests} pers.`, ...facts]
-    .filter(Boolean)
-    .join(" · ");
+  // date, time and party size have their own fields; notes keep the
+  // indicative price (for the owner, who reads the admin in French) and the guest's note
+  const notes = [facts.join(" · "), d.notes].filter(Boolean).join("\n") || null;
   const item = await prisma.reservationExtra.create({
     data: {
       reservationId: r.id,
       extraId: null,
+      kind: "concierge",
+      category: d.type,
       label,
       quantity: 1,
       unitPrice: 0,
       amount: 0,
       status: "requested",
       serviceDate: dateOrNull(d.date),
-      notes: d.notes ? `${notes}\n${d.notes}` : notes,
+      serviceTime: time,
+      guests: d.guests,
+      notes,
       requestedByGuest: true,
       placeId: venue?.id ?? null,
     },
@@ -115,7 +117,7 @@ export async function POST(req: NextRequest, { params }: Ctx) {
       ...facts.map((f) => `Indicative: ${f}`),
       ...(d.notes ? [`Note: ${d.notes}`] : []),
       ...ownerLines,
-      "Confirm or cancel it in the reservation (Extras).",
+      "Confirm or decline it in Admin → Demandes conciergerie — the guest is emailed your answer.",
     ],
   });
   return NextResponse.json({ success: true, item: serializeReservationExtra(item, venue?.slug ?? null) });

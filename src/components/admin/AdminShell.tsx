@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { SessionUser } from "@/lib/auth";
 import { api, Modal, useToast } from "./ui";
 
@@ -13,7 +13,15 @@ type NavItem = {
   minRole?: "owner" | "manager";
   /** hidden unless the matching feature is enabled */
   feature?: "loyalty";
+  /** count of what waits for an answer, from /api/admin/badges */
+  badge?: keyof Badges;
 };
+
+type Badges = { requests: number; concierge: number };
+
+/** Fire after answering something, so the menu counts refresh at once. */
+export const BADGES_EVENT = "onlyview:admin-badges";
+
 
 /** The menu, by what Alan is doing: bookings, selling, the guests' stay, the website, running the villa. */
 const NAV: Array<{ title: string | null; items: NavItem[] }> = [
@@ -23,7 +31,8 @@ const NAV: Array<{ title: string | null; items: NavItem[] }> = [
     items: [
       { href: "/admin/calendar", label: "Calendrier", icon: "📅" },
       { href: "/admin/reservations", label: "Réservations", icon: "🛏️" },
-      { href: "/admin/requests", label: "Demandes", icon: "📥" },
+      { href: "/admin/requests", label: "Demandes", icon: "📥", badge: "requests" },
+      { href: "/admin/concierge-requests", label: "Concierge", icon: "🍽️", badge: "concierge" },
       { href: "/admin/contracts", label: "Contrats", icon: "✍️" },
       { href: "/admin/clients", label: "Clients", icon: "👥" },
       { href: "/admin/loyalty", label: "Fidélité", icon: "✦", feature: "loyalty" },
@@ -79,6 +88,24 @@ export function AdminShell({
   const [pwdOpen, setPwdOpen] = useState(user.mustChangePassword);
   const [pwd, setPwd] = useState({ current: "", next: "" });
   const [pwdBusy, setPwdBusy] = useState(false);
+  const [badges, setBadges] = useState<Badges>({ requests: 0, concierge: 0 });
+
+  // refreshed on every page change, every minute, and when a page answers something
+  useEffect(() => {
+    const load = () =>
+      api<Badges>("/api/admin/badges").then(
+        (r) => r.success && setBadges({ requests: r.requests, concierge: r.concierge }),
+        () => {}
+      );
+    load();
+    const timer = window.setInterval(load, 60_000);
+    window.addEventListener(BADGES_EVENT, load);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener(BADGES_EVENT, load);
+    };
+  }, [pathname]);
+  const pending = badges.requests + badges.concierge;
 
   const canSee = (item: NavItem) => {
     if (item.feature && !features?.[item.feature]) return false;
@@ -128,7 +155,10 @@ export function AdminShell({
           <div className="space-y-0.5">
             {group.items.map((item) => {
               const active =
-                item.href === "/admin" ? pathname === "/admin" : pathname.startsWith(item.href);
+                item.href === "/admin"
+                  ? pathname === "/admin"
+                  : pathname === item.href || pathname.startsWith(item.href + "/");
+              const count = item.badge ? badges[item.badge] : 0;
               return (
                 <Link
                   key={item.href}
@@ -144,7 +174,15 @@ export function AdminShell({
                   <span aria-hidden className="w-5 text-center">
                     {item.icon}
                   </span>
-                  {item.label}
+                  <span className="flex-1">{item.label}</span>
+                  {count > 0 && (
+                    <span
+                      className="min-w-[1.25rem] rounded-full bg-gold px-1.5 text-center text-[0.65rem] font-bold leading-[1.25rem] text-night"
+                      aria-label={`${count} en attente`}
+                    >
+                      {count}
+                    </span>
+                  )}
                 </Link>
               );
             })}
@@ -205,6 +243,11 @@ export function AdminShell({
           aria-expanded={menuOpen}
         >
           {menuOpen ? "✕" : "☰"} Menu
+          {!menuOpen && pending > 0 && (
+            <span className="ml-2 min-w-[1.25rem] rounded-full bg-gold px-1.5 text-center text-[0.65rem] font-bold leading-[1.25rem] text-night">
+              {pending}
+            </span>
+          )}
         </button>
       </div>
       {menuOpen && (

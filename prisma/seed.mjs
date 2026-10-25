@@ -540,8 +540,42 @@ async function seedDemo() {
   console.log("Seeded demo dataset");
 }
 
+/**
+ * Concierge requests used to be stored as plain guest extras, with the time
+ * and party size inside the notes ("20:00 · 4 pers. · ~€300"). Give them
+ * their own kind and fields. Idempotent: only rows still marked as extras.
+ */
+async function backfillConciergeRequests() {
+  const rows = await prisma.reservationExtra.findMany({
+    where: { kind: "extra", requestedByGuest: true, extraId: null, notes: { contains: " pers." } },
+  });
+  for (const r of rows) {
+    const [first, ...rest] = (r.notes ?? "").split("\n");
+    const m = first.match(/^(?:(\d{2}:\d{2}) · )?(\d+) pers\.(?: · (.*))?$/);
+    if (!m) continue;
+    const category =
+      r.placeId != null || r.label.startsWith("Restaurant — ")
+        ? "restaurant"
+        : /^(Private chef|Chef à domicile) — /.test(r.label)
+          ? "chef"
+          : "boat";
+    await prisma.reservationExtra.update({
+      where: { id: r.id },
+      data: {
+        kind: "concierge",
+        category,
+        serviceTime: m[1] ?? null,
+        guests: parseInt(m[2], 10),
+        notes: [m[3], ...rest].filter(Boolean).join("\n") || null,
+      },
+    });
+  }
+  if (rows.length) console.log(`Moved ${rows.length} concierge request(s) out of extras`);
+}
+
 async function main() {
   await seedBase();
+  await backfillConciergeRequests();
   if (process.env.SEED_DEMO === "1") {
     await seedDemo();
   }

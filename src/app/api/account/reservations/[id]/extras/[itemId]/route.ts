@@ -17,8 +17,14 @@ export async function DELETE(_req: NextRequest, { params }: Ctx) {
   }
   await prisma.reservationExtra.delete({ where: { id: item.id } });
   await notifyOwnerOfGuestUpdate(r.id, {
-    subject: `Extra request withdrawn: ${item.label}`,
-    lines: [`${item.quantity} × ${item.label}`],
+    subject: `${item.kind === "concierge" ? "Concierge" : "Extra"} request withdrawn: ${item.label}`,
+    lines: [
+      item.kind === "concierge"
+        ? [item.serviceDate?.toISOString().slice(0, 10), item.serviceTime, item.guests && `${item.guests} pers.`]
+            .filter(Boolean)
+            .join(" · ")
+        : `${item.quantity} × ${item.label}`,
+    ],
   });
   return NextResponse.json({ success: true });
 }

@@ -1,9 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { Dict } from "@/lib/i18n";
-import { EXTRA_ADDED_EVENT } from "./ConciergePanel";
-import { directionsHref } from "./map/map-meta";
 
 export interface PlannerDetails {
   arrivalFlight: string | null;
@@ -32,14 +30,13 @@ export interface PlannerItem {
   status: string;
   serviceDate: string | null;
   requestedByGuest: boolean;
-  /** a table request's restaurant on the island map */
-  placeSlug?: string | null;
 }
 
 const usd = (n: number) => "$" + Math.round(n).toLocaleString("en-US");
 
 /**
- * Guest portal — arrival details and extras requests for one upcoming stay.
+ * Guest portal — arrival details and extras requests for one upcoming stay
+ * (concierge requests have their own section, ConciergeRequests).
  * Collapsed by default so the reservation card stays readable.
  */
 export function StayPlanner({
@@ -74,16 +71,6 @@ export function StayPlanner({
   const [picking, setPicking] = useState<number | null>(null);
   const [req, setReq] = useState({ quantity: "1", serviceDate: "", notes: "" });
   const [reqError, setReqError] = useState(false);
-
-  // a request sent from the concierge panel joins the list
-  useEffect(() => {
-    const onAdded = (e: Event) => {
-      const { reservationId: rid, item } = (e as CustomEvent<{ reservationId: number; item: PlannerItem }>).detail;
-      if (rid === reservationId) setItems((list) => [...list, item]);
-    };
-    window.addEventListener(EXTRA_ADDED_EVENT, onAdded);
-    return () => window.removeEventListener(EXTRA_ADDED_EVENT, onAdded);
-  }, [reservationId]);
 
   const num = (v: string) => (v.trim() === "" ? null : Math.max(0, parseInt(v, 10) || 0));
 
@@ -223,11 +210,6 @@ export function StayPlanner({
                     >
                       {t.extraStatuses[i.status] ?? i.status}
                     </span>
-                    {i.placeSlug && i.status !== "cancelled" && (
-                      <a href={directionsHref(locale, i.placeSlug)} className="text-gold underline">
-                        {t.directions}
-                      </a>
-                    )}
                     {i.status === "requested" && i.requestedByGuest && (
                       <button type="button" onClick={() => withdraw(i.id)} className="text-ink/40 underline">
                         {t.withdraw}

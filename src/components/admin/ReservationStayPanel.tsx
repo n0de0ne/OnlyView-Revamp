@@ -5,6 +5,7 @@ import type { SerializedReservation } from "@/lib/reservations";
 import type { SerializedReservationExtra } from "@/lib/extras";
 import { api, Card, ConfirmButton, fmtDate, fmtUSD, Modal, StatusBadge, useToast } from "./ui";
 import { UNIT_LABELS, type CatalogExtra } from "./ExtrasBoard";
+import { ConciergeRequestList } from "./ConciergeRequestList";
 
 type Details = SerializedReservation["guestDetails"];
 
@@ -18,7 +19,7 @@ const str = (v: string | null) => v ?? "";
 const intOrNull = (v: string) => (v.trim() === "" ? null : parseInt(v, 10));
 
 /**
- * Arrival details + extras of a saved stay. Each part saves on its own (not
+ * Arrival details, concierge requests and extras of a saved stay. Each part saves on its own (not
  * with the main form), so what the guest typed in the portal is never
  * overwritten by a stale editor.
  */
@@ -140,7 +141,9 @@ export function ReservationStayPanel({
     if (res.success) setItems(items.filter((i) => i.id !== id));
   };
 
-  const confirmedTotal = items.filter((i) => i.status === "confirmed").reduce((s, i) => s + i.amount, 0);
+  const extras = items.filter((i) => i.kind !== "concierge");
+  const concierge = items.filter((i) => i.kind === "concierge");
+  const confirmedTotal = extras.filter((i) => i.status === "confirmed").reduce((s, i) => s + i.amount, 0);
   const field = (k: keyof typeof d, label: string, placeholder?: string) => (
     <div className="afield">
       <label>{label}</label>
@@ -188,6 +191,25 @@ export function ReservationStayPanel({
         </div>
       </Card>
 
+      {concierge.length > 0 && (
+        <Card
+          title="🛎️ Conciergerie"
+          action={
+            concierge.some((i) => i.status === "requested") && (
+              <span className="rounded bg-blue-100 px-1.5 py-0.5 text-[0.65rem] font-semibold text-blue-700">
+                {concierge.filter((i) => i.status === "requested").length} à traiter
+              </span>
+            )
+          }
+        >
+          <ConciergeRequestList
+            items={concierge}
+            reservationId={reservationId}
+            onChange={(next) => setItems((list) => list.map((i) => (i.id === next.id ? next : i)))}
+          />
+        </Card>
+      )}
+
       <Card
         title="🍾 Extras"
         action={
@@ -196,7 +218,7 @@ export function ReservationStayPanel({
           </button>
         }
       >
-        {items.length === 0 ? (
+        {extras.length === 0 ? (
           <p className="text-sm text-slate-400">Aucun extra sur ce séjour.</p>
         ) : (
           <div className="overflow-x-auto rounded-xl border border-slate-200">
@@ -211,7 +233,7 @@ export function ReservationStayPanel({
                 </tr>
               </thead>
               <tbody>
-                {items.map((i) => (
+                {extras.map((i) => (
                   <tr key={i.id} className={`border-t border-slate-100 ${i.status === "cancelled" ? "opacity-50" : ""}`}>
                     <td className="px-3 py-2">
                       <div className="font-medium text-slate-700">
@@ -270,7 +292,7 @@ export function ReservationStayPanel({
             </table>
           </div>
         )}
-        {items.some((i) => i.status === "requested") && (
+        {extras.some((i) => i.status === "requested") && (
           <p className="mt-3 flex items-center gap-2 text-xs text-blue-700">
             <StatusBadge status="new" /> Demandes à traiter : passez-les en « Confirmé » (comptées dans le solde)
             ou « Annulé ».

@@ -297,12 +297,27 @@ model ReservationExtra {
   unitPrice        Float       @default(0)
   /// quantity × unitPrice, USD
   amount           Float       @default(0)
-  /// requested | confirmed | cancelled
+  /// requested | confirmed | declined (concierge only) | cancelled
   status           String      @default("requested")
   /// day the service is wanted, when it matters
   serviceDate      DateTime?
   notes            String?
   requestedByGuest Boolean     @default(false)
+  /// extra (a service billed with the stay) | concierge (a table, boat or chef
+  /// the owner books with the provider for the guest)
+  kind             String      @default("extra")
+  /// concierge: restaurant | boat | chef
+  category         String?
+  /// concierge: time wanted, HH:MM
+  serviceTime      String?
+  /// concierge: number of people (PAX)
+  guests           Int?
+  /// concierge: the owner's answer, shown to the guest (table under which name, why declined…)
+  adminNote        String?
+  /// last time the owner answered (status or note changed) — the portal
+  /// highlights the request until the guest has seen it
+  answeredAt       DateTime?
+  guestSeenAt      DateTime?
   /// the map place a concierge table request is for — gives the guest a
   /// "Directions" link to it on the island map
   placeId          Int?

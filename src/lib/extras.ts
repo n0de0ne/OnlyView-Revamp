@@ -20,6 +20,9 @@ export function defaultQuantity(unit: string, stay: { nights: number; guests: nu
 export const lineAmount = (quantity: number, unitPrice: number) =>
   Math.round(quantity * unitPrice * 100) / 100;
 
+/** Concierge requests are booked with the provider, not sold with the stay. */
+export const isConcierge = (i: { kind: string }) => i.kind === "concierge";
+
 /** What the guest owes for extras: confirmed lines only. */
 export function confirmedExtrasTotal(items: Array<{ status: string; amount: number }>): number {
   return items.filter((i) => i.status === "confirmed").reduce((s, i) => s + i.amount, 0);
@@ -53,6 +56,12 @@ export function serializeReservationExtra(i: ReservationExtra, placeSlug: string
     serviceDate: i.serviceDate ? toISODate(i.serviceDate) : null,
     notes: i.notes,
     requestedByGuest: i.requestedByGuest,
+    kind: i.kind,
+    category: i.category,
+    serviceTime: i.serviceTime,
+    guests: i.guests,
+    adminNote: i.adminNote,
+    answeredAt: i.answeredAt?.toISOString() ?? null,
     placeSlug,
     createdAt: i.createdAt.toISOString(),
   };
