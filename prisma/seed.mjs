@@ -288,6 +288,7 @@ const MAP_BATCHES = [
       "burger-palace", "caribbean-to-go", "creage-to-go", "heiko", "koi-sushi-bar", "lenvol",
       "la-cantine-anse-caraibes", "la-creperie", "la-pizzetta", "la-saintoise", "le-bouchon",
       "papas-pizza", "so-cuisine", "st-barth-burger",
+      "martini-bar", "modjo", "le-glacier", "le-petit-deauville", "natural-delights",
     ],
     // copy these fields from map-places.json onto an existing pin, unless the
     // owner already changed it (it no longer matches `when`)
