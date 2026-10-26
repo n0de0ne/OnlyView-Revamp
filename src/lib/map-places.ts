@@ -19,6 +19,18 @@ export const slugify = (s: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "") || "place";
 
+/** A restaurant whose online booking link is filled in (or changed) is
+ *  offered as "Réservation en ligne" in the guest portal. Only on a new or
+ *  changed link, so the owner can still pick another mode afterwards. */
+export function withOnlineBooking<
+  T extends { category?: string; bookingUrl?: string | null; bookingMode?: string | null },
+>(data: T, previous?: { category: string; bookingUrl: string | null } | null): T {
+  const category = data.category ?? previous?.category;
+  const url = data.bookingUrl;
+  if (category !== "restaurant" || !url || url === previous?.bookingUrl) return data;
+  return { ...data, bookingMode: "direct" };
+}
+
 type Row = {
   id: number;
   slug: string;
