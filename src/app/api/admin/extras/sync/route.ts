@@ -1,0 +1,21 @@
+import { adminRoute, jsonOk } from "@/lib/admin-api";
+import { audit } from "@/lib/audit";
+import { getExtrasSyncStatus, syncProviderExtras } from "@/lib/extras-sync";
+
+export const dynamic = "force-dynamic";
+
+/** Last St Barth Provider sync (Admin → Extras). */
+export const GET = adminRoute("viewer", async () => jsonOk({ status: await getExtrasSyncStatus() }));
+
+/** "Synchroniser maintenant" — same run as the daily one. */
+export const POST = adminRoute("manager", async (_req, _ctx, user) => {
+  const status = await syncProviderExtras();
+  await audit({
+    action: "extras_sync",
+    entityType: "extra",
+    details: { ok: status.ok, error: status.error, created: status.created, updated: status.updated, hidden: status.hidden },
+    userId: user.id,
+    username: user.username,
+  });
+  return jsonOk({ status });
+});
