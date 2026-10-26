@@ -182,6 +182,7 @@ interface Restaurant {
 function RestaurantsTab() {
   const { push } = useToast();
   const [items, setItems] = useState<Restaurant[] | null>(null);
+  const [q, setQ] = useState("");
   const load = useCallback(() => {
     api<{ places: Restaurant[] }>("/api/admin/map-places").then(
       (d) => d.success && setItems(d.places.filter((p) => p.category === "restaurant"))
@@ -200,16 +201,38 @@ function RestaurantsTab() {
     } else push(`Erreur : ${res.error}`, "error");
   };
 
+  const shown = useMemo(() => {
+    const needle = fold(q.trim());
+    if (!items || !needle) return items ?? [];
+    return items.filter((r) =>
+      fold([r.name, r.zone, r.cuisineFr, r.phone, r.whatsapp, r.email].filter(Boolean).join(" ")).includes(needle)
+    );
+  }, [items, q]);
+
   if (!items) return <Spinner />;
   return (
-    <Card className="overflow-hidden !p-0">
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-3">
+        <input
+          type="search"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Rechercher un restaurant, un quartier, une cuisine…"
+          className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm sm:w-80"
+        />
+        <span className="text-xs text-slate-500">
+          {q.trim() ? `${shown.length} sur ${items.length}` : `${items.length} restaurants`}
+        </span>
+      </div>
+      <Card className="overflow-hidden !p-0">
       <p className="border-b border-slate-100 px-5 py-3 text-xs text-slate-500">
         Les restaurants sont les repères de la{" "}
         <Link href="/admin/map" className="text-navy underline">
           carte de l&apos;île
         </Link>{" "}
-        : leur fiche (photo, cuisine, contacts, lien de réservation) se modifie là-bas. Choisissez ici comment
-        chacun est proposé aux clients.
+        : la liste est la même, un restaurant ajouté sur la carte apparaît ici. Sa fiche (photo, cuisine,
+        contacts, lien de réservation) se modifie là-bas ; un lien de réservation en ligne renseigné le passe
+        automatiquement en « Réservation en ligne ». Choisissez ici comment chacun est proposé aux clients.
       </p>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
@@ -221,7 +244,14 @@ function RestaurantsTab() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {items.map((r) => (
+            {shown.length === 0 && (
+              <tr>
+                <td colSpan={3} className="px-4 py-6 text-center text-sm text-slate-500">
+                  Aucun restaurant ne correspond à « {q.trim()} ».
+                </td>
+              </tr>
+            )}
+            {shown.map((r) => (
               <tr key={r.id} className={r.isActive ? "" : "opacity-50"}>
                 <td className="px-4 py-2.5">
                   <div className="font-medium text-slate-800">{r.name}</div>
@@ -259,9 +289,17 @@ function RestaurantsTab() {
           </tbody>
         </table>
       </div>
-    </Card>
+      </Card>
+    </div>
   );
 }
+
+/** lower case, accents dropped: "guerite" finds "La Guérite" */
+const fold = (s: string) =>
+  s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
 
 /* ───────────────────────── boats, chef, taxis, partners ───────────────────────── */
 
