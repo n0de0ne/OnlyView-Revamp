@@ -1871,6 +1871,46 @@ async function applyRestaurantContacts() {
   if (n) console.log(`Contacts added to ${n} restaurant(s)`);
 }
 
+/**
+ * Alan, 2026-10-26: back to the catalog as it was before the first St Barth
+ * Provider sync (#45), with its photos — their server had blocked ours, so
+ * the synced photos didn't load. Once: the 72 imported items get their
+ * imported names, prices, categories and photos back (guestBookable kept),
+ * the items the sync created are removed (stay lines keep their copy), and
+ * the sync's state is cleared so a later run starts over from scratch.
+ */
+async function restorePreSyncExtras() {
+  const key = "extras_restore_pre_sync_2026_10_26";
+  if (await prisma.setting.findUnique({ where: { key } })) return;
+  const imported = await prisma.setting.findUnique({ where: { key: "extras_batch_sb_provider_2026_10" } });
+  const partner = await prisma.servicePartner.findFirst({ where: { kind: "extras", name: "St Barth Provider" } });
+  const synced = await prisma.setting.findUnique({ where: { key: "extras_sync_sb_provider" } });
+  if (imported && partner && synced) {
+    const rows = await prisma.extra.findMany({ where: { partnerId: partner.id }, orderBy: { id: "asc" } });
+    // createMany kept the list order; its rows predate the import's setting
+    const cutoff = new Date(imported.value).getTime() + 60_000;
+    const legacy = rows.filter((x) => x.createdAt.getTime() <= cutoff);
+    const added = rows.filter((x) => x.createdAt.getTime() > cutoff && x.externalRef);
+    if (legacy.length !== SB_PROVIDER_EXTRAS.length) {
+      console.warn(`Extras restore skipped: ${legacy.length} imported items found, ${SB_PROVIDER_EXTRAS.length} expected`);
+      return;
+    }
+    await prisma.$transaction([
+      ...legacy.map((x, i) => {
+        const { imageUrl, ...item } = SB_PROVIDER_EXTRAS[i];
+        return prisma.extra.update({
+          where: { id: x.id },
+          data: { ...item, imageUrl, unit: "night", sortOrder: 100 + i, isActive: true, externalRef: null },
+        });
+      }),
+      prisma.extra.deleteMany({ where: { id: { in: added.map((x) => x.id) } } }),
+      prisma.setting.delete({ where: { key: "extras_sync_sb_provider" } }),
+    ]);
+    console.log(`Extras restored: ${legacy.length} items as before the sync, ${added.length} synced items removed`);
+  }
+  await prisma.setting.create({ data: { key, value: new Date().toISOString() } });
+}
+
 async function main() {
   await seedBase();
   await backfillConciergeRequests();
@@ -1878,6 +1918,7 @@ async function main() {
   await applyRestaurantContacts();
   await seedStBarthProviderExtras();
   await applyStBarthProviderPhotos();
+  await restorePreSyncExtras();
   await seedActivityCategories();
   await seedActivityOffers();
   if (process.env.SEED_DEMO === "1") {
