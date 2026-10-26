@@ -39,6 +39,7 @@ export const CONTENT_GROUPS: Array<{ id: string; label: string }> = [
   { id: "direct", label: "Réserver en direct" },
   { id: "guide", label: "Guide" },
   { id: "contact", label: "Contact & avis" },
+  { id: "guest", label: "Espace client" },
   { id: "seo", label: "Google (titres & descriptions)" },
   { id: "emails", label: "Emails aux clients" },
   { id: "contract", label: "Contrat" },
@@ -113,6 +114,13 @@ export const CONTENT_BLOCKS: ContentBlockDef[] = [
   { key: "contact", group: "contact", label: "Page contact", pick: ["title", "intro"] },
   { key: "contactOwner", group: "contact", label: "La propriétaire" },
   { key: "reviews", group: "contact", label: "Page avis", pick: ["title", "intro"] },
+  // guest portal
+  {
+    key: "stayInfo",
+    group: "guest",
+    label: "Infos pratiques (Wi-Fi, coffre-fort…)",
+    help: "Affiché dans l'espace client aux clients dont le séjour confirmé commence dans 14 jours ou moins, jusqu'au départ. Le nom et le mot de passe du Wi-Fi (et un éventuel code fixe du coffre) se règlent dans Réglages → Wi-Fi & coffre-fort. « more » : autant de rubriques que vous voulez (titre + texte).",
+  },
   // SEO
   { key: "meta", group: "seo", label: "Titres et descriptions des pages" },
   // guest emails

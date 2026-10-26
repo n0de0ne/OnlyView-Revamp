@@ -642,6 +642,22 @@ export const fr: Dict = {
     providerNote: "Le matériel est fourni par {name} : prix par jour, en euros, réglés directement au prestataire. Nous confirmons la disponibilité et la livraison pour vous.",
     extrasOther: "Autres",
     units: { stay: "par séjour", night: "par nuit", person: "par personne", unit: "l'unité" } as Record<string, string>,
+    house: {
+      wifiTitle: "Wi-Fi",
+      network: "Réseau",
+      password: "Mot de passe",
+      openNetwork: "Sans mot de passe",
+      copy: "Copier",
+      copied: "Copié",
+      joinApple: "Se connecter au Wi-Fi",
+      joinAppleHelp: "Touchez, autorisez le téléchargement, puis ouvrez Réglages → Profil téléchargé → Installer. Votre iPhone se connecte au Wi-Fi de la villa automatiquement, maintenant et à chaque retour.",
+      joinAndroid: "Copier le mot de passe",
+      joinAndroidHelp: "Copiez le mot de passe, puis ouvrez Paramètres → Wi-Fi, choisissez le réseau et collez-le. Ou scannez le QR code avec l'appareil photo d'un autre téléphone.",
+      showQr: "Afficher le QR code",
+      hideQr: "Masquer le QR code",
+      qrHelp: "Visez ce code avec l'appareil photo de n'importe quel téléphone : il propose de rejoindre le Wi-Fi en un geste. Pratique pour partager le Wi-Fi avec tout le groupe.",
+      safeCode: "Code",
+    },
     dateChange: {
       title: "Changement de dates",
       hint: "Besoin d'autres dates ? Demandez ici — nous vérifions la disponibilité et confirmons personnellement.",
@@ -767,6 +783,20 @@ export const fr: Dict = {
     nameMismatch: "Merci de saisir votre nom tel qu'il figure au contrat.",
     agreeLabel: "J'ai lu et j'accepte les termes du présent contrat de location.",
     ownerSignature: "Signature du Propriétaire",
+  },
+  stayInfo: {
+    title: "Infos pratiques",
+    intro: "L'essentiel pour votre séjour, toujours sous la main.",
+    safeTitle: "Le coffre-fort",
+    safeSteps: [
+      "Fermez la porte du coffre.",
+      "Tapez le code de votre choix, puis # pour le verrouiller.",
+      "Pour l'ouvrir, tapez à nouveau votre code.",
+      "Merci de le laisser ouvert à votre départ.",
+    ],
+    more: [
+      { title: "Départ", text: "Le départ est à {checkout}." },
+    ],
   },
   contact: {
     title: "Contact",

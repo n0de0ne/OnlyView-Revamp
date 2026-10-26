@@ -134,6 +134,16 @@ const GROUPS: Array<{
     ],
   },
   {
+    title: "Wi-Fi & coffre-fort",
+    fields: [
+      ["wifi_ssid", "Nom du réseau Wi-Fi", "Affiché dans l'espace client (séjours confirmés, 14 jours avant l'arrivée jusqu'au départ), avec un bouton pour se connecter et un QR code. Vide = pas de Wi-Fi affiché."],
+      ["wifi_password", "Mot de passe Wi-Fi", "Vide pour un réseau ouvert."],
+      ["wifi_security", "Sécurité du Wi-Fi", "WPA (défaut, couvre WPA2/WPA3) · WEP · ouvert"],
+      ["wifi_hidden", "Réseau masqué", "1 si le réseau n'apparaît pas dans la liste des Wi-Fi, sinon vide."],
+      ["safe_code", "Code fixe du coffre-fort", "Seulement si le coffre a un code fixe ; vide si le client choisit le sien. Le mode d'emploi se modifie dans Textes du site → Espace client."],
+    ],
+  },
+  {
     title: "Contact & villa",
     fields: [
       ["contact_email", "Email de contact"],

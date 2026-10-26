@@ -20,6 +20,8 @@ import { CONCIERGE_ICON, REQUEST_STATUS_STYLE, requestWhen, type GuestConciergeR
 import { confirmedExtrasTotal, isConcierge } from "@/lib/extras";
 import { paymentSummary } from "@/lib/payment-summary";
 import { getConciergeCatalog } from "@/lib/concierge";
+import { StayInfoCard } from "@/components/site/StayInfoCard";
+import { getSafeCode, getWifi, hasStayInfoAccess, wifiQrSvg } from "@/lib/stay-info";
 
 export const dynamic = "force-dynamic";
 
@@ -142,6 +144,13 @@ export default async function AccountPage({
       placeSlug: i.place?.slug ?? restaurantSlug(i.label),
     }));
   const fresh = upcoming.flatMap((r) => requestsOf(r).filter((i) => i.isNew).map((i) => ({ ...i, reservationId: r.id })));
+  // Wi-Fi, safe…: only around a confirmed stay
+  const stayInfo = (await hasStayInfoAccess(client.id))
+    ? await (async () => {
+        const wifi = await getWifi();
+        return { wifi, qrSvg: wifi ? await wifiQrSvg(wifi) : null, safeCode: await getSafeCode() };
+      })()
+    : null;
   const points = client.loyalty?.points ?? 0;
   const lifetime = client.loyalty?.lifetimePoints ?? 0;
   const tier = tierFor(lifetime);
@@ -362,6 +371,15 @@ export default async function AccountPage({
       <section className="mx-auto max-w-5xl px-5 py-14 lg:px-8">
         <div className="grid gap-10 lg:grid-cols-[1.5fr_1fr]">
           <div className="space-y-10">
+            {stayInfo && (
+              <StayInfoCard
+                t={t.account.house}
+                info={t.stayInfo}
+                wifi={stayInfo.wifi && { ssid: stayInfo.wifi.ssid, password: stayInfo.wifi.password }}
+                qrSvg={stayInfo.qrSvg}
+                safeCode={stayInfo.safeCode}
+              />
+            )}
             {fresh.length > 0 && (
               <div className="border border-gold bg-gold/5 p-5" role="status">
                 <h2 className="eyebrow !text-[0.6rem] flex items-center gap-2">
