@@ -36,6 +36,7 @@ export async function register() {
     const syncTick = () =>
       import("./lib/extras-sync")
         .then(async (m) => {
+          if (!(await m.isAutoSyncOn())) return; // paused in Admin → Extras
           const last = await m.getExtrasSyncStatus();
           // a run that was skipped (site down…) is retried after 3 h
           const wait = (last?.ok ? 23 : 3) * 60 * 60_000;

@@ -1911,6 +1911,14 @@ async function restorePreSyncExtras() {
   await prisma.setting.create({ data: { key, value: new Date().toISOString() } });
 }
 
+/** Alan, 2026-10-26: daily provider sync paused after the restore (Admin → Extras switch). Once. */
+async function pauseExtrasSync() {
+  const key = "extras_sync_paused_2026_10_26";
+  if (await prisma.setting.findUnique({ where: { key } })) return;
+  await prisma.setting.upsert({ where: { key: "extras_sync_auto" }, update: { value: "off" }, create: { key: "extras_sync_auto", value: "off" } });
+  await prisma.setting.create({ data: { key, value: new Date().toISOString() } });
+}
+
 async function main() {
   await seedBase();
   await backfillConciergeRequests();
@@ -1919,6 +1927,7 @@ async function main() {
   await seedStBarthProviderExtras();
   await applyStBarthProviderPhotos();
   await restorePreSyncExtras();
+  await pauseExtrasSync();
   await seedActivityCategories();
   await seedActivityOffers();
   if (process.env.SEED_DEMO === "1") {

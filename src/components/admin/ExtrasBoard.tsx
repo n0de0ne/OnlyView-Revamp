@@ -84,6 +84,7 @@ export function ExtrasBoard() {
   const [filter, setFilter] = useState("");
   const [sync, setSync] = useState<SyncStatus | null>(null);
   const [syncing, setSyncing] = useState(false);
+  const [auto, setAuto] = useState<boolean | null>(null);
 
   const load = useCallback(() => {
     api<{ extras: CatalogExtra[] }>("/api/admin/extras").then(
@@ -92,8 +93,20 @@ export function ExtrasBoard() {
   }, []);
   useEffect(load, [load]);
   useEffect(() => {
-    api<{ status: SyncStatus | null }>("/api/admin/extras/sync").then((d) => d.success && setSync(d.status));
+    api<{ status: SyncStatus | null; auto: boolean }>("/api/admin/extras/sync").then((d) => {
+      if (!d.success) return;
+      setSync(d.status);
+      setAuto(d.auto);
+    });
   }, []);
+
+  const toggleAuto = async () => {
+    const next = !auto;
+    const res = await api("/api/admin/extras/sync", { method: "PUT", json: { auto: next } });
+    if (!res.success) return push(`Erreur : ${res.error}`, "error");
+    setAuto(next);
+    push(next ? "Synchro quotidienne activée" : "Synchro quotidienne en pause");
+  };
 
   const syncNow = async () => {
     setSyncing(true);
@@ -200,7 +213,7 @@ export function ExtrasBoard() {
           <div className="min-w-0 text-sm">
             <div className="font-semibold text-slate-800">Synchro St Barth Provider</div>
             <p className="text-xs text-slate-500">
-              Chaque jour, le catalogue est recopié depuis leur site de réservation (booking.stbarthprovider.com) :
+              Quand la synchro quotidienne est activée, le catalogue est recopié chaque jour depuis leur site de réservation (booking.stbarthprovider.com) :
               nouveaux articles ajoutés, prix, noms, photos et catégories mis à jour, articles retirés masqués.
             </p>
             {sync ? (
@@ -225,9 +238,17 @@ export function ExtrasBoard() {
               </details>
             )}
           </div>
-          <button onClick={syncNow} disabled={syncing} className="abtn-primary shrink-0">
-            {syncing ? "Synchro…" : "Synchroniser maintenant"}
-          </button>
+          <div className="flex shrink-0 flex-col items-end gap-2">
+            {auto !== null && (
+              <label className="flex items-center gap-2 text-xs text-slate-600">
+                <input type="checkbox" checked={auto} onChange={toggleAuto} className="accent-navy" />
+                Synchro quotidienne {auto ? "activée" : "en pause"}
+              </label>
+            )}
+            <button onClick={syncNow} disabled={syncing} className="abtn-primary">
+              {syncing ? "Synchro…" : "Synchroniser maintenant"}
+            </button>
+          </div>
         </div>
       </Card>
 

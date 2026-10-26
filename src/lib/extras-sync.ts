@@ -256,6 +256,23 @@ export function syncProviderExtras(): Promise<ExtrasSyncStatus> {
   return running;
 }
 
+/** Admin → Extras switch: "off" pauses the daily run (the button still works). */
+export const EXTRAS_SYNC_AUTO_KEY = "extras_sync_auto";
+
+export async function isAutoSyncOn(): Promise<boolean> {
+  const row = await prisma.setting.findUnique({ where: { key: EXTRAS_SYNC_AUTO_KEY } });
+  return row?.value !== "off";
+}
+
+export async function setAutoSync(on: boolean) {
+  const value = on ? "on" : "off";
+  await prisma.setting.upsert({
+    where: { key: EXTRAS_SYNC_AUTO_KEY },
+    update: { value },
+    create: { key: EXTRAS_SYNC_AUTO_KEY, value },
+  });
+}
+
 export async function getExtrasSyncStatus(): Promise<ExtrasSyncStatus | null> {
   const row = await prisma.setting.findUnique({ where: { key: EXTRAS_SYNC_KEY } });
   try {
