@@ -23,7 +23,23 @@ export interface CatalogExtra {
   categoryEn: string | null;
   categoryFr: string | null;
   imageUrl: string | null;
+  synced: boolean;
 }
+
+interface SyncStatus {
+  lastRunAt: string;
+  ok: boolean;
+  error?: string;
+  lastSuccessAt?: string;
+  items?: number;
+  created?: number;
+  updated?: number;
+  hidden?: number;
+  changes?: string[];
+}
+
+const when = (iso: string) =>
+  new Date(iso).toLocaleString("fr-FR", { dateStyle: "medium", timeStyle: "short" });
 
 interface Partner {
   id: number;
@@ -66,6 +82,8 @@ export function ExtrasBoard() {
   const [form, setForm] = useState(EMPTY);
   const [partners, setPartners] = useState<Partner[]>([]);
   const [filter, setFilter] = useState("");
+  const [sync, setSync] = useState<SyncStatus | null>(null);
+  const [syncing, setSyncing] = useState(false);
 
   const load = useCallback(() => {
     api<{ extras: CatalogExtra[] }>("/api/admin/extras").then(
@@ -73,6 +91,22 @@ export function ExtrasBoard() {
     );
   }, []);
   useEffect(load, [load]);
+  useEffect(() => {
+    api<{ status: SyncStatus | null }>("/api/admin/extras/sync").then((d) => d.success && setSync(d.status));
+  }, []);
+
+  const syncNow = async () => {
+    setSyncing(true);
+    const res = await api<{ status: SyncStatus }>("/api/admin/extras/sync", { method: "POST" }).finally(() =>
+      setSyncing(false)
+    );
+    if (!res.success) return push(`Erreur : ${res.error}`, "error");
+    setSync(res.status);
+    if (res.status.ok) {
+      push("Catalogue St Barth Provider à jour");
+      load();
+    } else push(`Synchro annulée : ${res.status.error}`, "error");
+  };
   // rental companies (Conciergerie → Prestataires, activity "Location de matériel")
   useEffect(() => {
     api<{ items: Partner[] }>("/api/admin/concierge/partners").then(
@@ -161,6 +195,42 @@ export function ExtrasBoard() {
         </button>
       </div>
 
+      <Card>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0 text-sm">
+            <div className="font-semibold text-slate-800">Synchro St Barth Provider</div>
+            <p className="text-xs text-slate-500">
+              Chaque jour, le catalogue est recopié depuis leur site de réservation (booking.stbarthprovider.com) :
+              nouveaux articles ajoutés, prix, noms, photos et catégories mis à jour, articles retirés masqués.
+            </p>
+            {sync ? (
+              <p className={`mt-1 text-xs ${sync.ok ? "text-emerald-700" : "text-red-600"}`}>
+                {sync.ok
+                  ? `Dernière synchro ${when(sync.lastRunAt)} — ${sync.items} articles, ${sync.created} nouveaux, ${sync.updated} modifiés, ${sync.hidden} masqués.`
+                  : `Dernière tentative ${when(sync.lastRunAt)} annulée (${sync.error}), catalogue inchangé${
+                      sync.lastSuccessAt ? ` — dernière réussie ${when(sync.lastSuccessAt)}` : ""
+                    }.`}
+              </p>
+            ) : (
+              <p className="mt-1 text-xs text-slate-400">Pas encore synchronisé.</p>
+            )}
+            {sync?.ok && !!sync.changes?.length && (
+              <details className="mt-1 text-xs text-slate-500">
+                <summary className="cursor-pointer">Changements</summary>
+                <ul className="mt-1 list-inside list-disc">
+                  {sync.changes.map((c) => (
+                    <li key={c}>{c}</li>
+                  ))}
+                </ul>
+              </details>
+            )}
+          </div>
+          <button onClick={syncNow} disabled={syncing} className="abtn-primary shrink-0">
+            {syncing ? "Synchro…" : "Synchroniser maintenant"}
+          </button>
+        </div>
+      </Card>
+
       {!extras ? (
         <Spinner />
       ) : extras.length === 0 ? (
@@ -242,6 +312,13 @@ export function ExtrasBoard() {
         title={editing ? editing.nameFr : "Nouvel extra"}
         wide
       >
+        {editing?.synced && (
+          <p className="mb-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
+            Article synchronisé avec le site de St Barth Provider : nom, catégorie, prix, photo et ordre sont
+            remplacés chaque jour par ceux du site. Pour le retirer de l&apos;espace client, décochez « Proposé dans
+            l&apos;espace client » (ce choix est conservé).
+          </p>
+        )}
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="afield">
             <label>Nom (FR) *</label>

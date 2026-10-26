@@ -1,6 +1,7 @@
 /**
  * Server start hook — seeds the site's copy into the database, loads the
- * analytics geolocation database and schedules
+ * analytics geolocation database, schedules the daily St Barth Provider
+ * extras sync and
  * the hourly reminder run (Réglages → Rappels automatiques). The run goes through /api/cron/reminders on this same
  * server, authorised by a token that only lives in this process; set
  * REMINDERS_SCHEDULER=off when an external cron calls that route instead.
@@ -26,6 +27,24 @@ export async function register() {
         await content.getVilla(); // warm the facts the metadata helpers read
       })
       .catch((e) => console.error("[content] seeding failed:", e instanceof Error ? e.message : e));
+  }
+
+  // extras = St Barth Provider's catalog, mirrored from their booking site once
+  // a day (checked hourly, so a restart doesn't skip or repeat a day).
+  // EXTRAS_SYNC=off turns it off; Admin → Extras can still run it by hand.
+  if (process.env.NEXT_RUNTIME === "nodejs" && process.env.EXTRAS_SYNC !== "off") {
+    const syncTick = () =>
+      import("./lib/extras-sync")
+        .then(async (m) => {
+          const last = await m.getExtrasSyncStatus();
+          // a run that was skipped (site down…) is retried after 3 h
+          const wait = (last?.ok ? 23 : 3) * 60 * 60_000;
+          if (last && Date.now() - Date.parse(last.lastRunAt) < wait) return;
+          await m.syncProviderExtras();
+        })
+        .catch((e) => console.error("[extras-sync] scheduled run failed:", e instanceof Error ? e.message : e));
+    setTimeout(syncTick, 3 * 60_000).unref?.();
+    setInterval(syncTick, 60 * 60_000).unref?.();
   }
 
   if (process.env.REMINDERS_SCHEDULER === "off") return;

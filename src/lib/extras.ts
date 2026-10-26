@@ -76,6 +76,8 @@ export function serializeExtra(e: Extra & { partner?: Pick<ServicePartner, "name
     categoryEn: e.categoryEn,
     categoryFr: e.categoryFr,
     imageUrl: e.imageUrl,
+    /** mirrored from the provider's website (lib/extras-sync) */
+    synced: !!e.externalRef,
   };
 }
 
