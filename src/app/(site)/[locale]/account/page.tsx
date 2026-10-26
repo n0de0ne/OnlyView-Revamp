@@ -102,7 +102,8 @@ export default async function AccountPage({
   }
 
   const today = todayISO();
-  const upcoming = client.reservations.filter((r) => toISODate(r.endDate) >= today);
+  // the next stay first (reservations come newest first, for the past ones)
+  const upcoming = client.reservations.filter((r) => toISODate(r.endDate) >= today).reverse();
   const past = client.reservations.filter((r) => toISODate(r.endDate) < today);
   const loyaltyOn = await isLoyaltyEnabled();
   const catalog = (
@@ -156,10 +157,13 @@ export default async function AccountPage({
   const tier = tierFor(lifetime);
   const next = nextTier(lifetime);
 
+  // a guest with several stays: the next one open, the others folded to their dates
   const ReservationCard = ({
     r,
+    collapsed = false,
   }: {
     r: (typeof client.reservations)[number];
+    collapsed?: boolean;
   }) => {
     const contract = r.contracts[0];
     // an amendment awaiting signature: the agreement it replaces stays downloadable
@@ -168,8 +172,8 @@ export default async function AccountPage({
         ? r.contracts.find((c) => c.status === "signed")
         : undefined;
     const dc = r.dateChanges[0];
-    return (
-      <div className="border border-ink/10 bg-white p-6">
+    const header = (
+      <>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="font-display text-xl">
             {formatDateShort(r.startDate, locale)} → {formatDateShort(r.endDate, locale)}
@@ -184,7 +188,28 @@ export default async function AccountPage({
           {nightsBetween(toISODate(r.startDate), toISODate(r.endDate))} {t.account.nightsShort} ·{" "}
           {r.bedrooms} {t.common.bedrooms} · {r.guests} {t.common.guestsWord}
         </div>
-
+      </>
+    );
+    // a concierge answer the guest hasn't seen keeps its stay open (the notice links to it)
+    const Shell = ({ children }: { children: React.ReactNode }) =>
+      collapsed ? (
+        <details className="group border border-ink/10 bg-white p-6" open={requestsOf(r).some((i) => i.isNew)}>
+          <summary className="relative cursor-pointer list-none pr-7">
+            {header}
+            <span className="absolute right-0 top-1 text-gold transition group-open:rotate-45" aria-hidden>
+              +
+            </span>
+          </summary>
+          {children}
+        </details>
+      ) : (
+        <div className="border border-ink/10 bg-white p-6">
+          {header}
+          {children}
+        </div>
+      );
+    return (
+      <Shell>
         <div className="mt-5 grid gap-4 border-t border-ink/8 pt-5 sm:grid-cols-2">
           <div>
             <div className="eyebrow !text-[0.6rem]">{t.account.paymentTitle}</div>
@@ -358,7 +383,7 @@ export default async function AccountPage({
               }
             />
           )}
-      </div>
+      </Shell>
     );
   };
 
@@ -415,8 +440,8 @@ export default async function AccountPage({
                 <p className="text-sm text-ink/50">{t.account.noStays}</p>
               ) : (
                 <div className="space-y-4">
-                  {upcoming.map((r) => (
-                    <ReservationCard key={r.id} r={r} />
+                  {upcoming.map((r, i) => (
+                    <ReservationCard key={r.id} r={r} collapsed={i > 0} />
                   ))}
                 </div>
               )}
@@ -426,7 +451,7 @@ export default async function AccountPage({
                 <h2 className="section-title mb-6 !text-2xl">{t.account.past}</h2>
                 <div className="space-y-4 opacity-80">
                   {past.map((r) => (
-                    <ReservationCard key={r.id} r={r} />
+                    <ReservationCard key={r.id} r={r} collapsed />
                   ))}
                 </div>
               </div>
