@@ -3,6 +3,7 @@ import { adminRoute, jsonError, jsonInvalid, jsonOk } from "@/lib/admin-api";
 import { previewContentBlock } from "@/lib/site-content";
 import { emailButton, emailNote, emailTable, renderEmailSubject, renderEmailText } from "@/lib/email-templates";
 import { buildContract, contractToHtml, type ContractTemplate } from "@/lib/contract-content";
+import { OWNER_SIGNATURE_KEY } from "@/lib/contract-pdf";
 import { wrapEmail } from "@/lib/mailer";
 import { getRateConfig, getSettings } from "@/lib/settings";
 import { addDays, formatDate, todayISO } from "@/lib/dates";
@@ -50,7 +51,14 @@ export const POST = adminRoute("viewer", async (req) => {
         bic: s.bank_bic ?? "",
       },
     });
-    return jsonOk({ subject: contract.title, html: contractToHtml(contract), kind: "contract" });
+    // the owner's signature, as the guest sees it on the signing page and the PDF
+    const ownerSignature = s[OWNER_SIGNATURE_KEY];
+    const signatureHtml = ownerSignature
+      ? `<div style="margin-top:24px;"><p style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.15em;margin:0;">${contract.signatureLabels.owner}</p>` +
+        `<p style="font-size:13px;margin:4px 0 0;">${s.owner_name ?? "Annie CHRIQUI"}</p>` +
+        `<img src="${ownerSignature}" alt="" style="height:64px;width:auto;margin-top:8px;"></div>`
+      : "";
+    return jsonOk({ subject: contract.title, html: contractToHtml(contract) + signatureHtml, kind: "contract" });
   }
 
   if (!key.startsWith("emails.")) return jsonError("no_preview");
