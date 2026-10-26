@@ -284,7 +284,7 @@ model Extra {
   imageUrl      String?
   /// the provider's own product id when the item is mirrored from its
   /// website (St Barth Provider: "sbp:<id>") — see lib/extras-sync
-  externalRef   String?         @unique
+  externalRef   String?
   isActive      Boolean         @default(true)
   /// guests can request it from their portal
   guestBookable Boolean         @default(true)
