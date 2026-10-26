@@ -16,7 +16,8 @@ export interface GuestConciergeRequest {
   placeSlug: string | null;
 }
 
-export const CONCIERGE_ICON: Record<string, string> = { restaurant: "🍽️", boat: "⛵", chef: "👨‍🍳", activity: "🤿" };
+/** line icon per request category (keys of components/LineIcon) */
+export const CONCIERGE_ICON: Record<string, string> = { restaurant: "restaurant", boat: "sailboat", chef: "chef", activity: "palm" };
 
 export const REQUEST_STATUS_STYLE: Record<string, string> = {
   requested: "bg-st-option/15 text-st-option border-st-option/40",

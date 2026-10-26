@@ -1,3 +1,5 @@
+import { LineIcon } from "@/components/LineIcon";
+
 /**
  * The villa's key facts as a plain definition list — the block answer engines
  * quote and Google lifts into featured snippets. No images, no scripts: just
@@ -14,6 +16,7 @@ export function KeyFacts({
   summary,
   toggle,
   facts,
+  icons,
   className = "",
 }: {
   title: string;
@@ -23,6 +26,8 @@ export function KeyFacts({
   /** label of the "show everything" control */
   toggle: string;
   facts: Record<string, [string, string]>;
+  /** a line icon per fact (Admin → Textes du site → Icônes) */
+  icons?: Record<string, string>;
   className?: string;
 }) {
   return (
@@ -53,9 +58,12 @@ export function KeyFacts({
           {Object.entries(facts).map(([key, [term, detail]]) => (
             <div
               key={key}
-              className="border-b border-ink/10 py-2.5 text-sm sm:grid sm:grid-cols-[6.5rem_1fr] sm:items-baseline sm:gap-x-3"
+              className={`border-b border-ink/10 py-2.5 text-sm sm:grid sm:items-baseline sm:gap-x-3 ${
+                icons ? "sm:grid-cols-[8rem_1fr]" : "sm:grid-cols-[6.5rem_1fr]"
+              }`}
             >
-              <dt className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-gold">
+              <dt className="flex items-center gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-gold">
+                {icons?.[key] && <LineIcon name={icons[key]} className="h-4 w-4 text-gold" />}
                 {term}
               </dt>
               <dd className="mt-0.5 leading-snug text-ink/80 sm:mt-0">{detail}</dd>

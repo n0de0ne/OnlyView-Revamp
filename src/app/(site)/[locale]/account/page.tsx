@@ -15,6 +15,7 @@ import { ExtrasPanel } from "@/components/site/ExtrasPanel";
 import { DateChangeRequest } from "@/components/site/DateChangeRequest";
 import { ConciergePanel } from "@/components/site/ConciergePanel";
 import { ConciergeRequests } from "@/components/site/ConciergeRequests";
+import { LineIcon } from "@/components/LineIcon";
 import { CONCIERGE_ICON, REQUEST_STATUS_STYLE, requestWhen, type GuestConciergeRequest } from "@/components/site/concierge-format";
 import { confirmedExtrasTotal, isConcierge } from "@/lib/extras";
 import { paymentSummary } from "@/lib/payment-summary";
@@ -363,11 +364,14 @@ export default async function AccountPage({
           <div className="space-y-10">
             {fresh.length > 0 && (
               <div className="border border-gold bg-gold/5 p-5" role="status">
-                <h2 className="eyebrow !text-[0.6rem]">🛎️ {t.account.conciergeRequests.noticeTitle}</h2>
+                <h2 className="eyebrow !text-[0.6rem] flex items-center gap-2">
+                  <LineIcon name="concierge" className="h-4 w-4 text-gold" strokeWidth={1.5} />
+                  {t.account.conciergeRequests.noticeTitle}
+                </h2>
                 <ul className="mt-3 space-y-2 text-sm">
                   {fresh.map((i) => (
                     <li key={i.id} className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                      <span aria-hidden>{CONCIERGE_ICON[i.category ?? ""] ?? "🛎️"}</span>
+                      <LineIcon name={CONCIERGE_ICON[i.category ?? ""] ?? "concierge"} className="h-4 w-4 text-gold" strokeWidth={1.5} />
                       <span className="font-semibold">{i.label.replace(/^Restaurant — /, "")}</span>
                       <span className="text-ink/60">{requestWhen(i, locale, t.account.conciergeRequests)}</span>
                       <span

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { MapPin } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { isLocale, localePath, type Locale } from "@/lib/i18n";
@@ -126,9 +127,10 @@ export default async function GuidePage({
                     <Link
                       key={p.slug}
                       href={`${localePath(locale, "/map")}#${p.slug}`}
-                      className="rounded-full border border-ink/15 px-3 py-1 text-ink/80 transition hover:border-gold hover:text-ink"
+                      className="inline-flex items-center gap-1.5 rounded-full border border-ink/15 px-3 py-1 text-ink/80 transition hover:border-gold hover:text-ink"
                     >
-                      📍 {p.name}
+                      <MapPin aria-hidden className="h-3.5 w-3.5 text-gold" strokeWidth={1.5} />
+                      {p.name}
                     </Link>
                   ))}
               </p>

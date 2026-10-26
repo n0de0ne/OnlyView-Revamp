@@ -1369,7 +1369,7 @@ async function applyStBarthProviderPhotos() {
 const ACTIVITY_CATEGORIES = [
   {
     slug: "diving",
-    icon: "🤿",
+    icon: "diving",
     nameEn: "Scuba diving",
     nameFr: "Plongée sous-marine",
     descriptionEn: "A first dive or guided dives for certified divers in the island's marine reserve.",
@@ -1377,7 +1377,7 @@ const ACTIVITY_CATEGORIES = [
   },
   {
     slug: "snorkeling",
-    icon: "🐠",
+    icon: "snorkel",
     nameEn: "Snorkeling",
     nameFr: "Snorkeling",
     descriptionEn: "Mask and snorkel with a guide, from the beach or by boat: turtles, rays and reef fish.",
@@ -1385,7 +1385,7 @@ const ACTIVITY_CATEGORIES = [
   },
   {
     slug: "jet-ski",
-    icon: "🌊",
+    icon: "jetski",
     nameEn: "Jet ski",
     nameFr: "Jet ski",
     descriptionEn: "Jet ski rental or a guided ride around the island.",
@@ -1393,7 +1393,7 @@ const ACTIVITY_CATEGORIES = [
   },
   {
     slug: "hiking",
-    icon: "🥾",
+    icon: "hiking",
     nameEn: "Hiking",
     nameFr: "Randonnée",
     descriptionEn: "The island's trails, such as Colombier or Grand Fond, on your own or with a guide.",
@@ -1401,7 +1401,7 @@ const ACTIVITY_CATEGORIES = [
   },
   {
     slug: "yoga",
-    icon: "🧘",
+    icon: "yoga",
     nameEn: "Yoga",
     nameFr: "Yoga",
     descriptionEn: "A private class at the villa, facing the sea, or a small-group session.",
@@ -1409,7 +1409,7 @@ const ACTIVITY_CATEGORIES = [
   },
   {
     slug: "massage",
-    icon: "💆",
+    icon: "massage",
     nameEn: "Massages",
     nameFr: "Massages",
     descriptionEn: "A massage at the villa or in a spa, solo or for two.",
@@ -1417,7 +1417,7 @@ const ACTIVITY_CATEGORIES = [
   },
   {
     slug: "paddle-kayak",
-    icon: "🛶",
+    icon: "waves",
     nameEn: "Paddleboard & kayak",
     nameFr: "Paddle et kayak",
     descriptionEn: "Paddleboard or kayak rental, or a guided outing along the coast.",
@@ -1425,7 +1425,7 @@ const ACTIVITY_CATEGORIES = [
   },
   {
     slug: "board-sports",
-    icon: "🏄",
+    icon: "waves",
     nameEn: "Surf, windsurf & kite",
     nameFr: "Surf, windsurf et kite",
     descriptionEn: "Surf, windsurf, wingfoil or kitesurf: lessons or rental, for beginners and experienced riders.",
@@ -1433,7 +1433,7 @@ const ACTIVITY_CATEGORIES = [
   },
   {
     slug: "fishing",
-    icon: "🎣",
+    icon: "fishing",
     nameEn: "Deep-sea fishing",
     nameFr: "Pêche au gros",
     descriptionEn: "A half or full day fishing trip with a skipper.",
@@ -1441,7 +1441,7 @@ const ACTIVITY_CATEGORIES = [
   },
   {
     slug: "fitness",
-    icon: "🏋️",
+    icon: "gym",
     nameEn: "Private coach",
     nameFr: "Coach sportif",
     descriptionEn: "A personal training session at the villa or outdoors.",
@@ -1449,7 +1449,7 @@ const ACTIVITY_CATEGORIES = [
   },
   {
     slug: "tennis-padel",
-    icon: "🎾",
+    icon: "tennis",
     nameEn: "Tennis & padel",
     nameFr: "Tennis et padel",
     descriptionEn: "A court booking or a lesson with a coach.",

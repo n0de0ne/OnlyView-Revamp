@@ -13,9 +13,11 @@
  * whatever the map flies to lands in the part that is still visible.
  */
 import { useEffect, useRef } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet.markercluster/dist/MarkerCluster.css";
+import { LineIcon } from "@/components/LineIcon";
 import {
   MAP_CATEGORIES,
   ROUTE_COLOR,
@@ -73,14 +75,25 @@ const ISLAND_BOUNDS = L.latLngBounds([17.868, -62.884], [17.932, -62.786]);
 /** beyond this, the guest is not on the island: their dot would only zoom the map out to the ocean */
 const ON_ISLAND_M = 25_000;
 
+/** a line icon as SVG markup, for Leaflet's HTML markers (drawn once per icon) */
+const svgCache = new Map<string, string>();
+function iconSvg(name: string) {
+  let svg = svgCache.get(name);
+  if (svg === undefined) {
+    svg = renderToStaticMarkup(<LineIcon name={name} className="map-pin-icon" strokeWidth={1.75} />);
+    svgCache.set(name, svg);
+  }
+  return svg;
+}
+
 /** a round pin in a category colour with a white ring; selected, it lifts and shows its name */
-function pinIcon(color: string, emoji: string, opts: { size?: number; selected?: boolean; name?: string } = {}) {
+function pinIcon(color: string, icon: string, opts: { size?: number; selected?: boolean; name?: string } = {}) {
   const size = opts.size ?? 30;
   const sel = !!opts.selected;
   const s = sel ? Math.round(size * 1.45) : size;
   const label = sel && opts.name ? `<span class="map-pin-label">${esc(opts.name)}</span>` : "";
   return L.divIcon({
-    html: `<span class="map-pin-wrap${sel ? " is-selected" : ""}"><span class="map-pin" style="--pin:${color};--size:${s}px">${emoji}</span>${label}</span>`,
+    html: `<span class="map-pin-wrap${sel ? " is-selected" : ""}"><span class="map-pin" style="--pin:${color};--size:${s}px">${iconSvg(icon)}</span>${label}</span>`,
     className: "",
     // selected, the tip of the balloon (8px under the disc) marks the spot
     iconSize: [s, sel ? s + 8 : s],
@@ -214,7 +227,7 @@ export function LeafletMap({
       if (cancelled) return;
 
       const villaMarker = L.marker(villa, {
-        icon: pinIcon(VILLA_PIN_COLOR, "🏠", { size: 38 }),
+        icon: pinIcon(VILLA_PIN_COLOR, "house", { size: 38 }),
         zIndexOffset: 1000,
         title: labelsRef.current.villa,
         keyboard: true,
@@ -244,8 +257,8 @@ export function LeafletMap({
       }
 
       for (const p of places) {
-        const { color, emoji } = pinStyle(p);
-        const marker = L.marker([p.lat, p.lng], { icon: pinIcon(color, emoji), title: p.name, riseOnHover: true });
+        const { color, icon } = pinStyle(p);
+        const marker = L.marker([p.lat, p.lng], { icon: pinIcon(color, icon), title: p.name, riseOnHover: true });
         marker.on("click", (e) => {
           L.DomEvent.stopPropagation(e);
           cb.current.onSelect(p.id);
@@ -305,8 +318,8 @@ export function LeafletMap({
     const set = (id: number, selected: boolean) => {
       const e = markersRef.current.get(id);
       if (!e) return;
-      const { color, emoji } = pinStyle(e.place);
-      e.marker.setIcon(pinIcon(color, emoji, { selected, name: e.place.name }));
+      const { color, icon } = pinStyle(e.place);
+      e.marker.setIcon(pinIcon(color, icon, { selected, name: e.place.name }));
       e.marker.setZIndexOffset(selected ? 900 : 0);
     };
     if (prev != null) set(prev, false);

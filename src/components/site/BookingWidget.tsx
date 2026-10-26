@@ -1,4 +1,5 @@
 "use client";
+import { Sunset } from "lucide-react";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getDict, tpl, type Locale } from "@/lib/i18n";
@@ -191,9 +192,7 @@ export function BookingWidget({
   if (submitState === "done") {
     return (
       <div ref={topRef} className="mx-auto max-w-xl scroll-mt-24 border border-gold/40 bg-white p-10 text-center">
-        <div className="mb-4 text-4xl" aria-hidden>
-          🌅
-        </div>
+        <Sunset aria-hidden className="mx-auto mb-4 h-10 w-10 text-gold" strokeWidth={1} />
         <h2 className="font-display text-3xl text-ink">{t.booking.successTitle}</h2>
         <p className="mt-4 leading-relaxed text-ink/70">{t.booking.successText}</p>
       </div>
