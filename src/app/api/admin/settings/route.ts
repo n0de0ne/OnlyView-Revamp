@@ -72,6 +72,11 @@ const ALLOWED_KEYS = [
   "bing_site_verification",
   "villa_lat",
   "villa_lng",
+  "wifi_ssid",
+  "wifi_password",
+  "wifi_security",
+  "wifi_hidden",
+  "safe_code",
 ] as const;
 
 export const GET = adminRoute("owner", async () => {

@@ -662,6 +662,22 @@ export const en = {
     providerNote: "Rental equipment is supplied by {name}: prices per day, in euros, paid directly to them. We confirm availability and delivery for you.",
     extrasOther: "Other",
     units: { stay: "per stay", night: "per night", person: "per person", unit: "each" } as Record<string, string>,
+    house: {
+      wifiTitle: "Wi-Fi",
+      network: "Network",
+      password: "Password",
+      openNetwork: "No password",
+      copy: "Copy",
+      copied: "Copied",
+      joinApple: "Join the Wi-Fi",
+      joinAppleHelp: "Tap, allow the download, then open Settings → Profile Downloaded → Install. Your iPhone joins the villa's Wi-Fi automatically, now and on every return.",
+      joinAndroid: "Copy the password",
+      joinAndroidHelp: "Copy the password, then open Settings → Wi-Fi, choose the network and paste it. Or scan the QR code with another phone's camera.",
+      showQr: "Show QR code",
+      hideQr: "Hide QR code",
+      qrHelp: "Point any phone's camera at this code: it offers to join the Wi-Fi in one tap. Handy to share the Wi-Fi with everyone in your party.",
+      safeCode: "Code",
+    },
     dateChange: {
       title: "Change of dates",
       hint: "Need other dates? Ask here — we check availability and confirm personally.",
@@ -787,6 +803,20 @@ export const en = {
     nameMismatch: "Please type your name as it appears on the agreement.",
     agreeLabel: "I have read and agree to the terms of this rental agreement.",
     ownerSignature: "Owner's signature",
+  },
+  stayInfo: {
+    title: "Villa essentials",
+    intro: "The practical things for your stay, always at hand.",
+    safeTitle: "The safe",
+    safeSteps: [
+      "Close the safe door.",
+      "Type a code of your choice, then press # to lock it.",
+      "To open it, type your code again.",
+      "Please leave it open when you check out.",
+    ],
+    more: [
+      { title: "Check-out", text: "Check-out is at {checkout}." },
+    ],
   },
   contact: {
     title: "Contact",
