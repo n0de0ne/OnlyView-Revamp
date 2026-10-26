@@ -28,3 +28,4 @@ npm-debug.log*
 
 # analytics geolocation database (downloaded at runtime)
 .cache/
+/public/media/photos/uploads/

@@ -20,6 +20,13 @@ if [ "$(id -u)" = "0" ]; then
     ln -s /data/uploads public/media/photos/uploads
   fi
 
+  # Next's image cache (resized photos): writable by the app user, kept across updates
+  mkdir -p /data/cache
+  if [ ! -L .next/cache ]; then
+    rm -rf .next/cache
+    ln -s /data/cache .next/cache
+  fi
+
   chown -R "$PUID:$PGID" /data
   echo "[onlyview] running as $PUID:$PGID"
   exec su-exec "$PUID:$PGID" "$0" "$@"
