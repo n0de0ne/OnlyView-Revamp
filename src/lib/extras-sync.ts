@@ -1,3 +1,6 @@
+import fs from "node:fs";
+import path from "node:path";
+import sharp from "sharp";
 import { prisma } from "./db";
 
 /**
@@ -14,6 +17,10 @@ import { prisma } from "./db";
  * product that comes back is shown again. The site has almost no
  * descriptions, so ours are only replaced when it has one. guestBookable stays
  * the admin's call.
+ *
+ * Requests go one at a time, 1.5 s apart (a burst got our server's address
+ * blocked by theirs once), and photos are copied to our uploads so guests
+ * never load them from the provider.
  *
  * Any fetch or parse problem aborts the whole run before a single write, so a
  * site outage or redesign can never wipe the catalog; the outcome of every run
@@ -78,15 +85,68 @@ export function parsePrice(s: string): number | null {
   return /request|demande/i.test(s) ? 0 : null;
 }
 
+const UA = "OnlyView villa catalog sync (onlyviewstbarth.com)";
+/** one request at a time, at least this far apart: their small server bans bursts */
+const GAP_MS = 1500;
+let lastRequest = 0;
+
+async function polite(url: string, accept: string): Promise<Response> {
+  const wait = lastRequest + GAP_MS - Date.now();
+  if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+  try {
+    return await fetch(url, {
+      headers: { "User-Agent": UA, Accept: accept },
+      redirect: "manual",
+      signal: AbortSignal.timeout(20_000),
+      cache: "no-store",
+    });
+  } catch (e) {
+    // undici only says "fetch failed": name the page and the network error
+    const cause = (e as { cause?: { code?: string; message?: string } }).cause;
+    throw new Error(`${url.replace(SB_PROVIDER_BASE, "")}: ${cause?.code ?? cause?.message ?? (e as Error).message}`);
+  } finally {
+    lastRequest = Date.now();
+  }
+}
+
 async function get(path: string): Promise<string> {
-  const res = await fetch(SB_PROVIDER_BASE + path, {
-    headers: { "User-Agent": "OnlyView villa catalog sync (onlyviewstbarth.com)", Accept: "text/html" },
-    redirect: "manual",
-    signal: AbortSignal.timeout(20_000),
-    cache: "no-store",
-  });
+  const res = await polite(SB_PROVIDER_BASE + path, "text/html");
   if (res.status !== 200) throw new Error(`${path}: HTTP ${res.status}`);
   return res.text();
+}
+
+/**
+ * Photos are copied once into our uploads (small webp, named after their
+ * file, which they rename when they change a photo) so guests' browsers never
+ * hit their server. null = not available yet (keep what the item has).
+ */
+const PHOTO_DIR = ["public", "media", "photos", "uploads", "extras"];
+async function mirrorPhoto(src: string): Promise<string | null> {
+  const base = decodeURIComponent(new URL(src).pathname.split("/").pop() ?? "")
+    .replace(/\.[a-z0-9]+$/i, "")
+    .replace(/[^a-zA-Z0-9._-]/g, "_")
+    .slice(0, 120);
+  if (!base) return null;
+  const name = `sbp-${base}.webp`;
+  const url = `/media/photos/uploads/extras/${name}`;
+  const dir = path.join(process.cwd(), ...PHOTO_DIR);
+  const file = path.join(dir, name);
+  if (fs.existsSync(file)) return url;
+  try {
+    const res = await polite(src, "image/*");
+    if (res.status !== 200) return null;
+    const img = await sharp(Buffer.from(await res.arrayBuffer()))
+      .rotate()
+      .resize({ width: 480, height: 480, fit: "inside", withoutEnlargement: true })
+      .webp({ quality: 80 })
+      .toBuffer();
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(file, img);
+    return url;
+  } catch (e) {
+    console.error("[extras-sync] photo not copied:", src, e instanceof Error ? e.message : e);
+    return null;
+  }
 }
 
 /** The category menu: [[id, name]] in the site's order. */
@@ -141,19 +201,22 @@ export function parseDescription(html: string): string | null {
   return m ? text(m[1]) : null;
 }
 
-/** Read the whole catalog. Throws on anything that doesn't look right. */
-export async function fetchProviderCatalog(): Promise<ProviderProduct[]> {
-  const [homeEn, homeFr] = await Promise.all([get("/en"), get("/fr")]);
+/**
+ * Read the whole catalog, one page at a time. Product pages (descriptions)
+ * are only read for the ids `details` asks for. Throws on anything that
+ * doesn't look right.
+ */
+export async function fetchProviderCatalog(details: (id: number) => boolean = () => true): Promise<ProviderProduct[]> {
+  const homeEn = await get("/en");
+  const homeFr = await get("/fr");
   const catsEn = parseCategories(homeEn, "en");
   const catsFr = new Map(parseCategories(homeFr, "fr"));
   if (catsEn.length < 3) throw new Error(`only ${catsEn.length} categories found on the site`);
 
   const products = new Map<number, ProviderProduct>();
   for (const [catId, catEn] of catsEn) {
-    const [en, fr] = await Promise.all([
-      get(`/en/customer-bookings/category/${catId}`).then((h) => parseCategory(h, "en")),
-      get(`/fr/customer-bookings/category/${catId}`).then((h) => parseCategory(h, "fr")),
-    ]);
+    const en = parseCategory(await get(`/en/customer-bookings/category/${catId}`), "en");
+    const fr = parseCategory(await get(`/fr/customer-bookings/category/${catId}`), "fr");
     if (!en.length) throw new Error(`category "${catEn}" has no products the sync can read`);
     const frById = new Map(fr.map((p) => [p.id, p]));
     for (const p of en) {
@@ -172,20 +235,12 @@ export async function fetchProviderCatalog(): Promise<ProviderProduct[]> {
     }
   }
 
-  // descriptions live on each product page: best effort, a few at a time
+  // descriptions live on each product page: best effort
   const list = [...products.values()];
-  for (let i = 0; i < list.length; i += 6) {
-    await Promise.all(
-      list.slice(i, i + 6).map(async (p) => {
-        const [en, fr] = await Promise.all(
-          (["en", "fr"] as const).map((l) =>
-            get(`/${l}/customer-bookings/view/${p.id}`).then(parseDescription, () => null)
-          )
-        );
-        p.descriptionEn = en || null;
-        p.descriptionFr = fr || null;
-      })
-    );
+  for (const p of list.filter((p) => details(p.id))) {
+    const read = (l: "en" | "fr") => get(`/${l}/customer-bookings/view/${p.id}`).then(parseDescription, () => null);
+    p.descriptionEn = (await read("en")) || null;
+    p.descriptionFr = (await read("fr")) || null;
   }
   return list;
 }
@@ -219,7 +274,21 @@ async function run(): Promise<ExtrasSyncStatus> {
   const previous = await getExtrasSyncStatus().catch(() => null);
   const lastRunAt = new Date().toISOString();
   try {
-    const status = await apply(await fetchProviderCatalog(), !previous?.lastSuccessAt);
+    // product pages: new products every day, all of them on Sundays
+    const known = new Set(
+      (await prisma.extra.findMany({ where: { externalRef: { startsWith: REF } }, select: { externalRef: true } })).map(
+        (x) => x.externalRef
+      )
+    );
+    const sunday = new Date().getUTCDay() === 0;
+    const products = await fetchProviderCatalog((id) => sunday || !known.has(REF + id));
+    let misses = 0; // their server not answering: stop asking for photos this run
+    for (const p of products) {
+      if (!p.imageUrl) continue;
+      p.imageUrl = misses < 3 ? await mirrorPhoto(p.imageUrl) : null;
+      misses = p.imageUrl ? 0 : misses + 1;
+    }
+    const status = await apply(products, !previous?.lastSuccessAt);
     const s: ExtrasSyncStatus = { lastRunAt, ok: true, lastSuccessAt: lastRunAt, source: SB_PROVIDER_BASE, ...status };
     await saveStatus(s);
     if (s.created || s.updated || s.hidden)

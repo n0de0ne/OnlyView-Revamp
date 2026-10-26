@@ -4,7 +4,7 @@
 
 import { useState } from "react";
 import type { Dict } from "@/lib/i18n";
-import { extraThumb, isRental, lineAmount, moneyIn, rentalDays } from "@/lib/extras";
+import { isRental, lineAmount, moneyIn, rentalDays } from "@/lib/extras";
 
 export interface PlannerExtra {
   id: number;
@@ -263,7 +263,7 @@ export function ExtrasPanel({
                     <div className="flex gap-3">
                       {x.imageUrl && (
                         <img
-                          src={extraThumb(x.imageUrl)}
+                          src={x.imageUrl}
                           alt=""
                           loading="lazy"
                           className="h-20 w-20 shrink-0 bg-white object-contain"
