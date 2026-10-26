@@ -97,6 +97,23 @@ export function parseCategories(html: string, lang: "en" | "fr"): Array<[number,
   return [...seen];
 }
 
+/**
+ * The product photo of a card: the first <img> that isn't the site's logo,
+ * whether its src is relative or absolute (or lazy-loaded in data-src).
+ */
+export function productImage(card: string): string | null {
+  for (const tag of card.match(/<img\b[^>]*>/gi) ?? []) {
+    const src = tag.match(/\s(?:data-src|src)\s*=\s*["']([^"']+)["']/i)?.[1]?.trim();
+    if (!src || /logo|theme_stbarth|^data:/i.test(src)) continue;
+    try {
+      return new URL(text(src), SB_PROVIDER_BASE + "/").href;
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
+
 /** Product cards of a category page, in order. */
 export function parseCategory(html: string, lang: "en" | "fr") {
   return html
@@ -106,13 +123,13 @@ export function parseCategory(html: string, lang: "en" | "fr") {
       const id = card.match(new RegExp(`/${lang}/customer-bookings/view/(\\d+)`))?.[1];
       const name = card.match(/title_article_cat[^>]*>([\s\S]*?)<\/h4>/)?.[1];
       const price = card.match(/text_grey m-0 text-center">([\s\S]*?)<\/p>/)?.[1];
-      const img = card.match(/<img[^>]*src="(\/img\/uploads\/[^"]+)"/)?.[1];
+      const img = productImage(card);
       if (!id || !name) return null;
       return {
         id: +id,
         name: tidyName(text(name)),
         price: price ? parsePrice(text(price)) : null,
-        imageUrl: img ? SB_PROVIDER_BASE + img : null,
+        imageUrl: img,
       };
     })
     .filter((x): x is NonNullable<typeof x> => !!x);
@@ -276,7 +293,8 @@ async function apply(products: ProviderProduct[], firstRun: boolean) {
       nameFr: p.nameFr,
       categoryEn: p.categoryEn,
       categoryFr: p.categoryFr,
-      imageUrl: p.imageUrl,
+      // a product the site shows without a photo keeps the one it had
+      ...(p.imageUrl ? { imageUrl: p.imageUrl } : {}),
       sortOrder: 100 + i,
       isActive: true,
       externalRef: ref,

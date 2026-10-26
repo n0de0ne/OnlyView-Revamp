@@ -48,6 +48,23 @@ export function confirmedExtrasTotal(
     .reduce((s, i) => s + i.amount, 0);
 }
 
+const THUMB_HOSTS = ["booking.stbarthprovider.com", "static.wixstatic.com"];
+
+/**
+ * An extra's photo as a small thumbnail served by our own image optimizer:
+ * the provider's originals weigh up to 300 KB and their server shouldn't have
+ * to answer our guests' browsers. Other URLs are used as they are.
+ */
+export function extraThumb(url: string, width: 128 | 256 = 256): string {
+  try {
+    if (THUMB_HOSTS.includes(new URL(url).hostname))
+      return `/_next/image?url=${encodeURIComponent(url)}&w=${width}&q=75`;
+  } catch {
+    // relative or odd URL: leave it alone
+  }
+  return url;
+}
+
 /** "€50" / "$1,200" */
 export const moneyIn = (n: number, currency: string) =>
   (currency === "EUR" ? "€" : "$") + (Math.round(n * 100) / 100).toLocaleString("en-US");

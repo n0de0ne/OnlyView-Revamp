@@ -6,6 +6,12 @@ const nextConfig: NextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
     deviceSizes: [480, 640, 828, 1080, 1400, 1800, 2200],
+    // extras photos hosted by St Barth Provider (booking site, old Wix catalog):
+    // served resized from our own domain, see extraThumb()
+    remotePatterns: [
+      { protocol: "https", hostname: "booking.stbarthprovider.com" },
+      { protocol: "https", hostname: "static.wixstatic.com" },
+    ],
   },
   async headers() {
     return [

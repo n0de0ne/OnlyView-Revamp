@@ -4,7 +4,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { api, Card, ConfirmButton, Modal, Spinner, useToast } from "./ui";
-import { moneyIn } from "@/lib/extras";
+import { extraThumb, moneyIn } from "@/lib/extras";
 
 export interface CatalogExtra {
   id: number;
@@ -262,7 +262,7 @@ export function ExtrasBoard() {
                     <div className="flex items-start gap-3">
                       {x.imageUrl && (
                         <img
-                          src={x.imageUrl}
+                          src={extraThumb(x.imageUrl)}
                           alt=""
                           loading="lazy"
                           className="h-14 w-14 shrink-0 rounded-lg bg-white object-contain"
