@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { adminRoute, jsonError, jsonOk, jsonInvalid } from "@/lib/admin-api";
 import { MapPlaceInput } from "@/lib/admin-schemas";
 import { audit } from "@/lib/audit";
-import { slugify } from "@/lib/map-places";
+import { slugify, withOnlineBooking } from "@/lib/map-places";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +30,7 @@ export const POST = adminRoute("manager", async (req, _ctx, user) => {
   const base = slugify(parsed.data.name);
   let slug = base;
   for (let n = 2; await prisma.mapPlace.findUnique({ where: { slug } }); n++) slug = `${base}-${n}`;
-  const place = await prisma.mapPlace.create({ data: { ...parsed.data, slug } });
+  const place = await prisma.mapPlace.create({ data: { ...withOnlineBooking(parsed.data), slug } });
   await audit({
     action: "map_place_create",
     entityType: "map_place",

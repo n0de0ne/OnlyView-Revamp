@@ -503,7 +503,14 @@ export function MapPlacesBoard({ villa }: { villa: LatLng }) {
                     </div>
                     <div className="afield col-span-2">
                       <label>Lien de réservation en ligne</label>
-                      <input value={editing.draft.bookingUrl} onChange={(e) => patch({ bookingUrl: e.target.value })} placeholder="https://…" />
+                      {/* a filled link means the guest books online (the server applies it too) */}
+                      <input
+                        value={editing.draft.bookingUrl}
+                        onChange={(e) =>
+                          patch({ bookingUrl: e.target.value, ...(e.target.value.trim() ? { bookingMode: "direct" } : {}) })
+                        }
+                        placeholder="https://…"
+                      />
                     </div>
                     <div className="afield">
                       <label>WhatsApp du restaurant</label>

@@ -1356,9 +1356,29 @@ async function applyStBarthProviderPhotos() {
   if (n) console.log(`St Barth Provider photos added to ${n} extras`);
 }
 
+// Restaurants whose online booking link was filled before the admin did it
+// automatically: offer them as "Réservation en ligne". Once per database, so
+// a mode the owner picks later sticks.
+async function backfillOnlineBooking() {
+  const key = "map_batch_2026_10_online_booking";
+  if (await prisma.setting.findUnique({ where: { key } })) return;
+  const { count } = await prisma.mapPlace.updateMany({
+    where: {
+      category: "restaurant",
+      AND: [{ bookingUrl: { not: null } }, { bookingUrl: { not: "" } }],
+      // a plain `not: "direct"` would skip the null (not offered) ones
+      OR: [{ bookingMode: null }, { bookingMode: { not: "direct" } }],
+    },
+    data: { bookingMode: "direct" },
+  });
+  await prisma.setting.create({ data: { key, value: new Date().toISOString() } });
+  if (count) console.log(`Online booking set on ${count} restaurant(s)`);
+}
+
 async function main() {
   await seedBase();
   await backfillConciergeRequests();
+  await backfillOnlineBooking();
   await seedStBarthProviderExtras();
   await applyStBarthProviderPhotos();
   if (process.env.SEED_DEMO === "1") {

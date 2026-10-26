@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { adminRoute, jsonError, jsonOk, jsonInvalid } from "@/lib/admin-api";
 import { MapPlaceInput } from "@/lib/admin-schemas";
 import { audit } from "@/lib/audit";
+import { withOnlineBooking } from "@/lib/map-places";
 
 export const dynamic = "force-dynamic";
 
@@ -22,13 +23,20 @@ export const PUT = adminRoute<Ctx>("manager", async (req, { params }, user) => {
   const id = parseInt(idRaw, 10);
   const parsed = MapPlaceInput.partial().safeParse(await req.json().catch(() => null));
   if (!parsed.success) return jsonInvalid(parsed.error);
+  if (!Number.isFinite(id)) return jsonError("not_found", 404);
+  const previous = await prisma.mapPlace.findUnique({
+    where: { id },
+    select: { category: true, bookingUrl: true },
+  });
+  if (!previous) return jsonError("not_found", 404);
+  const data = withOnlineBooking(parsed.data, previous);
   try {
-    const place = await prisma.mapPlace.update({ where: { id }, data: parsed.data });
+    const place = await prisma.mapPlace.update({ where: { id }, data });
     await audit({
       action: "map_place_update",
       entityType: "map_place",
       entityId: id,
-      details: parsed.data,
+      details: data,
       userId: user.id,
       username: user.username,
     });
