@@ -10,7 +10,8 @@ export type MapCategory =
   | "bakery"
   | "pharmacy"
   | "transport"
-  | "sport";
+  | "sport"
+  | "activity";
 
 export const MAP_CATEGORIES: MapCategory[] = [
   "beach",
@@ -20,6 +21,7 @@ export const MAP_CATEGORIES: MapCategory[] = [
   "pharmacy",
   "transport",
   "sport",
+  "activity",
 ];
 
 /** pin colours in the site's palette (ocean, navy, gold…) — one hue per category */
@@ -34,6 +36,7 @@ export const CATEGORY_META: Record<
   pharmacy: { color: "#b5534a", emoji: "💊", en: "Pharmacies", fr: "Pharmacies", one: { en: "Pharmacy", fr: "Pharmacie" } },
   transport: { color: "#5b6773", emoji: "✈️", en: "Transport", fr: "Transport", one: { en: "Transport", fr: "Transport" } },
   sport: { color: "#3f8c8c", emoji: "🎾", en: "Sports", fr: "Sport", one: { en: "Sports", fr: "Sport" } },
+  activity: { color: "#c46f4e", emoji: "🤿", en: "Activities", fr: "Activités", one: { en: "Activity", fr: "Activité" } },
 };
 
 /** icon variants inside a category (the legacy map's per-type pins) */
@@ -49,6 +52,10 @@ export const KIND_META: Record<string, { color?: string; emoji: string; en: stri
   info: { emoji: "ℹ️", en: "Tourist office", fr: "Office de tourisme" },
   gym: { emoji: "🏋️", en: "Gym", fr: "Salle de sport" },
   court: { emoji: "🎾", en: "Court", fr: "Terrain" },
+  diving: { emoji: "🤿", en: "Diving", fr: "Plongée" },
+  watersports: { emoji: "🏄", en: "Water sports", fr: "Sports nautiques" },
+  jetski: { emoji: "🚤", en: "Jet ski", fr: "Jet ski" },
+  wellness: { emoji: "💆", en: "Massage / wellness", fr: "Massage / bien-être" },
 };
 
 /** the kinds an admin can pick for a category */
@@ -56,6 +63,7 @@ export const KINDS_BY_CATEGORY: Partial<Record<MapCategory, string[]>> = {
   restaurant: ["restaurant", "beach_club", "lounge", "snack", "nightlife"],
   transport: ["gas", "airport", "ferry", "info"],
   sport: ["gym", "court"],
+  activity: ["diving", "watersports", "jetski", "wellness"],
 };
 
 export const VILLA_PIN_COLOR = "#c9a962";

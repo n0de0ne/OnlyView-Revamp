@@ -61,6 +61,8 @@ function schemaType(p: MapPlaceDTO): string {
             : "GasStation";
     case "sport":
       return p.kind === "gym" ? "ExerciseGym" : "SportsActivityLocation";
+    case "activity":
+      return p.kind === "wellness" ? "HealthAndBeautyBusiness" : "SportsActivityLocation";
   }
 }
 

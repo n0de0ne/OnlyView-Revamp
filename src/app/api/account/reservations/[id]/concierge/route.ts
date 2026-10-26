@@ -23,6 +23,13 @@ const Body = z.discriminatedUnion("type", [
   z.object({ type: z.literal("restaurant"), time: z.string().regex(/^\d{2}:\d{2}$/), ...common }),
   z.object({ type: z.literal("boat"), outing: z.enum(BOAT_OUTINGS.map((o) => o.key) as [string, ...string[]]), ...common }),
   z.object({ type: z.literal("chef"), time: z.string().regex(/^\d{2}:\d{2}$/).nullable().optional(), ...common }),
+  // id = the kind of activity; offerId = one of its offers, or none: "find me one"
+  z.object({
+    type: z.literal("activity"),
+    offerId: z.number().int().positive().nullable().optional(),
+    time: z.string().regex(/^\d{2}:\d{2}$/).nullable().optional(),
+    ...common,
+  }),
 ]);
 
 const bad = (error: string, status = 400) => NextResponse.json({ success: false, error }, { status });
@@ -30,7 +37,8 @@ const contactLine = (c: { phone?: string | null; whatsapp?: string | null; email
   [c.phone && `☎ ${c.phone}`, c.whatsapp && `WhatsApp ${c.whatsapp}`, c.email].filter(Boolean).join(" · ");
 
 /**
- * Guest portal concierge: ask for a table, a boat or a private chef. The
+ * Guest portal concierge: ask for a table, a boat, a private chef or an
+ * activity (a given offer, or just the kind: the owner finds a provider). The
  * request lands on the stay as a concierge request (not an extra: it is paid
  * to the provider) that the owner confirms or declines from the admin inbox.
  */
@@ -71,6 +79,30 @@ export async function POST(req: NextRequest, { params }: Ctx) {
     subject = `Boat requested: ${boat.name} (${getDict("en").account.concierge.outings[outing.key]})`;
     facts.push(`~${money(price, boat.partner?.currency ?? "EUR")}`);
     if (boat.partner) ownerLines.push(`${boat.partner.name}: ${contactLine(boat.partner)}`);
+  } else if (d.type === "activity") {
+    const cat = await prisma.activityCategory.findUnique({ where: { id: d.id } });
+    if (!cat || !cat.isActive) return bad("not_found", 404);
+    const offer = d.offerId
+      ? await prisma.activity.findUnique({ where: { id: d.offerId }, include: { partner: true } })
+      : null;
+    if (d.offerId && (!offer || !offer.isActive || offer.categoryId !== cat.id || (offer.partner && !offer.partner.isActive)))
+      return bad("not_found", 404);
+    const catName = d.locale === "fr" ? cat.nameFr : cat.nameEn;
+    const offerName = offer && (d.locale === "fr" ? offer.nameFr ?? offer.name : offer.name);
+    label = offer ? `${catName} — ${offerName}` : catName;
+    subject = offer ? `Activity requested: ${cat.nameEn} — ${offer.name}` : `Activity requested: ${cat.nameEn} (no provider yet)`;
+    if (offer?.price != null) {
+      const cur = offer.partner?.currency ?? "EUR";
+      facts.push(
+        offer.priceType === "per_person"
+          ? `~${money(offer.price * d.guests, cur)} (${d.guests} × ${money(offer.price, cur)})`
+          : `~${money(offer.price, cur)} ${{ per_group: "le groupe", per_unit: "l'unité" }[offer.priceType] ?? ""}`.trim()
+      );
+    }
+    if (offer && d.guests < offer.minimumGuests) facts.push(`sous le minimum de ${offer.minimumGuests} pers.`);
+    if (offer?.maximumGuests && d.guests > offer.maximumGuests) facts.push(`au-dessus du maximum de ${offer.maximumGuests} pers.`);
+    if (offer?.partner) ownerLines.push(`${offer.partner.name}: ${contactLine(offer.partner)}`);
+    if (!offer) ownerLines.push("No offer chosen: find a provider for the guest.");
   } else {
     const offer = await prisma.chefOffer.findUnique({ where: { id: d.id }, include: { partner: true } });
     if (!offer || !offer.isActive || (offer.partner && !offer.partner.isActive)) return bad("not_found", 404);

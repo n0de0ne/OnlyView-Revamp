@@ -326,7 +326,7 @@ model ReservationExtra {
   /// extra (a service billed with the stay) | concierge (a table, boat or chef
   /// the owner books with the provider for the guest)
   kind             String      @default("extra")
-  /// concierge: restaurant | boat | chef
+  /// concierge: restaurant | boat | chef | activity
   category         String?
   /// concierge: time wanted, HH:MM
   serviceTime      String?
@@ -612,11 +612,12 @@ model Testimonial {
 model MapPlace {
   id                   Int                @id @default(autoincrement())
   slug                 String             @unique
-  /// beach | restaurant | supermarket | bakery | pharmacy | transport | sport
+  /// beach | restaurant | supermarket | bakery | pharmacy | transport | sport | activity
   category             String
   /// icon variant inside the category — restaurants: restaurant | beach_club |
   /// lounge | snack | nightlife; transport: gas | airport | ferry | info;
-  /// sport: gym | court. Empty = the category's default icon.
+  /// sport: gym | court; activity: diving | watersports | jetski | wellness.
+  /// Empty = the category's default icon.
   kind                 String?
   name                 String
   /// the village / area, shown next to the name (Gustavia, Saint-Jean…)
@@ -664,7 +665,7 @@ model MapPlace {
 /// chef. Ported from the legacy boat_partners + chef_partners tables.
 model ServicePartner {
   id          Int      @id @default(autoincrement())
-  /// boat | chef | extras (equipment rental)
+  /// boat | chef | extras (equipment rental) | activity (diving, yoga, massage…)
   kind        String
   name        String
   contactName String?
@@ -684,6 +685,7 @@ model ServicePartner {
   boats      Boat[]
   chefOffers ChefOffer[]
   extras     Extra[]
+  activities Activity[]
 
   @@unique([kind, name])
 }
@@ -767,6 +769,55 @@ model ChefOffer {
   sortOrder        Int             @default(0)
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
+}
+
+/// A kind of activity the concierge arranges (diving, yoga, massage…). It is
+/// offered to guests even with no offer yet: they ask, the owner finds it.
+model ActivityCategory {
+  id            Int        @id @default(autoincrement())
+  slug          String     @unique
+  nameEn        String
+  nameFr        String
+  descriptionEn String?
+  descriptionFr String?
+  /// an emoji shown next to the name
+  icon          String?
+  isActive      Boolean    @default(true)
+  sortOrder     Int        @default(0)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  activities    Activity[]
+}
+
+/// A provider's activity offer guests can request (a dive, a yoga class…).
+/// Prices are indicative, in the partner's currency; null = on quote.
+model Activity {
+  id            Int               @id @default(autoincrement())
+  slug          String            @unique
+  categoryId    Int?
+  category      ActivityCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  partnerId     Int?
+  partner       ServicePartner?   @relation(fields: [partnerId], references: [id], onDelete: SetNull)
+  /// in English; nameFr for French guests (falls back to name)
+  name          String
+  nameFr        String?
+  descriptionEn String?
+  descriptionFr String?
+  /// "2h", "half day"…
+  duration      String?
+  price         Float?
+  /// per_person | per_group | per_unit (per jet ski, board…) | quote
+  priceType     String            @default("per_person")
+  minimumGuests Int               @default(1)
+  maximumGuests Int?
+  imageUrl      String?
+  webPageUrl    String?
+  /// internal, never shown to guests
+  notes         String?
+  isActive      Boolean           @default(true)
+  sortOrder     Int               @default(0)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
 }
 
 model Setting {

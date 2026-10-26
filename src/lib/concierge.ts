@@ -1,13 +1,27 @@
 import "server-only";
 import type { z } from "zod";
 import { prisma } from "./db";
-import { BoatInput, ChefOfferInput, ServicePartnerInput, TaxiInput } from "./admin-schemas";
+import {
+  ActivityCategoryInput,
+  ActivityInput,
+  BoatInput,
+  ChefOfferInput,
+  ServicePartnerInput,
+  TaxiInput,
+} from "./admin-schemas";
 import type { Locale } from "./i18n";
 
 /* ───────────────────────── admin catalog ───────────────────────── */
 
 /** The concierge catalogs the admin edits through /api/admin/concierge/<type>. */
-export const CONCIERGE_TYPES = ["partners", "taxis", "boats", "chef-offers"] as const;
+export const CONCIERGE_TYPES = [
+  "partners",
+  "taxis",
+  "boats",
+  "chef-offers",
+  "activities",
+  "activity-categories",
+] as const;
 export type ConciergeType = (typeof CONCIERGE_TYPES)[number];
 
 export const isConciergeType = (s: string): s is ConciergeType =>
@@ -18,6 +32,8 @@ export const conciergeSchema = {
   taxis: TaxiInput,
   boats: BoatInput,
   "chef-offers": ChefOfferInput,
+  activities: ActivityInput,
+  "activity-categories": ActivityCategoryInput,
 } satisfies Record<ConciergeType, z.ZodTypeAny>;
 
 const slugify = (s: string) =>
@@ -40,7 +56,7 @@ export async function listConcierge(type: ConciergeType) {
     case "partners":
       return prisma.servicePartner.findMany({
         orderBy: [{ kind: "asc" }, { name: "asc" }],
-        include: { _count: { select: { boats: true, chefOffers: true, extras: true } } },
+        include: { _count: { select: { boats: true, chefOffers: true, extras: true, activities: true } } },
       });
     case "taxis":
       return prisma.taxi.findMany({ orderBy: [{ sortOrder: "asc" }, { name: "asc" }] });
@@ -48,6 +64,16 @@ export async function listConcierge(type: ConciergeType) {
       return prisma.boat.findMany({ orderBy: [{ sortOrder: "asc" }, { name: "asc" }] });
     case "chef-offers":
       return prisma.chefOffer.findMany({ orderBy: [{ sortOrder: "asc" }, { name: "asc" }] });
+    case "activities":
+      return prisma.activity.findMany({ orderBy: [{ categoryId: "asc" }, { sortOrder: "asc" }, { name: "asc" }] });
+    case "activity-categories":
+      // the admin lists, searches and titles every catalog by `name`
+      return (
+        await prisma.activityCategory.findMany({
+          orderBy: [{ sortOrder: "asc" }, { nameFr: "asc" }],
+          include: { _count: { select: { activities: true } } },
+        })
+      ).map((c) => ({ ...c, name: c.nameFr }));
   }
 }
 
@@ -68,6 +94,17 @@ export async function createConcierge(type: ConciergeType, data: Record<string, 
       const slug = await freeSlug(d.name, (slug) => prisma.chefOffer.findUnique({ where: { slug } }));
       return prisma.chefOffer.create({ data: { ...d, slug } });
     }
+    case "activities": {
+      const d = data as z.infer<typeof ActivityInput>;
+      const slug = await freeSlug(d.name, (slug) => prisma.activity.findUnique({ where: { slug } }));
+      return prisma.activity.create({ data: { ...d, slug } });
+    }
+    case "activity-categories": {
+      const d = data as z.infer<typeof ActivityCategoryInput>;
+      const slug = await freeSlug(d.nameEn, (slug) => prisma.activityCategory.findUnique({ where: { slug } }));
+      const c = await prisma.activityCategory.create({ data: { ...d, slug } });
+      return { ...c, name: c.nameFr };
+    }
   }
 }
 
@@ -81,6 +118,10 @@ export async function updateConcierge(type: ConciergeType, id: number, data: Rec
       return prisma.boat.update({ where: { id }, data });
     case "chef-offers":
       return prisma.chefOffer.update({ where: { id }, data });
+    case "activities":
+      return prisma.activity.update({ where: { id }, data });
+    case "activity-categories":
+      return prisma.activityCategory.update({ where: { id }, data });
   }
 }
 
@@ -94,6 +135,10 @@ export async function deleteConcierge(type: ConciergeType, id: number) {
       return prisma.boat.delete({ where: { id } });
     case "chef-offers":
       return prisma.chefOffer.delete({ where: { id } });
+    case "activities":
+      return prisma.activity.delete({ where: { id } });
+    case "activity-categories":
+      return prisma.activityCategory.delete({ where: { id } });
   }
 }
 
@@ -123,7 +168,7 @@ export async function getConciergeCatalog(locale: Locale) {
   const pick = (en: string | null, frText: string | null) => (fr ? frText ?? en : en ?? frText);
   const activePartner = { OR: [{ partnerId: null }, { partner: { isActive: true } }] };
 
-  const [restaurants, boats, chef, taxis] = await Promise.all([
+  const [restaurants, boats, chef, taxis, activityCategories] = await Promise.all([
     prisma.mapPlace.findMany({
       where: { category: "restaurant", isActive: true, bookingMode: { not: null } },
       orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
@@ -141,6 +186,19 @@ export async function getConciergeCatalog(locale: Locale) {
     prisma.taxi.findMany({
       where: { isActive: true },
       orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+    }),
+    // every active kind of activity is offered, with or without offers:
+    // the guest can always ask and the owner finds a provider
+    prisma.activityCategory.findMany({
+      where: { isActive: true },
+      orderBy: [{ sortOrder: "asc" }, { nameEn: "asc" }],
+      include: {
+        activities: {
+          where: { isActive: true, ...activePartner },
+          include: { partner: { select: { currency: true } } },
+          orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+        },
+      },
     }),
   ]);
 
@@ -196,6 +254,25 @@ export async function getConciergeCatalog(locale: Locale) {
       displayPhone: t.displayPhone ?? t.phone,
       zone: t.zone,
       hasWhatsapp: t.hasWhatsapp,
+    })),
+    activities: activityCategories.map((c) => ({
+      id: c.id,
+      name: fr ? c.nameFr : c.nameEn,
+      description: pick(c.descriptionEn, c.descriptionFr),
+      icon: c.icon,
+      offers: c.activities.map((a) => ({
+        id: a.id,
+        name: fr ? a.nameFr ?? a.name : a.name,
+        description: pick(a.descriptionEn, a.descriptionFr),
+        duration: a.duration,
+        price: a.price,
+        priceType: a.priceType,
+        minimumGuests: a.minimumGuests,
+        maximumGuests: a.maximumGuests,
+        imageUrl: a.imageUrl,
+        webPageUrl: a.webPageUrl,
+        currency: a.partner?.currency ?? "EUR",
+      })),
     })),
   };
 }

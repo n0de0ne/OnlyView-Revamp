@@ -26,7 +26,7 @@ export const CONCIERGE_STATUS: Record<string, { label: string; className: string
   cancelled: { label: "Annulé", className: "bg-slate-100 text-slate-500 line-through" },
 };
 
-const ICON: Record<string, string> = { restaurant: "🍽️", boat: "⛵", chef: "👨‍🍳" };
+const ICON: Record<string, string> = { restaurant: "🍽️", boat: "⛵", chef: "👨‍🍳", activity: "🤿" };
 
 /** "sam. 2 oct." */
 const day = (iso: string | null) =>
