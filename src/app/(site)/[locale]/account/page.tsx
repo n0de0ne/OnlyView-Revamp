@@ -11,6 +11,7 @@ import { isLoyaltyEnabled } from "@/lib/features";
 import { PageHero } from "@/components/site/PageHero";
 import { GuestLoginForm } from "@/components/site/GuestLoginForm";
 import { StayPlanner } from "@/components/site/StayPlanner";
+import { ExtrasPanel } from "@/components/site/ExtrasPanel";
 import { DateChangeRequest } from "@/components/site/DateChangeRequest";
 import { ConciergePanel } from "@/components/site/ConciergePanel";
 import { ConciergeRequests } from "@/components/site/ConciergeRequests";
@@ -283,34 +284,46 @@ export default async function AccountPage({
             />
           )}
         {["option", "confirmed"].includes(r.status) && !r.isArchived && toISODate(r.endDate) >= today && (
-          <StayPlanner
-            reservationId={r.id}
-            locale={locale}
-            t={t.account}
-            catalog={catalog}
-            defaultOpen={!r.guestDetailsUpdatedAt && toISODate(r.startDate) <= addDays(today, 21)}
-            details={{
-              arrivalFlight: r.arrivalFlight,
-              arrivalEta: r.arrivalEta,
-              departureFlight: r.departureFlight,
-              departureEta: r.departureEta,
-              adults: r.adults,
-              children: r.children,
-              guestNames: r.guestNames,
-              specialRequests: r.specialRequests,
-            }}
-            items={r.extras.filter((i) => !isConcierge(i)).map((i) => ({
-              id: i.id,
-              label: i.label,
-              quantity: i.quantity,
-              amount: i.amount,
-              currency: i.currency,
-              paidToProvider: i.paidToProvider,
-              status: i.status,
-              serviceDate: i.serviceDate ? toISODate(i.serviceDate) : null,
-              requestedByGuest: i.requestedByGuest,
-            }))}
-          />
+          <>
+            <ExtrasPanel
+              reservationId={r.id}
+              locale={locale}
+              t={t.account}
+              catalog={catalog}
+              stay={{
+                start: toISODate(r.startDate) > today ? toISODate(r.startDate) : today,
+                end: toISODate(r.endDate),
+              }}
+              items={r.extras.filter((i) => !isConcierge(i)).map((i) => ({
+                id: i.id,
+                label: i.label,
+                quantity: i.quantity,
+                amount: i.amount,
+                currency: i.currency,
+                paidToProvider: i.paidToProvider,
+                status: i.status,
+                serviceDate: i.serviceDate ? toISODate(i.serviceDate) : null,
+                serviceEndDate: i.serviceEndDate ? toISODate(i.serviceEndDate) : null,
+                days: i.days,
+                requestedByGuest: i.requestedByGuest,
+              }))}
+            />
+            <StayPlanner
+              reservationId={r.id}
+              t={t.account}
+              defaultOpen={!r.guestDetailsUpdatedAt && toISODate(r.startDate) <= addDays(today, 21)}
+              details={{
+                arrivalFlight: r.arrivalFlight,
+                arrivalEta: r.arrivalEta,
+                departureFlight: r.departureFlight,
+                departureEta: r.departureEta,
+                adults: r.adults,
+                children: r.children,
+                guestNames: r.guestNames,
+                specialRequests: r.specialRequests,
+              }}
+            />
+          </>
         )}
         {["option", "confirmed"].includes(r.status) &&
           !r.isArchived &&

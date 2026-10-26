@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
+
 import { useCallback, useEffect, useState } from "react";
 import { api, Card, ConfirmButton, Modal, Spinner, useToast } from "./ui";
 import { moneyIn } from "@/lib/extras";
@@ -187,8 +189,17 @@ export function ExtrasBoard() {
                       x.isActive ? "border-slate-200" : "border-slate-100 opacity-60"
                     }`}
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
+                    <div className="flex items-start gap-3">
+                      {x.imageUrl && (
+                        <img
+                          src={x.imageUrl}
+                          alt=""
+                          loading="lazy"
+                          className="h-14 w-14 shrink-0 rounded-lg bg-white object-contain"
+                          onError={(e) => (e.currentTarget.style.display = "none")}
+                        />
+                      )}
+                      <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2 font-semibold text-slate-800">
                           {x.nameFr}
                           {x.guestBookable && x.isActive && (

@@ -207,6 +207,7 @@ export const ReservationExtraPatch = z.object({
   unitPrice: z.number().min(0).optional(),
   status: z.enum(["requested", "confirmed", "declined", "cancelled"]).optional(),
   serviceDate: z.string().regex(ISO_DATE).nullable().optional(),
+  serviceEndDate: z.string().regex(ISO_DATE).nullable().optional(),
   notes: z.string().max(2000).nullable().optional(),
   /** concierge requests: time, party size and the answer the guest sees */
   serviceTime: z.string().regex(/^\d{2}:\d{2}$/).nullable().optional(),

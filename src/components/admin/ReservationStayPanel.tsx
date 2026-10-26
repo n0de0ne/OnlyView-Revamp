@@ -250,6 +250,8 @@ export function ReservationStayPanel({
                       {(i.serviceDate || i.notes) && (
                         <div className="text-xs text-slate-400">
                           {i.serviceDate && fmtDate(i.serviceDate)}
+                          {i.serviceEndDate && <> → {fmtDate(i.serviceEndDate)}</>}
+                          {i.days != null && <> ({i.days} j)</>}
                           {i.serviceDate && i.notes && " · "}
                           {i.notes}
                         </div>
@@ -257,6 +259,7 @@ export function ReservationStayPanel({
                     </td>
                     <td className="px-3 py-2 text-right text-slate-500">
                       {i.quantity} × {moneyIn(i.unitPrice, i.currency)}
+                      {i.days != null && <> × {i.days} j</>}
                     </td>
                     <td className="px-3 py-2 text-right font-semibold">
                       {moneyIn(i.amount, i.currency)}
