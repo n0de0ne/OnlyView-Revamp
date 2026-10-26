@@ -1375,10 +1375,39 @@ async function backfillOnlineBooking() {
   if (count) console.log(`Online booking set on ${count} restaurant(s)`);
 }
 
+// Contacts found for restaurants that had none (Alan OK'd the list on
+// 2026-10-26). Once per database, and only into empty fields.
+const RESTAURANT_CONTACTS = {
+  "bar-oubli": { phone: "+590 590 27 70 06" },
+  "eden-to-go": { phone: "+590 590 29 83 70" },
+  "le-piment": { phone: "+590 590 27 53 88", email: "lepimentsbh@gmail.com", website: "https://lepimentbistro.com" },
+  lucali: { phone: "+590 690 37 64 75", email: "hello@lucali-stbarth.com", website: "https://www.lucali-stbarth.com" },
+  mapo: { phone: "+590 590 52 08 36" },
+  sayolita: { phone: "+590 590 27 13 30" },
+  "le-clandestin": { phone: "+590 590 27 66 89" },
+};
+
+async function applyRestaurantContacts() {
+  const key = "map_batch_2026_10_restaurant_contacts";
+  if (await prisma.setting.findUnique({ where: { key } })) return;
+  let n = 0;
+  for (const [slug, fields] of Object.entries(RESTAURANT_CONTACTS)) {
+    const row = await prisma.mapPlace.findUnique({ where: { slug } });
+    if (!row) continue;
+    const data = Object.fromEntries(Object.entries(fields).filter(([k]) => !row[k]));
+    if (!Object.keys(data).length) continue;
+    await prisma.mapPlace.update({ where: { slug }, data });
+    n++;
+  }
+  await prisma.setting.create({ data: { key, value: new Date().toISOString() } });
+  if (n) console.log(`Contacts added to ${n} restaurant(s)`);
+}
+
 async function main() {
   await seedBase();
   await backfillConciergeRequests();
   await backfillOnlineBooking();
+  await applyRestaurantContacts();
   await seedStBarthProviderExtras();
   await applyStBarthProviderPhotos();
   if (process.env.SEED_DEMO === "1") {
