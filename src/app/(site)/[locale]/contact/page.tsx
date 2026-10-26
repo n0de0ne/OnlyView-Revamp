@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Clock, Languages, MessageCircle } from "lucide-react";
 import { isLocale, localePath, type Locale } from "@/lib/i18n";
 import { getContent } from "@/lib/site-content";
 import { breadcrumbJsonLd, jsonLd, ownerJsonLd, pageMetadata, webPageJsonLd } from "@/lib/seo";
@@ -67,23 +68,24 @@ export default async function ContactPage({
                 rel="noopener noreferrer"
                 className="btn-outline"
               >
-                💬 {t.cta.whatsapp}
+                <MessageCircle aria-hidden className="h-4 w-4" strokeWidth={1.5} />
+                {t.cta.whatsapp}
               </a>
             </div>
           )}
           <div className="border-t border-ink/10 pt-8">
             <h2 className="eyebrow mb-3">{t.contactOwner.ownerTitle}</h2>
             <p className="leading-relaxed text-ink/75">{t.contactOwner.ownerText}</p>
-            <dl className="mt-5 grid gap-2 text-sm text-ink/65 sm:grid-cols-2">
-              <div>
-                <dt className="text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-gold">⏱</dt>
-                <dd>{t.contactOwner.responseTime}</dd>
-              </div>
-              <div>
-                <dt className="text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-gold">🗣</dt>
-                <dd>{t.contactOwner.languages}</dd>
-              </div>
-            </dl>
+            <ul className="mt-5 grid gap-3 text-sm text-ink/65 sm:grid-cols-2">
+              <li className="flex items-center gap-2.5">
+                <Clock aria-hidden className="h-[1.1rem] w-[1.1rem] shrink-0 text-gold" strokeWidth={1.25} />
+                {t.contactOwner.responseTime}
+              </li>
+              <li className="flex items-center gap-2.5">
+                <Languages aria-hidden className="h-[1.1rem] w-[1.1rem] shrink-0 text-gold" strokeWidth={1.25} />
+                {t.contactOwner.languages}
+              </li>
+            </ul>
           </div>
           <div className="border-t border-ink/10 pt-8 text-sm leading-relaxed text-ink/60">
             Villa ONLY VIEW

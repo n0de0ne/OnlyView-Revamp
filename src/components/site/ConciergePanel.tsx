@@ -3,6 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useState } from "react";
+import { LineIcon } from "@/components/LineIcon";
 import type { Dict } from "@/lib/i18n";
 import type { ConciergeCatalog } from "@/lib/concierge";
 import { CONCIERGE_REQUEST_EVENT, type GuestConciergeRequest } from "./ConciergeRequests";
@@ -369,12 +370,8 @@ export function ConciergePanel({
           {tab === "activities" &&
             catalog.activities.map((c) => (
               <li key={c.id} className={cardClass}>
-                <div className="font-semibold">
-                  {c.icon && (
-                    <span aria-hidden className="mr-1.5">
-                      {c.icon}
-                    </span>
-                  )}
+                <div className="flex items-center gap-2 font-semibold">
+                  {c.icon && <LineIcon name={c.icon} className="h-[1.1rem] w-[1.1rem] text-gold" strokeWidth={1.5} />}
                   {c.name}
                 </div>
                 {c.description && <p className="mt-1 text-xs text-ink/60">{c.description}</p>}

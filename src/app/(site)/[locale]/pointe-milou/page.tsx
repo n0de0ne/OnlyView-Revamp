@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Map as MapIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { isLocale, localePath, type Locale } from "@/lib/i18n";
@@ -164,7 +165,8 @@ export default async function PointeMilouPage({
               href={localePath(locale, "/map")}
               className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-navy hover:text-gold"
             >
-              🗺️ {t.location.islandMapCta} →
+              <MapIcon aria-hidden className="h-4 w-4 text-gold" strokeWidth={1.5} />
+              {t.location.islandMapCta} →
             </Link>
           </div>
         </div>

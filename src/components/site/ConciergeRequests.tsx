@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { LineIcon } from "@/components/LineIcon";
 import type { Dict } from "@/lib/i18n";
 import { directionsHref } from "./map/map-meta";
 import { CONCIERGE_ICON as ICON, REQUEST_STATUS_STYLE, requestWhen, type GuestConciergeRequest } from "./concierge-format";
@@ -85,7 +86,7 @@ export function ConciergeRequests({
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span aria-hidden>{ICON[i.category ?? ""] ?? "🛎️"}</span>
+                  <LineIcon name={ICON[i.category ?? ""] ?? "concierge"} className="h-4 w-4 text-gold" strokeWidth={1.5} />
                   <span className="font-semibold">{i.label.replace(/^Restaurant — /, "")}</span>
                   {i.isNew && (
                     <span className="bg-gold px-1.5 py-0.5 text-[0.55rem] font-bold uppercase tracking-widest text-white">

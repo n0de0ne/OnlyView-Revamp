@@ -15,6 +15,8 @@
  */
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { CarFront, Footprints, House, MapPin, SquareParking } from "lucide-react";
+import { LineIcon } from "@/components/LineIcon";
 import type { Dict } from "@/lib/i18n";
 import {
   CATEGORY_META,
@@ -406,9 +408,7 @@ export function IslandMap({
             {f === "all" ? (
               <span aria-hidden>✦</span>
             ) : (
-              <span aria-hidden className="text-[0.95rem] leading-none">
-                {CATEGORY_META[f].emoji}
-              </span>
+              <LineIcon name={CATEGORY_META[f].icon} className="h-4 w-4" strokeWidth={1.5} />
             )}
             {f === "all" ? t.all : catLabel(f)}
             <span className={`tabular-nums ${active ? "text-white/60" : "text-ink/40"}`}>{count}</span>
@@ -469,11 +469,11 @@ export function IslandMap({
     <div>
       <div className="flex items-start gap-3">
         <span
-          className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-xl shadow-sm ring-2 ring-white"
+          className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white shadow-sm ring-2 ring-white"
           style={{ background: pinStyle(place).color }}
           aria-hidden
         >
-          {pinStyle(place).emoji}
+          <LineIcon name={pinStyle(place).icon} className="h-[1.3rem] w-[1.3rem]" strokeWidth={1.5} />
         </span>
         <div className="min-w-0 flex-1">
           <h3 className="font-display text-[1.6rem] leading-[1.1] text-ink">{place.name}</h3>
@@ -482,8 +482,9 @@ export function IslandMap({
             {place.driveMinutes ? (
               <>
                 {" · "}
-                <span className="font-semibold text-navy">
-                  🚗 {place.driveMinutes} {t.min}
+                <span className="inline-flex items-center gap-1 font-semibold text-navy">
+                  <CarFront aria-hidden className="h-3.5 w-3.5" strokeWidth={1.75} />
+                  {place.driveMinutes} {t.min}
                 </span>
               </>
             ) : null}
@@ -534,17 +535,19 @@ export function IslandMap({
         <div className="mt-3 rounded-2xl bg-navy px-4 py-3.5 text-white" role="status" aria-live="polite">
           {routeHere.status !== "loading" || routeHere.fromMe ? (
             <div className="mb-1 flex items-center justify-between gap-3">
-              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-white/55">
-                {routeHere.fromMe ? `📍 ${t.routeFromYou}` : `🏠 ${t.routeFromVilla}`}
+              <p className="flex items-center gap-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-white/55">
+                {routeHere.fromMe ? <MapPin aria-hidden className="h-3.5 w-3.5" /> : <House aria-hidden className="h-3.5 w-3.5" />}
+                {routeHere.fromMe ? t.routeFromYou : t.routeFromVilla}
               </p>
               {/* switch the start: the guest's position ⇄ the villa */}
               {(routeHere.fromMe || routeHere.canFromMe) && routeHere.status !== "loading" && (
                 <button
                   type="button"
                   onClick={() => send({ type: "route", id: routeHere.place.id, ...(routeHere.fromMe ? { from: "villa" } : {}) })}
-                  className="tap shrink-0 rounded-full bg-white/15 px-2.5 py-1 text-[0.7rem] font-semibold text-white hover:bg-white/25"
+                  className="tap inline-flex shrink-0 items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1 text-[0.7rem] font-semibold text-white hover:bg-white/25"
                 >
-                  {routeHere.fromMe ? `🏠 ${t.routeFromVilla}` : `📍 ${t.routeFromYou}`}
+                  {routeHere.fromMe ? <House aria-hidden className="h-3.5 w-3.5" /> : <MapPin aria-hidden className="h-3.5 w-3.5" />}
+                  {routeHere.fromMe ? t.routeFromVilla : t.routeFromYou}
                 </button>
               )}
             </div>
@@ -563,8 +566,9 @@ export function IslandMap({
                 </span>
               </p>
               {routeHere.walkM > 0 && (
-                <p className="mt-0.5 text-[0.82rem] text-gold-light">
-                  🚶 {t.thenWalk.toLowerCase()} {walkMinutes(routeHere.walkM)} {t.min} · {fmtWalk(routeHere.walkM)}
+                <p className="mt-0.5 flex items-center gap-1.5 text-[0.82rem] text-gold-light">
+                  <Footprints aria-hidden className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} />
+                  {t.thenWalk.toLowerCase()} {walkMinutes(routeHere.walkM)} {t.min} · {fmtWalk(routeHere.walkM)}
                 </p>
               )}
               {routeHere.status === "approx" && <p className="mt-1 text-xs text-white/55">{t.approx}</p>}
@@ -636,7 +640,7 @@ export function IslandMap({
           </div>
           <div className="map-ctl">
             <CtlButton label={t.recenter} onClick={() => send({ type: "villa" })}>
-              <span className="text-[1.05rem] leading-none">🏠</span>
+              <House aria-hidden className="h-[1.1rem] w-[1.1rem]" strokeWidth={1.75} />
             </CtlButton>
             <CtlButton label={t.fitAll} onClick={() => send({ type: "fit" })}>
               <IconIsland />
@@ -717,7 +721,7 @@ export function IslandMap({
                 {place.description && <p className="text-[0.95rem] leading-relaxed text-ink/75">{place.description}</p>}
                 {place.walkFromLastWaypoint && (
                   <p className="mt-3 flex items-start gap-2 rounded-xl bg-gold/10 px-3 py-2.5 text-[0.82rem] text-gold-dark">
-                    <span aria-hidden>🅿️</span>
+                    <SquareParking aria-hidden className="h-4 w-4 shrink-0" strokeWidth={1.5} />
                     {t.parking}
                   </p>
                 )}
@@ -728,13 +732,17 @@ export function IslandMap({
                   </div>
                   {place.zone && (
                     <div className="flex justify-between gap-4 py-3">
-                      <dt className="text-ink/50">📍</dt>
+                      <dt className="text-ink/50">
+                        <MapPin aria-label={fr ? "Quartier" : "Area"} className="h-4 w-4 text-gold" strokeWidth={1.5} />
+                      </dt>
                       <dd className="text-right text-ink">{place.zone}</dd>
                     </div>
                   )}
                   {place.driveMinutes ? (
                     <div className="flex justify-between gap-4 py-3">
-                      <dt className="text-ink/50">🚗</dt>
+                      <dt className="text-ink/50">
+                        <CarFront aria-label={fr ? "En voiture" : "By car"} className="h-4 w-4 text-gold" strokeWidth={1.5} />
+                      </dt>
                       <dd className="text-right text-ink">
                         {place.driveMinutes} {t.min} {t.fromVilla}
                       </dd>
@@ -785,7 +793,7 @@ export function IslandMap({
                     </div>
                     <ul className="overflow-hidden rounded-2xl bg-white/75 shadow-[0_1px_0_rgba(16,24,32,0.04)]">
                       {list.map((p) => {
-                        const { color, emoji } = pinStyle(p);
+                        const { color, icon } = pinStyle(p);
                         return (
                           <li key={p.id} id={p.slug} className="scroll-mt-32 [&+li>button]:border-t [&+li>button]:border-ink/[0.07]">
                             <button
@@ -796,11 +804,11 @@ export function IslandMap({
                               className="group ml-0 flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-white active:bg-ink/[0.04]"
                             >
                               <span
-                                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[1rem]"
+                                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white"
                                 style={{ background: color }}
                                 aria-hidden
                               >
-                                {emoji}
+                                <LineIcon name={icon} className="h-[1.1rem] w-[1.1rem]" strokeWidth={1.5} />
                               </span>
                               <span className="min-w-0 flex-1">
                                 <span className="block truncate text-[0.95rem] font-medium text-ink">{p.name}</span>

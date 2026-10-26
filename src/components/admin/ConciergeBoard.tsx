@@ -10,6 +10,8 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { api, Card, ConfirmButton, Modal, Spinner, useToast } from "./ui";
+import { IconPicker } from "./IconPicker";
+import { LineIcon } from "../LineIcon";
 
 type Tab = "restaurants" | "boats" | "chef-offers" | "activities" | "activity-categories" | "taxis" | "partners";
 type Item = Record<string, unknown> & { id: number; name: string; isActive: boolean };
@@ -19,7 +21,7 @@ type Category = { id: number; nameFr: string; icon: string | null; isActive: boo
 type Field = {
   key: string;
   label: string;
-  type?: "text" | "textarea" | "number" | "optNumber" | "price" | "checkbox" | "select" | "partner" | "category";
+  type?: "text" | "textarea" | "number" | "optNumber" | "price" | "checkbox" | "select" | "partner" | "category" | "icon";
   options?: Array<[string, string]>;
   wide?: boolean;
   required?: boolean;
@@ -126,7 +128,7 @@ const FIELDS: Record<Exclude<Tab, "restaurants">, Field[]> = {
   "activity-categories": [
     { key: "nameFr", label: "Nom (FR)", required: true },
     { key: "nameEn", label: "Nom (EN)", required: true },
-    { key: "icon", label: "Icône (un emoji, ex. 🤿)" },
+    { key: "icon", label: "Icône (affichée en doré aux clients)", type: "icon" },
     { key: "sortOrder", label: "Ordre d'affichage", type: "number" },
     { key: "descriptionFr", label: "Description (FR)", type: "textarea" },
     { key: "descriptionEn", label: "Description (EN)", type: "textarea" },
@@ -380,7 +382,7 @@ function summary(
     case "activities": {
       const cat = typeof x.categoryId === "number" ? categories.get(x.categoryId) : undefined;
       return {
-        sub: [cat && `${cat.icon ?? ""} ${cat.nameFr}`.trim(), partner?.name, x.duration].filter(Boolean).join(" · "),
+        sub: [cat?.nameFr, partner?.name, x.duration].filter(Boolean).join(" · "),
         right:
           typeof x.price === "number"
             ? `${money(x.price, cur)} ${ACTIVITY_PRICE_LABELS[x.priceType as string] ?? ""}`
@@ -397,7 +399,7 @@ function summary(
     case "activity-categories": {
       const n = (x._count as { activities: number } | undefined)?.activities ?? 0;
       return {
-        sub: [x.icon, x.nameEn].filter(Boolean).join(" "),
+        sub: x.nameEn as string,
         right: n ? `${n} offre${n > 1 ? "s" : ""}` : "sur demande",
         warn: null,
       };
@@ -524,11 +526,13 @@ function CatalogTab({ type }: { type: Exclude<Tab, "restaurants"> }) {
             <option value="">Aucun (masqué aux clients)</option>
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
-                {[c.icon, c.nameFr].filter(Boolean).join(" ")}
+                {c.nameFr}
                 {c.isActive ? "" : " (inactif)"}
               </option>
             ))}
           </select>
+        ) : f.type === "icon" ? (
+          <IconPicker value={String(v ?? "")} onChange={(k) => patch(f.key, k)} allowNone />
         ) : f.type === "partner" ? (
           <select value={v == null ? "" : String(v)} onChange={(e) => patch(f.key, e.target.value)}>
             <option value="">Aucun</option>
@@ -612,6 +616,9 @@ function CatalogTab({ type }: { type: Exclude<Tab, "restaurants"> }) {
                 )}
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2 font-semibold text-slate-800">
+                    {type === "activity-categories" && typeof x.icon === "string" && (
+                      <LineIcon name={x.icon} className="h-[1.1rem] w-[1.1rem] text-gold" strokeWidth={1.5} />
+                    )}
                     {x.name}
                     {!x.isActive && (
                       <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[0.6rem] text-slate-500">INACTIF</span>

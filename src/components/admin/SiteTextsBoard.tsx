@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { api, Card, ConfirmButton, fmtDate, Modal, Spinner, useToast } from "./ui";
+import { IconPicker } from "./IconPicker";
+import { ICON_SLOTS } from "@/lib/icon-slots";
 
 type Json = string | number | boolean | null | Json[] | { [k: string]: Json };
 
@@ -363,6 +365,34 @@ function ValueEditor({ value, shape, onChange }: { value: Json; shape: Json; onC
   return null;
 }
 
+/** The "icons" block: one picker per spot of the site, grouped as on the pages. */
+function IconsEditor({ value, onChange }: { value: Json; onChange: (v: Json) => void }) {
+  const all = isObj(value) ? value : {};
+  return (
+    <div className="space-y-4">
+      {Object.entries(ICON_SLOTS).map(([group, { label, items }]) => {
+        const g = isObj(all[group]) ? (all[group] as Record<string, Json>) : {};
+        return (
+          <div key={group} className="rounded-xl border border-slate-200 p-3">
+            <div className="mb-2 text-xs font-semibold text-slate-600">{label}</div>
+            <div className="grid gap-x-4 gap-y-2 sm:grid-cols-2">
+              {Object.entries(items).map(([k, [name]]) => (
+                <div key={k} className="afield">
+                  <label>{name}</label>
+                  <IconPicker
+                    value={typeof g[k] === "string" ? (g[k] as string) : ""}
+                    onChange={(icon) => onChange({ ...all, [group]: { ...g, [k]: icon } })}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function BlockEditor({ block, locale, onSaved }: { block: Block; locale: string; onSaved: () => void }) {
   const { push } = useToast();
   const v = block.values[locale];
@@ -397,7 +427,11 @@ function BlockEditor({ block, locale, onSaved }: { block: Block; locale: string;
   return (
     <div className="min-w-0 space-y-3">
       {LOCALE_LABELS[locale] && <div className="text-xs font-semibold uppercase tracking-wider text-slate-400">{LOCALE_LABELS[locale]}</div>}
-      <ValueEditor value={draft} shape={v.original} onChange={setDraft} />
+      {block.key === "icons" ? (
+        <IconsEditor value={draft} onChange={setDraft} />
+      ) : (
+        <ValueEditor value={draft} shape={v.original} onChange={setDraft} />
+      )}
       <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3">
         <button className="abtn-gold" disabled={!dirty || saving} onClick={save}>
           {saving ? "…" : "Enregistrer"}

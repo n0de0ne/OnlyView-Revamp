@@ -4,7 +4,9 @@ import Link from "next/link";
 import { GoldenHour } from "@/components/site/golden-hour/GoldenHour";
 import { Tilt } from "@/components/motion/Tilt";
 import { isLocale, localePath, type Locale } from "@/lib/i18n";
-import { getContent } from "@/lib/site-content";
+import { getContent, getIcons } from "@/lib/site-content";
+import { ICON_SLOTS } from "@/lib/icon-slots";
+import { LineIcon } from "@/components/LineIcon";
 import {
   DEFAULT_OG_IMAGE,
   organizationJsonLd,
@@ -55,12 +57,13 @@ export default async function HomePage({
   const locale = (isLocale(raw) ? raw : "en") as Locale;
   const t = await getContent(locale);
 
-  const [loyalty, photos, rates, testimonials, contact] = await Promise.all([
+  const [loyalty, photos, rates, testimonials, contact, icons] = await Promise.all([
     isLoyaltyEnabled(),
     getPhotos(),
     getRateConfig(),
     getApprovedTestimonials(3),
     getContact(),
+    getIcons(),
   ]);
   const { whatsappUrl, sameAs } = contact;
 
@@ -73,20 +76,8 @@ export default async function HomePage({
     { cat: "exterior", title: t.spaces.exterior, desc: t.spaces.exteriorDesc },
   ];
 
-  const amenities = [
-    ["📶", t.amenities.wifi],
-    ["❄️", t.amenities.ac],
-    ["🏊", t.amenities.pool],
-    ["🍳", t.amenities.kitchen],
-    ["🔊", t.amenities.sonos],
-    ["📺", t.amenities.tv],
-    ["🔥", t.amenities.bbq],
-    ["🚗", t.amenities.parking],
-    ["🔐", t.amenities.safe],
-    ["🛎️", t.amenities.concierge],
-    ["🧹", t.amenities.housekeeping],
-    ["🛏️", t.amenities.linens],
-  ] as const;
+  const amenityKeys = Object.keys(ICON_SLOTS.amenities.items) as Array<keyof typeof icons.amenities>;
+  const amenities = amenityKeys.map((k) => [icons.amenities[k], t.amenities[k]] as const);
 
   const heroImage = firstOf(photos, "pool-terrace");
   const avgRating =
@@ -140,10 +131,10 @@ export default async function HomePage({
             <p className="max-w-xl leading-relaxed text-ink/70">{t.intro.text}</p>
 
             <div className="mt-8 grid grid-cols-2 gap-x-6 gap-y-3 text-sm text-ink/80 sm:grid-cols-2">
-              {[t.badges.bedrooms, t.badges.guests, t.badges.pool, t.badges.view].map((b) => (
-                <div key={b} className="flex items-center gap-2.5">
-                  <span className="h-px w-6 bg-gold" aria-hidden />
-                  {b}
+              {(["bedrooms", "guests", "pool", "view"] as const).map((k) => (
+                <div key={k} className="flex items-center gap-3">
+                  <LineIcon name={icons.badges[k]} />
+                  {t.badges[k]}
                 </div>
               ))}
             </div>
@@ -184,7 +175,8 @@ export default async function HomePage({
         label={t.seo.factsLabel}
         summary={t.seo.factsSummary}
         toggle={t.seo.factsToggle}
-        facts={t.seo.facts} />
+        facts={t.seo.facts}
+        icons={icons.facts} />
 
       {/* Spaces */}
       <section className="bg-sand-dark py-24 lg:py-32">
@@ -244,9 +236,7 @@ export default async function HomePage({
               key={label}
               className="flex items-center gap-3.5 border-b border-ink/8 pb-4 text-sm text-ink/80"
             >
-              <span aria-hidden className="text-xl">
-                {icon}
-              </span>
+              <LineIcon name={icon} className="h-6 w-6 text-gold" />
               {label}
             </li>
           ))}
@@ -340,14 +330,12 @@ export default async function HomePage({
             <h2 className="section-title mb-6">{t.location.title}</h2>
             <p className="max-w-lg leading-relaxed text-ink/70">{t.location.text}</p>
             <ul className="mt-8 space-y-3 text-sm text-ink/80">
-              {[t.location.airport, t.location.beach, t.location.gustavia, t.location.restaurants].map(
-                (item) => (
-                  <li key={item} className="flex items-center gap-3">
-                    <span className="h-1.5 w-1.5 rotate-45 bg-gold" aria-hidden />
-                    {item}
-                  </li>
-                )
-              )}
+              {(["airport", "beach", "gustavia", "restaurants"] as const).map((k) => (
+                <li key={k} className="flex items-center gap-3">
+                  <LineIcon name={icons.location[k]} className="h-[1.1rem] w-[1.1rem] text-gold" />
+                  {t.location[k]}
+                </li>
+              ))}
             </ul>
             <Link href={localePath(locale, "/pointe-milou")} className="btn-outline mt-9">
               {t.location.mapCta}

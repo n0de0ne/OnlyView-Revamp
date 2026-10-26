@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { isLocale, localePath, type Locale } from "@/lib/i18n";
-import { getContent, villaFacts } from "@/lib/site-content";
+import { getContent, getIcons, villaFacts } from "@/lib/site-content";
+import { ICON_SLOTS } from "@/lib/icon-slots";
+import { LineIcon } from "@/components/LineIcon";
 import { breadcrumbJsonLd, jsonLd, pageMetadata, schemaImages, vacationRentalJsonLd } from "@/lib/seo";
 import { getContact } from "@/lib/contact";
 import { KeyFacts } from "@/components/site/KeyFacts";
@@ -39,7 +41,7 @@ export default async function VillaPage({
   const locale = (isLocale(raw) ? raw : "en") as Locale;
   const t = await getContent(locale);
   const VILLA = villaFacts();
-  const [photos, { sameAs }] = await Promise.all([getPhotos(), getContact()]);
+  const [photos, { sameAs }, icons] = await Promise.all([getPhotos(), getContact(), getIcons()]);
 
   const rooms: Array<{ cat: string; title: string; text: string }> = [
     { cat: "living", ...t.tour.stops.living },
@@ -51,20 +53,9 @@ export default async function VillaPage({
     { cat: "pool-terrace", ...t.tour.stops.pool },
   ];
 
-  const amenities = [
-    t.amenities.wifi,
-    t.amenities.ac,
-    t.amenities.pool,
-    t.amenities.kitchen,
-    t.amenities.sonos,
-    t.amenities.tv,
-    t.amenities.bbq,
-    t.amenities.parking,
-    t.amenities.safe,
-    t.amenities.concierge,
-    t.amenities.housekeeping,
-    t.amenities.linens,
-  ];
+  const amenities = (Object.keys(ICON_SLOTS.amenities.items) as Array<keyof typeof icons.amenities>).map(
+    (k) => [icons.amenities[k], t.amenities[k]] as const
+  );
 
   return (
     <>
@@ -113,7 +104,9 @@ export default async function VillaPage({
         label={t.seo.factsLabel}
         summary={t.seo.factsSummary}
         toggle={t.seo.factsToggle}
-        facts={t.seo.facts} className="border-b border-ink/10" />
+        facts={t.seo.facts}
+        icons={icons.facts}
+        className="border-b border-ink/10" />
 
       {/* Rooms — alternating layout */}
       <section className="mx-auto max-w-7xl space-y-24 px-5 py-24 lg:px-8">
@@ -157,9 +150,9 @@ export default async function VillaPage({
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
           <h2 className="section-title mb-10 !text-white">{t.amenities.title}</h2>
           <ul className="grid grid-cols-1 gap-x-10 gap-y-4 text-sm text-white/80 sm:grid-cols-2 lg:grid-cols-3">
-            {amenities.map((a) => (
-              <li key={a} className="flex items-center gap-3 border-b border-white/10 pb-3">
-                <span className="h-1.5 w-1.5 rotate-45 bg-gold" aria-hidden />
+            {amenities.map(([icon, a]) => (
+              <li key={a} className="flex items-center gap-3.5 border-b border-white/10 pb-3">
+                <LineIcon name={icon} />
                 {a}
               </li>
             ))}

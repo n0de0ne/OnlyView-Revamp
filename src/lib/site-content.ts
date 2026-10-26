@@ -3,6 +3,7 @@ import { prisma } from "./db";
 import { DEFAULT_LOCALE, getDict, isLocale, LOCALES, tpl, type Dict, type Locale } from "./i18n";
 import { getRateConfig, getSettings } from "./settings";
 import { VILLA, type VillaFacts } from "./site-facts";
+import { ICON_DEFAULTS, type IconSet } from "./icon-slots";
 
 /**
  * The site's copy, stored in the database (Admin → Textes du site).
@@ -53,6 +54,13 @@ export const CONTENT_BLOCKS: ContentBlockDef[] = [
   { key: "intro", group: "home", label: "Présentation" },
   { key: "spaces", group: "home", label: "Espaces de vie" },
   { key: "amenities", group: "home", label: "Équipements" },
+  {
+    key: "icons",
+    group: "home",
+    label: "Icônes",
+    shared: true,
+    help: "Les icônes dorées à côté des équipements, des chiffres clés, des atouts et de l'emplacement (accueil et page villa).",
+  },
   { key: "testimonials", group: "home", label: "Section avis" },
   { key: "ratesTeaser", group: "home", label: "Aperçu des tarifs" },
   { key: "location", group: "home", label: "Emplacement" },
@@ -161,6 +169,7 @@ function getPath(obj: unknown, path: string): unknown {
 /** The block's value as shipped in the code, for one language. */
 export function blockDefault(block: ContentBlockDef, locale: Locale): Json {
   if (block.key === "villa") return villaSeed() as unknown as Json;
+  if (block.key === "icons") return ICON_DEFAULTS as unknown as Json;
   const value = getPath(getDict(locale), block.key) as Json;
   if (!block.pick || !isObj(value)) return value;
   return Object.fromEntries(block.pick.filter((k) => k in value).map((k) => [k, value[k]]));
@@ -293,6 +302,12 @@ async function load(): Promise<Loaded> {
 export async function getVilla(): Promise<VillaFacts> {
   await load();
   return villaSnapshot;
+}
+
+/** The line icons the owner picked for the copy (block "icons"). */
+export async function getIcons(): Promise<IconSet> {
+  const data = await load();
+  return coerce(data.rows.get(`icons|${SHARED}`), ICON_DEFAULTS as unknown as Json) as unknown as IconSet;
 }
 
 /**

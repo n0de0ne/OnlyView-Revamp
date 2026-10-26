@@ -419,6 +419,11 @@ html.lenis body {
 .map-pin {
   font-size: calc(var(--size, 30px) * 0.5);
   line-height: 1;
+  color: #fff;
+}
+.map-pin-icon {
+  width: 54%;
+  height: 54%;
 }
 .leaflet-marker-icon:hover .map-pin {
   transform: scale(1.12);

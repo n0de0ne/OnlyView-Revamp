@@ -24,38 +24,42 @@ export const MAP_CATEGORIES: MapCategory[] = [
   "activity",
 ];
 
-/** pin colours in the site's palette (ocean, navy, gold…) — one hue per category */
+/**
+ * pin colours in the site's palette (ocean, navy, gold…) — one hue per category.
+ * `icon` is the line icon the public map draws (components/LineIcon), `emoji`
+ * the admin's compact marker.
+ */
 export const CATEGORY_META: Record<
   MapCategory,
-  { color: string; emoji: string; en: string; fr: string; one: { en: string; fr: string } }
+  { color: string; emoji: string; icon: string; en: string; fr: string; one: { en: string; fr: string } }
 > = {
-  beach: { color: "#5a8fa8", emoji: "🏖️", en: "Beaches", fr: "Plages", one: { en: "Beach", fr: "Plage" } },
-  restaurant: { color: "#1b4965", emoji: "🍽️", en: "Restaurants", fr: "Restaurants", one: { en: "Restaurant", fr: "Restaurant" } },
-  supermarket: { color: "#6b8f71", emoji: "🛒", en: "Supermarkets", fr: "Supermarchés", one: { en: "Supermarket", fr: "Supermarché" } },
-  bakery: { color: "#c9a962", emoji: "🥐", en: "Bakeries", fr: "Boulangeries", one: { en: "Bakery", fr: "Boulangerie" } },
-  pharmacy: { color: "#b5534a", emoji: "💊", en: "Pharmacies", fr: "Pharmacies", one: { en: "Pharmacy", fr: "Pharmacie" } },
-  transport: { color: "#5b6773", emoji: "✈️", en: "Transport", fr: "Transport", one: { en: "Transport", fr: "Transport" } },
-  sport: { color: "#3f8c8c", emoji: "🎾", en: "Sports", fr: "Sport", one: { en: "Sports", fr: "Sport" } },
-  activity: { color: "#c46f4e", emoji: "🤿", en: "Activities", fr: "Activités", one: { en: "Activity", fr: "Activité" } },
+  beach: { color: "#5a8fa8", emoji: "🏖️", icon: "beach", en: "Beaches", fr: "Plages", one: { en: "Beach", fr: "Plage" } },
+  restaurant: { color: "#1b4965", emoji: "🍽️", icon: "restaurant", en: "Restaurants", fr: "Restaurants", one: { en: "Restaurant", fr: "Restaurant" } },
+  supermarket: { color: "#6b8f71", emoji: "🛒", icon: "cart", en: "Supermarkets", fr: "Supermarchés", one: { en: "Supermarket", fr: "Supermarché" } },
+  bakery: { color: "#c9a962", emoji: "🥐", icon: "bakery", en: "Bakeries", fr: "Boulangeries", one: { en: "Bakery", fr: "Boulangerie" } },
+  pharmacy: { color: "#b5534a", emoji: "💊", icon: "pharmacy", en: "Pharmacies", fr: "Pharmacies", one: { en: "Pharmacy", fr: "Pharmacie" } },
+  transport: { color: "#5b6773", emoji: "✈️", icon: "plane", en: "Transport", fr: "Transport", one: { en: "Transport", fr: "Transport" } },
+  sport: { color: "#3f8c8c", emoji: "🎾", icon: "tennis", en: "Sports", fr: "Sport", one: { en: "Sports", fr: "Sport" } },
+  activity: { color: "#c46f4e", emoji: "🤿", icon: "snorkel", en: "Activities", fr: "Activités", one: { en: "Activity", fr: "Activité" } },
 };
 
 /** icon variants inside a category (the legacy map's per-type pins) */
-export const KIND_META: Record<string, { color?: string; emoji: string; en: string; fr: string }> = {
-  restaurant: { emoji: "🍽️", en: "Restaurant", fr: "Restaurant" },
-  beach_club: { color: "#3d7a94", emoji: "🏖️", en: "Beach club", fr: "Beach club" },
-  lounge: { color: "#6f5a8c", emoji: "🍷", en: "Lounge / bar", fr: "Lounge / bar" },
-  snack: { color: "#b8763f", emoji: "🍔", en: "Snack / casual", fr: "Snack / décontracté" },
-  nightlife: { color: "#8c4a6b", emoji: "✨", en: "Nightlife", fr: "Soirée" },
-  gas: { emoji: "⛽", en: "Gas station", fr: "Station-service" },
-  airport: { emoji: "✈️", en: "Airport", fr: "Aéroport" },
-  ferry: { emoji: "⛴️", en: "Ferry", fr: "Ferry" },
-  info: { emoji: "ℹ️", en: "Tourist office", fr: "Office de tourisme" },
-  gym: { emoji: "🏋️", en: "Gym", fr: "Salle de sport" },
-  court: { emoji: "🎾", en: "Court", fr: "Terrain" },
-  diving: { emoji: "🤿", en: "Diving", fr: "Plongée" },
-  watersports: { emoji: "🏄", en: "Water sports", fr: "Sports nautiques" },
-  jetski: { emoji: "🚤", en: "Jet ski", fr: "Jet ski" },
-  wellness: { emoji: "💆", en: "Massage / wellness", fr: "Massage / bien-être" },
+export const KIND_META: Record<string, { color?: string; emoji: string; icon: string; en: string; fr: string }> = {
+  restaurant: { emoji: "🍽️", icon: "restaurant", en: "Restaurant", fr: "Restaurant" },
+  beach_club: { color: "#3d7a94", emoji: "🏖️", icon: "beach", en: "Beach club", fr: "Beach club" },
+  lounge: { color: "#6f5a8c", emoji: "🍷", icon: "wine", en: "Lounge / bar", fr: "Lounge / bar" },
+  snack: { color: "#b8763f", emoji: "🍔", icon: "snack", en: "Snack / casual", fr: "Snack / décontracté" },
+  nightlife: { color: "#8c4a6b", emoji: "✨", icon: "cocktail", en: "Nightlife", fr: "Soirée" },
+  gas: { emoji: "⛽", icon: "fuel", en: "Gas station", fr: "Station-service" },
+  airport: { emoji: "✈️", icon: "plane", en: "Airport", fr: "Aéroport" },
+  ferry: { emoji: "⛴️", icon: "ship", en: "Ferry", fr: "Ferry" },
+  info: { emoji: "ℹ️", icon: "landmark", en: "Tourist office", fr: "Office de tourisme" },
+  gym: { emoji: "🏋️", icon: "gym", en: "Gym", fr: "Salle de sport" },
+  court: { emoji: "🎾", icon: "tennis", en: "Court", fr: "Terrain" },
+  diving: { emoji: "🤿", icon: "snorkel", en: "Diving", fr: "Plongée" },
+  watersports: { emoji: "🏄", icon: "waves", en: "Water sports", fr: "Sports nautiques" },
+  jetski: { emoji: "🚤", icon: "jetski", en: "Jet ski", fr: "Jet ski" },
+  wellness: { emoji: "💆", icon: "massage", en: "Massage / wellness", fr: "Massage / bien-être" },
 };
 
 /** the kinds an admin can pick for a category */
@@ -93,7 +97,7 @@ export interface MapPlaceDTO {
 export function pinStyle(place: { category: MapCategory; kind?: string | null }) {
   const cat = CATEGORY_META[place.category] ?? CATEGORY_META.restaurant;
   const kind = place.kind ? KIND_META[place.kind] : undefined;
-  return { color: kind?.color ?? cat.color, emoji: kind?.emoji ?? cat.emoji };
+  return { color: kind?.color ?? cat.color, emoji: kind?.emoji ?? cat.emoji, icon: kind?.icon ?? cat.icon };
 }
 
 /** the human label of a pin's type: the kind when it has one, else the category */
