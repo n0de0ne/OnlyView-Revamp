@@ -63,12 +63,25 @@ export function StayInfoCard({
   const more = info.more.filter((m) => m.title.trim() || m.text.trim());
 
   return (
-    <div className="border border-gold/40 bg-white p-6" id="stay-info">
-      <h2 className="section-title !text-2xl">{info.title}</h2>
-      {info.intro && <p className="mt-1 text-sm text-ink/60">{info.intro}</p>}
+    <details className="group border border-gold/40 bg-white p-5" id="stay-info">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+        <span className="min-w-0">
+          <span className="eyebrow !text-[0.6rem] flex items-center gap-2">
+            <Wifi className="h-4 w-4 text-gold" strokeWidth={1.25} />
+            {info.title}
+          </span>
+          <span className="mt-1 block truncate text-xs text-ink/55">
+            {wifi ? `${t.wifiTitle} · ${wifi.ssid}` : info.intro}
+          </span>
+        </span>
+        <span className="text-gold transition group-open:rotate-45" aria-hidden>
+          +
+        </span>
+      </summary>
+      {info.intro && <p className="mt-4 text-sm text-ink/60">{info.intro}</p>}
 
       {wifi && (
-        <div className="mt-6">
+        <div className="mt-5">
           <h3 className="eyebrow !text-[0.6rem] flex items-center gap-2">
             <Wifi className="h-4 w-4 text-gold" strokeWidth={1.25} />
             {t.wifiTitle}
@@ -180,6 +193,6 @@ export function StayInfoCard({
           <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-ink/75">{m.text}</p>
         </div>
       ))}
-    </div>
+    </details>
   );
 }
