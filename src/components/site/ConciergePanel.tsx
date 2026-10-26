@@ -8,8 +8,9 @@ import type { ConciergeCatalog } from "@/lib/concierge";
 import { CONCIERGE_REQUEST_EVENT, type GuestConciergeRequest } from "./ConciergeRequests";
 import { directionsHref } from "./map/map-meta";
 
-type Tab = "restaurants" | "boats" | "chef" | "taxis";
-type Target = { type: "restaurant" | "boat" | "chef"; id: number };
+type Tab = "restaurants" | "boats" | "chef" | "activities" | "taxis";
+/** for an activity, id is its kind and offerId the chosen offer (none = "find me one") */
+type Target = { type: "restaurant" | "boat" | "chef" | "activity"; id: number; offerId?: number | null };
 
 
 const fill = (s: string, n: number) => s.replace("{n}", String(n));
@@ -18,7 +19,8 @@ const money = (n: number, currency: string) =>
 
 /**
  * Guest portal — the concierge for one upcoming stay: book a table, a boat
- * day or a private chef (the owner confirms), or call a taxi directly.
+ * day, a private chef or an activity (the owner confirms), or call a taxi
+ * directly. Every kind of activity can be asked for, even with no offer yet.
  */
 export function ConciergePanel({
   reservationId,
@@ -34,7 +36,7 @@ export function ConciergePanel({
   /** first and last day the guest is on the island, YYYY-MM-DD */
   stay: { start: string; end: string; guests: number };
 }) {
-  const tabs = (["restaurants", "boats", "chef", "taxis"] as const).filter((k) => catalog[k].length > 0);
+  const tabs = (["restaurants", "boats", "chef", "activities", "taxis"] as const).filter((k) => catalog[k].length > 0);
   const [tab, setTab] = useState<Tab>(tabs[0] ?? "restaurants");
   const [q, setQ] = useState("");
   const [target, setTarget] = useState<Target | null>(null);
@@ -48,9 +50,16 @@ export function ConciergePanel({
     setTarget(next);
     setState("idle");
     setSent(null);
-    setForm((f) => ({ ...f, outing, date: f.date || stay.start }));
+    // an activity's time is optional; a table or a chef needs one
+    setForm((f) => ({
+      ...f,
+      outing,
+      date: f.date || stay.start,
+      time: next.type === "activity" ? "" : f.time || "20:00",
+    }));
   };
-  const isOpen = (type: Target["type"], id: number) => target?.type === type && target.id === id;
+  const isOpen = (type: Target["type"], id: number, offerId: number | null = null) =>
+    target?.type === type && target.id === id && (target.offerId ?? null) === offerId;
   const match = (...parts: Array<string | null | undefined>) =>
     !q.trim() || parts.join(" ").toLowerCase().includes(q.trim().toLowerCase());
 
@@ -66,6 +75,7 @@ export function ConciergePanel({
         date: form.date,
         time: target.type === "boat" ? undefined : form.time || null,
         outing: target.type === "boat" ? form.outing : undefined,
+        offerId: target.type === "activity" ? target.offerId ?? null : undefined,
         guests: Math.max(1, parseInt(form.guests, 10) || 1),
         notes: form.notes || null,
         locale,
@@ -353,6 +363,94 @@ export function ConciergePanel({
                     + {t.bookChef}
                   </button>
                 )}
+              </li>
+            ))}
+
+          {tab === "activities" &&
+            catalog.activities.map((c) => (
+              <li key={c.id} className={cardClass}>
+                <div className="font-semibold">
+                  {c.icon && (
+                    <span aria-hidden className="mr-1.5">
+                      {c.icon}
+                    </span>
+                  )}
+                  {c.name}
+                </div>
+                {c.description && <p className="mt-1 text-xs text-ink/60">{c.description}</p>}
+                {c.offers.length > 0 && (
+                  <ul className="mt-3 space-y-3">
+                    {c.offers.map((o) => (
+                      <li key={o.id} className="border-t border-ink/8 pt-3">
+                        <div className="flex gap-3">
+                          {thumb(o.imageUrl)}
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-baseline justify-between gap-2">
+                              <span className="text-sm font-semibold">{o.name}</span>
+                              <span className="text-sm">
+                                {o.price != null && o.priceType !== "quote" ? (
+                                  <>
+                                    <span className="font-semibold">{money(o.price, o.currency)}</span>
+                                    <span className="ml-1 text-xs text-ink/45">{t.priceTypes[o.priceType]}</span>
+                                  </>
+                                ) : (
+                                  <span className="text-xs text-ink/55">{t.onQuote}</span>
+                                )}
+                              </span>
+                            </div>
+                            <div className="text-xs text-ink/55">
+                              {[
+                                o.duration,
+                                o.minimumGuests > 1 && fill(t.minGuests, o.minimumGuests),
+                                o.maximumGuests && fill(t.upTo, o.maximumGuests),
+                              ]
+                                .filter(Boolean)
+                                .join(" · ")}
+                            </div>
+                            {o.description && <p className="mt-1 text-xs text-ink/60">{o.description}</p>}
+                          </div>
+                        </div>
+                        {isOpen("activity", c.id, o.id) ? (
+                          requestForm(true)
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              open({ type: "activity", id: c.id, offerId: o.id });
+                              setForm((f) => ({
+                                ...f,
+                                guests: String(
+                                  Math.min(Math.max(stay.guests, o.minimumGuests), o.maximumGuests ?? Infinity)
+                                ),
+                              }));
+                            }}
+                            className={actionClass}
+                          >
+                            + {t.bookActivity}
+                          </button>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {/* no offer listed (or none that fits): the owner finds a provider */}
+                <div className={c.offers.length > 0 ? "mt-3 border-t border-ink/8 pt-3" : "mt-2"}>
+                  {c.offers.length === 0 && <p className="text-xs text-ink/50">{t.onRequest}</p>}
+                  {isOpen("activity", c.id) ? (
+                    requestForm(true)
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        open({ type: "activity", id: c.id, offerId: null });
+                        setForm((f) => ({ ...f, guests: String(stay.guests) }));
+                      }}
+                      className={actionClass}
+                    >
+                      + {c.offers.length > 0 ? t.askOther : t.askActivity}
+                    </button>
+                  )}
+                </div>
               </li>
             ))}
 

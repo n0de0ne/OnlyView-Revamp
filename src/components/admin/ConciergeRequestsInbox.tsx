@@ -10,7 +10,7 @@ const SCOPES: Record<string, string> = {
   all: "Toutes",
 };
 
-/** Guests' table, boat and private chef requests, the unanswered ones first. */
+/** Guests' table, boat, private chef and activity requests, the unanswered ones first. */
 export function ConciergeRequestsInbox() {
   const [scope, setScope] = useState("open");
   const [items, setItems] = useState<ConciergeRequest[] | null>(null);
@@ -29,7 +29,7 @@ export function ConciergeRequestsInbox() {
         <div>
           <h1 className="text-xl font-bold text-slate-800">Demandes conciergerie</h1>
           <p className="mt-0.5 text-sm text-slate-500">
-            Restaurants, bateaux et chef demandés depuis l&apos;espace client. Réservez auprès du prestataire puis
+            Restaurants, bateaux, chef et activités demandés depuis l&apos;espace client. Réservez auprès du prestataire puis
             confirmez : le client reçoit un email et voit la réponse dans son espace.
           </p>
         </div>

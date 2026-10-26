@@ -4,21 +4,22 @@
 
 /**
  * Conciergerie — the catalog the guest portal offers: restaurants (pins of the
- * island map), boats, private-chef formulas, taxis, and the providers behind
- * them. Guests' requests land on their stay, under Extras, as "Demandé".
+ * island map), boats, private-chef formulas, activities, taxis, and the
+ * providers behind them. Guests' requests land in the concierge inbox.
  */
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { api, Card, ConfirmButton, Modal, Spinner, useToast } from "./ui";
 
-type Tab = "restaurants" | "boats" | "chef-offers" | "taxis" | "partners";
+type Tab = "restaurants" | "boats" | "chef-offers" | "activities" | "activity-categories" | "taxis" | "partners";
 type Item = Record<string, unknown> & { id: number; name: string; isActive: boolean };
 type Partner = { id: number; name: string; isActive: boolean; currency: string };
+type Category = { id: number; nameFr: string; icon: string | null; isActive: boolean };
 
 type Field = {
   key: string;
   label: string;
-  type?: "text" | "textarea" | "number" | "price" | "checkbox" | "select" | "partner";
+  type?: "text" | "textarea" | "number" | "optNumber" | "price" | "checkbox" | "select" | "partner" | "category";
   options?: Array<[string, string]>;
   wide?: boolean;
   required?: boolean;
@@ -36,6 +37,18 @@ const PRICE_TYPE_LABELS: Record<string, string> = {
   per_day: "par jour",
   quote: "sur devis",
 };
+const ACTIVITY_PRICE_LABELS: Record<string, string> = {
+  per_person: "par personne",
+  per_group: "pour le groupe",
+  per_unit: "par engin / planche",
+  quote: "sur devis",
+};
+const PARTNER_KINDS: Array<[string, string]> = [
+  ["boat", "Bateaux"],
+  ["chef", "Chef à domicile"],
+  ["activity", "Activités"],
+  ["extras", "Location de matériel (extras)"],
+];
 const BOOKING_LABELS: Record<string, string> = {
   concierge: "Réservé par nous",
   direct: "Réservation en ligne",
@@ -92,6 +105,33 @@ const FIELDS: Record<Exclude<Tab, "restaurants">, Field[]> = {
     { key: "holidaySurcharge", label: "Supplément jours fériés", type: "checkbox" },
     { key: "isActive", label: "Proposé aux clients", type: "checkbox" },
   ],
+  activities: [
+    { key: "nameFr", label: "Nom de l'offre (FR)" },
+    { key: "name", label: "Nom de l'offre (EN)", required: true },
+    { key: "categoryId", label: "Type d'activité", type: "category" },
+    { key: "partnerId", label: "Prestataire", type: "partner" },
+    { key: "duration", label: "Durée (ex. 2h, demi-journée)" },
+    { key: "price", label: "Prix", type: "price" },
+    { key: "priceType", label: "Tarif", type: "select", options: Object.entries(ACTIVITY_PRICE_LABELS) },
+    { key: "minimumGuests", label: "Minimum de participants", type: "number" },
+    { key: "maximumGuests", label: "Maximum de participants (vide = sans limite)", type: "optNumber" },
+    { key: "descriptionFr", label: "Description (FR)", type: "textarea" },
+    { key: "descriptionEn", label: "Description (EN)", type: "textarea" },
+    { key: "notes", label: "Notes internes", type: "textarea", wide: true },
+    { key: "webPageUrl", label: "Page du prestataire (URL)" },
+    { key: "imageUrl", label: "Photo (URL)" },
+    { key: "sortOrder", label: "Ordre d'affichage", type: "number" },
+    { key: "isActive", label: "Proposé aux clients", type: "checkbox" },
+  ],
+  "activity-categories": [
+    { key: "nameFr", label: "Nom (FR)", required: true },
+    { key: "nameEn", label: "Nom (EN)", required: true },
+    { key: "icon", label: "Icône (un emoji, ex. 🤿)" },
+    { key: "sortOrder", label: "Ordre d'affichage", type: "number" },
+    { key: "descriptionFr", label: "Description (FR)", type: "textarea" },
+    { key: "descriptionEn", label: "Description (EN)", type: "textarea" },
+    { key: "isActive", label: "Proposé aux clients (même sans offre : ils peuvent demander)", type: "checkbox", wide: true },
+  ],
   taxis: [
     { key: "name", label: "Nom", required: true },
     { key: "phone", label: "Téléphone (format international, ex. +590690…)", required: true },
@@ -103,7 +143,7 @@ const FIELDS: Record<Exclude<Tab, "restaurants">, Field[]> = {
   ],
   partners: [
     { key: "name", label: "Nom", required: true },
-    { key: "kind", label: "Activité", type: "select", options: [["boat", "Bateaux"], ["chef", "Chef à domicile"], ["extras", "Location de matériel (extras)"]] },
+    { key: "kind", label: "Activité", type: "select", options: PARTNER_KINDS },
     { key: "contactName", label: "Contact" },
     { key: "phone", label: "Téléphone" },
     { key: "whatsapp", label: "WhatsApp" },
@@ -119,6 +159,8 @@ const FIELDS: Record<Exclude<Tab, "restaurants">, Field[]> = {
 const DEFAULTS: Record<Exclude<Tab, "restaurants">, Record<string, unknown>> = {
   boats: { capacity: 10, sortOrder: 0, isActive: true },
   "chef-offers": { category: "dinner", priceType: "per_person", minimumGuests: 4, sortOrder: 0, isActive: true, holidaySurcharge: false },
+  activities: { priceType: "per_person", minimumGuests: 1, sortOrder: 0, isActive: true },
+  "activity-categories": { sortOrder: 0, isActive: true },
   taxis: { sortOrder: 0, hasWhatsapp: true, isActive: true },
   partners: { kind: "boat", currency: "EUR", isActive: true },
 };
@@ -127,6 +169,8 @@ const TABS: Array<[Tab, string]> = [
   ["restaurants", "🍽️ Restaurants"],
   ["boats", "⛵ Bateaux"],
   ["chef-offers", "👨‍🍳 Chef"],
+  ["activities", "🤿 Activités"],
+  ["activity-categories", "🏷️ Types d'activités"],
   ["taxis", "🚕 Taxis"],
   ["partners", "🤝 Prestataires"],
 ];
@@ -141,8 +185,8 @@ export function ConciergeBoard() {
       <div>
         <h1 className="text-xl font-bold text-slate-800">Conciergerie</h1>
         <p className="text-sm text-slate-500">
-          Ce que l&apos;espace client propose pendant le séjour. Les demandes des clients arrivent dans leur
-          réservation, onglet Extras, au statut « Demandé » — avec le contact du prestataire dans l&apos;e-mail.
+          Ce que l&apos;espace client propose pendant le séjour. Les demandes des clients arrivent dans Demandes
+          conciergerie, au statut « Demandé » — avec le contact du prestataire dans l&apos;e-mail.
         </p>
       </div>
       <div className="flex flex-wrap gap-2">
@@ -265,7 +309,12 @@ function RestaurantsTab() {
 
 /* ───────────────────────── boats, chef, taxis, partners ───────────────────────── */
 
-function summary(type: Exclude<Tab, "restaurants">, x: Item, partners: Map<number, Partner>) {
+function summary(
+  type: Exclude<Tab, "restaurants">,
+  x: Item,
+  partners: Map<number, Partner>,
+  categories: Map<number, Category>
+) {
   const partner = typeof x.partnerId === "number" ? partners.get(x.partnerId) : undefined;
   const cur = partner?.currency ?? "EUR";
   switch (type) {
@@ -290,6 +339,31 @@ function summary(type: Exclude<Tab, "restaurants">, x: Item, partners: Map<numbe
             : "sur devis",
         warn: partner && !partner.isActive ? "chef inactif" : null,
       };
+    case "activities": {
+      const cat = typeof x.categoryId === "number" ? categories.get(x.categoryId) : undefined;
+      return {
+        sub: [cat && `${cat.icon ?? ""} ${cat.nameFr}`.trim(), partner?.name, x.duration].filter(Boolean).join(" · "),
+        right:
+          typeof x.price === "number"
+            ? `${money(x.price, cur)} ${ACTIVITY_PRICE_LABELS[x.priceType as string] ?? ""}`
+            : "sur devis",
+        warn: !cat
+          ? "sans type : masqué"
+          : !cat.isActive
+            ? "type inactif"
+            : partner && !partner.isActive
+              ? "prestataire inactif"
+              : null,
+      };
+    }
+    case "activity-categories": {
+      const n = (x._count as { activities: number } | undefined)?.activities ?? 0;
+      return {
+        sub: [x.icon, x.nameEn].filter(Boolean).join(" "),
+        right: n ? `${n} offre${n > 1 ? "s" : ""}` : "sur demande",
+        warn: null,
+      };
+    }
     case "taxis":
       return {
         sub: [x.displayPhone ?? x.phone, x.zone, x.hasWhatsapp ? "WhatsApp" : null].filter(Boolean).join(" · "),
@@ -297,17 +371,17 @@ function summary(type: Exclude<Tab, "restaurants">, x: Item, partners: Map<numbe
         warn: null,
       };
     case "partners": {
-      const c = x._count as { boats: number; chefOffers: number; extras?: number } | undefined;
+      const c = x._count as { boats: number; chefOffers: number; extras?: number; activities?: number } | undefined;
       return {
-        sub: [x.kind === "boat" ? "Bateaux" : x.kind === "extras" ? "Location de matériel" : "Chef", x.phone, x.email]
-          .filter(Boolean)
-          .join(" · "),
+        sub: [PARTNER_KINDS.find(([k]) => k === x.kind)?.[1], x.phone, x.email].filter(Boolean).join(" · "),
         right:
           x.kind === "boat"
             ? `${c?.boats ?? 0} bateaux`
             : x.kind === "extras"
               ? `${c?.extras ?? 0} extras`
-              : `${c?.chefOffers ?? 0} formules`,
+              : x.kind === "activity"
+                ? `${c?.activities ?? 0} offres`
+                : `${c?.chefOffers ?? 0} formules`,
         warn: null,
       };
     }
@@ -318,20 +392,23 @@ function CatalogTab({ type }: { type: Exclude<Tab, "restaurants"> }) {
   const { push } = useToast();
   const [items, setItems] = useState<Item[] | null>(null);
   const [partners, setPartners] = useState<Partner[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [q, setQ] = useState("");
   const [editing, setEditing] = useState<{ id: number | null; draft: Record<string, unknown> } | null>(null);
   const fields = FIELDS[type];
 
   const load = useCallback(() => {
-    api<{ items: Item[]; partners?: Partner[] }>(`/api/admin/concierge/${type}`).then((d) => {
+    api<{ items: Item[]; partners?: Partner[]; categories?: Category[] }>(`/api/admin/concierge/${type}`).then((d) => {
       if (!d.success) return;
       setItems(d.items);
       setPartners(d.partners ?? []);
+      setCategories(d.categories ?? []);
     });
   }, [type]);
   useEffect(load, [load]);
 
   const partnerMap = useMemo(() => new Map(partners.map((p) => [p.id, p])), [partners]);
+  const categoryMap = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
   const shown = (items ?? []).filter((x) => !q.trim() || x.name.toLowerCase().includes(q.trim().toLowerCase()));
 
   const open = (x: Item | null) =>
@@ -346,7 +423,7 @@ function CatalogTab({ type }: { type: Exclude<Tab, "restaurants"> }) {
       const v = editing.draft[f.key];
       if (f.type === "checkbox") body[f.key] = !!v;
       else if (f.type === "number") body[f.key] = parseInt(String(v ?? ""), 10) || 0;
-      else if (f.type === "price" || f.type === "partner")
+      else if (f.type === "price" || f.type === "partner" || f.type === "category" || f.type === "optNumber")
         body[f.key] = v === "" || v == null || !Number.isFinite(Number(v)) ? null : Number(v);
       else body[f.key] = v == null ? "" : String(v);
       if (f.required && !String(body[f.key] ?? "").trim()) return push(`${f.label} : obligatoire`, "error");
@@ -404,6 +481,16 @@ function CatalogTab({ type }: { type: Exclude<Tab, "restaurants"> }) {
               </option>
             ))}
           </select>
+        ) : f.type === "category" ? (
+          <select value={v == null ? "" : String(v)} onChange={(e) => patch(f.key, e.target.value)}>
+            <option value="">Aucun (masqué aux clients)</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {[c.icon, c.nameFr].filter(Boolean).join(" ")}
+                {c.isActive ? "" : " (inactif)"}
+              </option>
+            ))}
+          </select>
         ) : f.type === "partner" ? (
           <select value={v == null ? "" : String(v)} onChange={(e) => patch(f.key, e.target.value)}>
             <option value="">Aucun</option>
@@ -416,7 +503,7 @@ function CatalogTab({ type }: { type: Exclude<Tab, "restaurants"> }) {
           </select>
         ) : (
           <input
-            type={f.type === "number" || f.type === "price" ? "number" : "text"}
+            type={f.type === "number" || f.type === "optNumber" || f.type === "price" ? "number" : "text"}
             min={f.type === "price" ? 0 : undefined}
             value={v == null ? "" : String(v)}
             onChange={(e) => patch(f.key, e.target.value)}
@@ -426,7 +513,20 @@ function CatalogTab({ type }: { type: Exclude<Tab, "restaurants"> }) {
     );
   };
 
-  const addLabel = { boats: "+ Bateau", "chef-offers": "+ Formule", taxis: "+ Taxi", partners: "+ Prestataire" }[type];
+  const addLabel = {
+    boats: "+ Bateau",
+    "chef-offers": "+ Formule",
+    activities: "+ Offre d'activité",
+    "activity-categories": "+ Type d'activité",
+    taxis: "+ Taxi",
+    partners: "+ Prestataire",
+  }[type];
+  const intro = {
+    activities:
+      "Les offres précises des prestataires (une plongée, un cours de yoga…), rangées par type d'activité. Sans offre, le type reste proposé aux clients « sur demande ».",
+    "activity-categories":
+      "Les activités proposées dans l'espace client. Chaque type actif apparaît même sans offre : le client décrit ce qu'il veut et vous trouvez le prestataire.",
+  }[type as string];
 
   return (
     <div className="space-y-4">
@@ -443,6 +543,8 @@ function CatalogTab({ type }: { type: Exclude<Tab, "restaurants"> }) {
         </button>
       </div>
 
+      {intro && <p className="text-xs text-slate-500">{intro}</p>}
+
       {!items ? (
         <Spinner />
       ) : shown.length === 0 ? (
@@ -452,7 +554,7 @@ function CatalogTab({ type }: { type: Exclude<Tab, "restaurants"> }) {
       ) : (
         <div className="grid gap-3 lg:grid-cols-2">
           {shown.map((x) => {
-            const s = summary(type, x, partnerMap);
+            const s = summary(type, x, partnerMap, categoryMap);
             return (
               <button
                 key={x.id}

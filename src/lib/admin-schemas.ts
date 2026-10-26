@@ -108,7 +108,7 @@ const placeUrl = z.preprocess(
 const WAYPOINTS_RE = /^\s*-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?\s*(\|\s*-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?\s*)*$/;
 
 export const MapPlaceInput = z.object({
-  category: z.enum(["beach", "restaurant", "supermarket", "bakery", "pharmacy", "transport", "sport"]),
+  category: z.enum(["beach", "restaurant", "supermarket", "bakery", "pharmacy", "transport", "sport", "activity"]),
   kind: z.string().max(30).nullable().optional().or(z.literal("").transform(() => null)),
   name: z.string().trim().min(1).max(150),
   zone: z.string().trim().max(100).nullable().optional().or(z.literal("").transform(() => null)),
@@ -238,7 +238,7 @@ const optUrl = z.string().trim().url().max(500).nullable().optional().or(z.liter
 const optPrice = z.number().min(0).max(1_000_000).nullable().optional();
 
 export const ServicePartnerInput = z.object({
-  kind: z.enum(["boat", "chef", "extras"]),
+  kind: z.enum(["boat", "chef", "extras", "activity"]),
   name: z.string().trim().min(1).max(150),
   contactName: optText(150),
   phone: optText(50),
@@ -310,6 +310,35 @@ export const ChefOfferInput = z.object({
   imageUrl: optUrl,
   webPageUrl: optUrl,
   holidaySurcharge: z.boolean().default(false),
+  isActive: z.boolean().default(true),
+  sortOrder: z.number().int().min(-10000).max(10000).default(0),
+});
+
+export const ActivityCategoryInput = z.object({
+  nameEn: z.string().trim().min(1).max(100),
+  nameFr: z.string().trim().min(1).max(100),
+  descriptionEn: optText(1000),
+  descriptionFr: optText(1000),
+  icon: optText(16),
+  isActive: z.boolean().default(true),
+  sortOrder: z.number().int().min(-10000).max(10000).default(0),
+});
+
+export const ActivityInput = z.object({
+  categoryId: z.number().int().positive().nullable().optional(),
+  partnerId: z.number().int().positive().nullable().optional(),
+  name: z.string().trim().min(1).max(150),
+  nameFr: optText(150),
+  descriptionEn: optText(2000),
+  descriptionFr: optText(2000),
+  duration: optText(100),
+  price: optPrice,
+  priceType: z.enum(["per_person", "per_group", "per_unit", "quote"]).default("per_person"),
+  minimumGuests: z.number().int().min(1).max(500).default(1),
+  maximumGuests: z.number().int().min(1).max(500).nullable().optional(),
+  imageUrl: optUrl,
+  webPageUrl: optUrl,
+  notes: optText(2000),
   isActive: z.boolean().default(true),
   sortOrder: z.number().int().min(-10000).max(10000).default(0),
 });

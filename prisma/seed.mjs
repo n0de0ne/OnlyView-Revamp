@@ -303,6 +303,11 @@ const MAP_BATCHES = [
       { slug: "fish-corner", when: { kind: "snack" }, fields: ["kind"] },
     ],
   },
+  {
+    // the concierge's activity providers (Alan, 2026-10-26)
+    key: "map_batch_2026_10_activities",
+    add: ["serial-divers", "carib-waterplay", "jet-ski-tour", "jet-ski-racing", "master-ski-pilou"],
+  },
 ];
 
 async function applyMapBatches() {
@@ -1356,11 +1361,476 @@ async function applyStBarthProviderPhotos() {
   if (n) console.log(`St Barth Provider photos added to ${n} extras`);
 }
 
+/**
+ * Kinds of activity the guest portal's concierge offers (Admin → Conciergerie
+ * → Types d'activités). No provider offers yet: guests ask, the owner finds
+ * one. One-time batch, so categories Alan deletes or edits stay that way.
+ */
+const ACTIVITY_CATEGORIES = [
+  {
+    slug: "diving",
+    icon: "🤿",
+    nameEn: "Scuba diving",
+    nameFr: "Plongée sous-marine",
+    descriptionEn: "A first dive or guided dives for certified divers in the island's marine reserve.",
+    descriptionFr: "Baptême ou plongées encadrées pour plongeurs certifiés dans la réserve naturelle de l'île.",
+  },
+  {
+    slug: "snorkeling",
+    icon: "🐠",
+    nameEn: "Snorkeling",
+    nameFr: "Snorkeling",
+    descriptionEn: "Mask and snorkel with a guide, from the beach or by boat: turtles, rays and reef fish.",
+    descriptionFr: "Palmes, masque et tuba avec un guide, depuis la plage ou en bateau : tortues, raies et poissons du récif.",
+  },
+  {
+    slug: "jet-ski",
+    icon: "🌊",
+    nameEn: "Jet ski",
+    nameFr: "Jet ski",
+    descriptionEn: "Jet ski rental or a guided ride around the island.",
+    descriptionFr: "Location de jet ski ou tour de l'île accompagné.",
+  },
+  {
+    slug: "hiking",
+    icon: "🥾",
+    nameEn: "Hiking",
+    nameFr: "Randonnée",
+    descriptionEn: "The island's trails, such as Colombier or Grand Fond, on your own or with a guide.",
+    descriptionFr: "Les sentiers de l'île, comme Colombier ou Grand Fond, seul ou avec un guide.",
+  },
+  {
+    slug: "yoga",
+    icon: "🧘",
+    nameEn: "Yoga",
+    nameFr: "Yoga",
+    descriptionEn: "A private class at the villa, facing the sea, or a small-group session.",
+    descriptionFr: "Un cours privé à la villa, face à la mer, ou une séance en petit groupe.",
+  },
+  {
+    slug: "massage",
+    icon: "💆",
+    nameEn: "Massages",
+    nameFr: "Massages",
+    descriptionEn: "A massage at the villa or in a spa, solo or for two.",
+    descriptionFr: "Un massage à la villa ou en spa, en solo ou en duo.",
+  },
+  {
+    slug: "paddle-kayak",
+    icon: "🛶",
+    nameEn: "Paddleboard & kayak",
+    nameFr: "Paddle et kayak",
+    descriptionEn: "Paddleboard or kayak rental, or a guided outing along the coast.",
+    descriptionFr: "Location de paddle ou de kayak, ou balade guidée le long de la côte.",
+  },
+  {
+    slug: "board-sports",
+    icon: "🏄",
+    nameEn: "Surf, windsurf & kite",
+    nameFr: "Surf, windsurf et kite",
+    descriptionEn: "Surf, windsurf, wingfoil or kitesurf: lessons or rental, for beginners and experienced riders.",
+    descriptionFr: "Surf, windsurf, wingfoil ou kitesurf : cours ou location, pour débutants comme confirmés.",
+  },
+  {
+    slug: "fishing",
+    icon: "🎣",
+    nameEn: "Deep-sea fishing",
+    nameFr: "Pêche au gros",
+    descriptionEn: "A half or full day fishing trip with a skipper.",
+    descriptionFr: "Une sortie de pêche d'une demi-journée ou d'une journée avec un skipper.",
+  },
+  {
+    slug: "fitness",
+    icon: "🏋️",
+    nameEn: "Private coach",
+    nameFr: "Coach sportif",
+    descriptionEn: "A personal training session at the villa or outdoors.",
+    descriptionFr: "Une séance de sport personnalisée à la villa ou en plein air.",
+  },
+  {
+    slug: "tennis-padel",
+    icon: "🎾",
+    nameEn: "Tennis & padel",
+    nameFr: "Tennis et padel",
+    descriptionEn: "A court booking or a lesson with a coach.",
+    descriptionFr: "La réservation d'un court ou un cours avec un professeur.",
+  },
+];
+
+async function seedActivityCategories() {
+  const key = "activity_categories_batch_2026_10";
+  if (await prisma.setting.findUnique({ where: { key } })) return;
+  const existing = new Set((await prisma.activityCategory.findMany({ select: { slug: true } })).map((c) => c.slug));
+  const data = ACTIVITY_CATEGORIES.filter((c) => !existing.has(c.slug)).map((c, i) => ({
+    ...c,
+    isActive: true,
+    sortOrder: (i + 1) * 10,
+  }));
+  if (data.length) await prisma.activityCategory.createMany({ data });
+  await prisma.setting.create({ data: { key, value: new Date().toISOString() } });
+  console.log(`Added ${data.length} activity categories`);
+}
+
+/**
+ * Providers Alan named for the concierge's activities (2026-10-26) and their
+ * published offers, prices in EUR as found on their sites that day. One-time
+ * batch: edits and deletions in Admin → Conciergerie stay. An offer whose kind
+ * of activity was deleted is skipped.
+ */
+const ACTIVITY_PARTNERS = [
+  {
+    name: "Serial Divers",
+    phone: "+590 690 51 67 86",
+    whatsapp: "+590 690 72 40 68",
+    email: "booking@serialdivers.com",
+    website: "https://www.serialdivers.com",
+    location: "35 rue Schoelcher, Gustavia",
+    notes: "Centre de plongée, départs de Gustavia. Prix saison 2026-2027 (tarif en ligne un peu moins cher).",
+    offers: [
+      {
+        slug: "serial-divers-single-dive",
+        category: "diving",
+        name: "Single dive",
+        nameFr: "Plongée simple",
+        descriptionEn: "A guided dive on the marine reserve's sites, for certified divers.",
+        descriptionFr: "Une plongée encadrée sur les sites de la réserve naturelle, pour plongeurs certifiés.",
+        price: 100,
+        priceType: "per_person",
+      },
+      {
+        slug: "serial-divers-double-dive",
+        category: "diving",
+        name: "Double dive",
+        nameFr: "Double plongée",
+        descriptionEn: "Two dives in one outing, for certified divers.",
+        descriptionFr: "Deux plongées dans la même sortie, pour plongeurs certifiés.",
+        price: 190,
+        priceType: "per_person",
+      },
+      {
+        slug: "serial-divers-discover-scuba",
+        category: "diving",
+        name: "Discover scuba (baptême)",
+        nameFr: "Baptême de plongée",
+        descriptionEn: "A first dive with an instructor, no experience needed. From age 8.",
+        descriptionFr: "Un premier contact avec la plongée, avec un moniteur, sans expérience. Dès 8 ans.",
+        price: 110,
+        priceType: "per_person",
+      },
+      {
+        slug: "serial-divers-private-instructor",
+        category: "diving",
+        name: "Private instructor",
+        nameFr: "Moniteur privé",
+        descriptionEn: "An instructor for your group only. Starting price.",
+        descriptionFr: "Un moniteur rien que pour votre groupe. Prix de départ.",
+        price: 250,
+        priceType: "per_group",
+      },
+      {
+        slug: "serial-divers-private-boat",
+        category: "diving",
+        name: "Private dive boat",
+        nameFr: "Bateau de plongée privatisé",
+        descriptionEn: "The boat for your group, to dive or snorkel where you like. Starting price.",
+        descriptionFr: "Le bateau pour votre groupe, pour plonger ou faire du snorkeling où vous voulez. Prix de départ.",
+        price: 500,
+        priceType: "per_group",
+      },
+      {
+        slug: "serial-divers-guided-snorkeling",
+        category: "snorkeling",
+        name: "Guided snorkeling",
+        nameFr: "Snorkeling guidé",
+        descriptionEn: "A boat outing with a guide in the water with you.",
+        descriptionFr: "Une sortie en bateau avec un guide dans l'eau avec vous.",
+        price: 70,
+        priceType: "per_person",
+      },
+      {
+        slug: "serial-divers-snorkeling-trip",
+        category: "snorkeling",
+        name: "Snorkeling trip",
+        nameFr: "Sortie snorkeling",
+        descriptionEn: "A boat outing to snorkel on your own, gear included.",
+        descriptionFr: "Une sortie en bateau pour faire du snorkeling en autonomie, matériel inclus.",
+        price: 50,
+        priceType: "per_person",
+      },
+      {
+        slug: "serial-divers-freediving-intro",
+        category: "snorkeling",
+        name: "Freediving introduction",
+        nameFr: "Initiation à l'apnée",
+        descriptionEn: "Learn to breathe and dive on a single breath with an instructor.",
+        descriptionFr: "Apprendre la respiration et la plongée en apnée avec un moniteur.",
+        price: 90,
+        priceType: "per_person",
+      },
+    ],
+  },
+  {
+    name: "Carib Waterplay",
+    phone: "+33 6 65 95 43 52",
+    website: "https://caribwaterplay.com",
+    location: "Plage de Saint-Jean, à côté du Pearl Beach",
+    notes: "Ouvert tous les jours 9h-18h. Prix « à partir de » de leur fiche access.sb (oct. 2026). Numéro français : à confirmer.",
+    offers: [
+      {
+        slug: "carib-waterplay-windsurf-lesson",
+        category: "board-sports",
+        name: "Windsurf lesson",
+        nameFr: "Cours de windsurf",
+        descriptionEn: "On Saint-Jean bay, for beginners and experienced riders. Starting price.",
+        descriptionFr: "Dans la baie de Saint-Jean, pour débutants comme confirmés. Prix de départ.",
+        price: 100,
+        priceType: "per_person",
+      },
+      {
+        slug: "carib-waterplay-wingfoil-lesson",
+        category: "board-sports",
+        name: "Wingfoil lesson",
+        nameFr: "Cours de wingfoil",
+        descriptionEn: "Starting price.",
+        descriptionFr: "Prix de départ.",
+        price: 100,
+        priceType: "per_person",
+      },
+      {
+        slug: "carib-waterplay-surf-lesson",
+        category: "board-sports",
+        name: "Surf lesson",
+        nameFr: "Cours de surf",
+        descriptionEn: "Starting price.",
+        descriptionFr: "Prix de départ.",
+        price: 90,
+        priceType: "per_person",
+      },
+      {
+        slug: "carib-waterplay-catamaran-lesson",
+        category: "board-sports",
+        name: "Catamaran sailing lesson",
+        nameFr: "Cours de catamaran",
+        descriptionEn: "Learn to sail a beach catamaran. Starting price.",
+        descriptionFr: "Apprendre à naviguer sur un catamaran de plage. Prix de départ.",
+        price: 160,
+        priceType: "per_person",
+      },
+      {
+        slug: "carib-waterplay-windsurf-rental",
+        category: "board-sports",
+        name: "Windsurf rental",
+        nameFr: "Location de windsurf",
+        descriptionEn: "By the hour or the day, cheaper for longer rentals. Starting price.",
+        descriptionFr: "À l'heure ou à la journée, dégressif. Prix de départ.",
+        price: 30,
+        priceType: "per_unit",
+      },
+      {
+        slug: "carib-waterplay-sup-kayak-excursion",
+        category: "paddle-kayak",
+        name: "Paddleboard or kayak excursion",
+        nameFr: "Balade en paddle ou kayak",
+        descriptionEn: "A guided outing along the coast. Starting price.",
+        descriptionFr: "Une balade guidée le long de la côte. Prix de départ.",
+        price: 90,
+        priceType: "per_person",
+      },
+      {
+        slug: "carib-waterplay-sup-rental",
+        category: "paddle-kayak",
+        name: "Paddleboard rental",
+        nameFr: "Location de paddle",
+        descriptionEn: "By the hour or the day. Starting price.",
+        descriptionFr: "À l'heure ou à la journée. Prix de départ.",
+        price: 25,
+        priceType: "per_unit",
+      },
+      {
+        slug: "carib-waterplay-kayak-rental",
+        category: "paddle-kayak",
+        name: "Kayak rental",
+        nameFr: "Location de kayak",
+        descriptionEn: "By the hour or the day. Starting price.",
+        descriptionFr: "À l'heure ou à la journée. Prix de départ.",
+        price: 20,
+        priceType: "per_unit",
+      },
+    ],
+  },
+  {
+    name: "Jet Ski Tour",
+    contactName: "Jean-Christophe Prayas",
+    phone: "+590 690 59 66 06",
+    location: "Grand Cul-de-Sac, base nautique de l'hôtel Le Barthélemy (et Gustavia)",
+    notes: "Sur réservation. Prix de leur fiche access.sb (oct. 2026).",
+    offers: [
+      {
+        slug: "jet-ski-tour-30-min",
+        category: "jet-ski",
+        name: "Guided jet ski ride, 30 min",
+        nameFr: "Balade guidée en jet ski, 30 min",
+        descriptionEn:
+          "With Jean-Christophe Prayas, offshore jet ski vice-champion, from the calm Grand Cul-de-Sac lagoon. Up to 2 people per jet ski.",
+        descriptionFr:
+          "Avec Jean-Christophe Prayas, vice-champion de jet offshore, depuis le lagon calme de Grand Cul-de-Sac. Jusqu'à 2 personnes par jet ski.",
+        duration: "30 min",
+        price: 100,
+        priceType: "per_unit",
+      },
+      {
+        slug: "jet-ski-tour-1-hour",
+        category: "jet-ski",
+        name: "Guided jet ski ride, 1 hour",
+        nameFr: "Balade guidée en jet ski, 1 h",
+        descriptionEn: "From Grand Cul-de-Sac with Jean-Christophe Prayas. Up to 2 people per jet ski.",
+        descriptionFr: "Depuis Grand Cul-de-Sac avec Jean-Christophe Prayas. Jusqu'à 2 personnes par jet ski.",
+        duration: "1 h",
+        price: 150,
+        priceType: "per_unit",
+      },
+      {
+        slug: "jet-ski-tour-island-tour",
+        category: "jet-ski",
+        name: "Jet ski island tour",
+        nameFr: "Tour de l'île en jet ski",
+        descriptionEn: "All the way around St Barth with Jean-Christophe Prayas. Up to 2 people per jet ski.",
+        descriptionFr: "Le tour complet de l'île avec Jean-Christophe Prayas. Jusqu'à 2 personnes par jet ski.",
+        price: 195,
+        priceType: "per_unit",
+      },
+    ],
+  },
+  {
+    name: "Jet Ski Racing",
+    phone: "+590 690 23 70 07",
+    whatsapp: "+590 690 23 70 07",
+    location: "Gustavia, départ de The Point",
+    notes: "Ouvert 7j/7. Prix de leur grille 2023-24 : à vérifier.",
+    offers: [
+      {
+        slug: "jet-ski-racing-group-1h",
+        category: "jet-ski",
+        name: "Group jet ski excursion, 1 hour",
+        nameFr: "Excursion jet ski en groupe, 1 h",
+        descriptionEn: "Guided group ride from Gustavia (at least 2 jet skis). Gear, towels and photos included.",
+        descriptionFr: "Sortie guidée en groupe depuis Gustavia (2 jet skis minimum). Équipement, serviettes et photos inclus.",
+        duration: "1 h",
+        price: 160,
+        priceType: "per_unit",
+      },
+      {
+        slug: "jet-ski-racing-group-1h30",
+        category: "jet-ski",
+        name: "Group jet ski excursion, 1 h 30",
+        nameFr: "Excursion jet ski en groupe, 1 h 30",
+        descriptionEn: "Guided group ride from Gustavia (at least 2 jet skis).",
+        descriptionFr: "Sortie guidée en groupe depuis Gustavia (2 jet skis minimum).",
+        duration: "1 h 30",
+        price: 190,
+        priceType: "per_unit",
+      },
+      {
+        slug: "jet-ski-racing-half-day",
+        category: "jet-ski",
+        name: "Jet ski rental, half day",
+        nameFr: "Location de jet ski, demi-journée",
+        descriptionEn: "Can be delivered to Saint-Jean, Gouverneur, Saline, Flamands or Shell Beach.",
+        descriptionFr: "Livraison possible à Saint-Jean, Gouverneur, Saline, Flamands ou Shell Beach.",
+        price: 520,
+        priceType: "per_unit",
+      },
+      {
+        slug: "jet-ski-racing-full-day",
+        category: "jet-ski",
+        name: "Jet ski rental, full day",
+        nameFr: "Location de jet ski, journée",
+        descriptionEn: "Can be delivered to Saint-Jean, Gouverneur, Saline, Flamands or Shell Beach.",
+        descriptionFr: "Livraison possible à Saint-Jean, Gouverneur, Saline, Flamands ou Shell Beach.",
+        price: 920,
+        priceType: "per_unit",
+      },
+    ],
+  },
+  {
+    name: "Master Ski Pilou",
+    phone: "+590 590 27 91 79",
+    location: "Rue Jeanne d'Arc, Gustavia",
+    notes: "Tous les jours 7h-21h. Pas de prix publiés.",
+    offers: [
+      {
+        slug: "master-ski-pilou-guided-tour",
+        category: "jet-ski",
+        name: "Guided jet ski tour",
+        nameFr: "Balade guidée en jet ski",
+        descriptionEn: "Along the coast from Gustavia. Fuel, guide, life jackets and water included. Drivers 16+, 2 people per jet ski.",
+        descriptionFr: "Le long de la côte depuis Gustavia. Essence, guide, gilets et eau inclus. Pilote dès 16 ans, 2 personnes par jet ski.",
+        price: null,
+        priceType: "quote",
+      },
+    ],
+  },
+  {
+    // no provider yet: the prices Alan gave
+    name: null,
+    offers: [
+      {
+        slug: "massage-60-min",
+        category: "massage",
+        name: "Massage, 60 min",
+        nameFr: "Massage, 60 min",
+        descriptionEn: null,
+        descriptionFr: null,
+        duration: "60 min",
+        price: 160,
+        priceType: "per_person",
+      },
+      {
+        slug: "massage-90-min",
+        category: "massage",
+        name: "Massage, 90 min",
+        nameFr: "Massage, 90 min",
+        descriptionEn: null,
+        descriptionFr: null,
+        duration: "90 min",
+        price: 220,
+        priceType: "per_person",
+      },
+    ],
+  },
+];
+
+async function seedActivityOffers() {
+  const key = "activity_offers_batch_2026_10";
+  if (await prisma.setting.findUnique({ where: { key } })) return;
+  const categories = new Map((await prisma.activityCategory.findMany()).map((c) => [c.slug, c.id]));
+  let n = 0;
+  for (const { offers, ...p } of ACTIVITY_PARTNERS) {
+    const partner = p.name
+      ? await prisma.servicePartner.upsert({
+          where: { kind_name: { kind: "activity", name: p.name } },
+          update: {},
+          create: { ...p, kind: "activity", currency: "EUR" },
+        })
+      : null;
+    for (const [i, { category, ...o }] of offers.entries()) {
+      const categoryId = categories.get(category);
+      if (!categoryId || (await prisma.activity.findUnique({ where: { slug: o.slug } }))) continue;
+      await prisma.activity.create({ data: { ...o, categoryId, partnerId: partner?.id ?? null, sortOrder: (i + 1) * 10 } });
+      n++;
+    }
+  }
+  await prisma.setting.create({ data: { key, value: new Date().toISOString() } });
+  console.log(`Added ${n} activity offers`);
+}
+
 async function main() {
   await seedBase();
   await backfillConciergeRequests();
   await seedStBarthProviderExtras();
   await applyStBarthProviderPhotos();
+  await seedActivityCategories();
+  await seedActivityOffers();
   if (process.env.SEED_DEMO === "1") {
     await seedDemo();
   }
