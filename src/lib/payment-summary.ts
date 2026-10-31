@@ -7,12 +7,24 @@ export interface RentPayment {
 }
 
 /**
+ * An agency's commission. It is taken on the rent HT: the tourist tax is
+ * passed on to the Collectivité, so no one takes a cut of it.
+ */
+export function agencyCommission(priceHT: number, agencyFeePercent: number | null | undefined): number {
+  const fee = Math.max(0, agencyFeePercent ?? 0);
+  return Math.round(priceHT * (fee / 100) * 100) / 100;
+}
+
+/**
  * What the villa collects for the rent. An agency pays it all in one go once
  * the stay is done, less its commission, and owes no deposit.
  */
-export function rentDue(totalTTC: number, agencyFeePercent: number | null | undefined): number {
-  const fee = Math.max(0, agencyFeePercent ?? 0);
-  return Math.round((totalTTC - totalTTC * (fee / 100)) * 100) / 100;
+export function rentDue(
+  totalTTC: number,
+  priceHT: number,
+  agencyFeePercent: number | null | undefined
+): number {
+  return Math.round((totalTTC - agencyCommission(priceHT, agencyFeePercent)) * 100) / 100;
 }
 
 /**
@@ -28,7 +40,7 @@ export function paymentSummary(p: {
   depositReceived: boolean;
   depositAmount: number;
   /** agency booking: no deposit, the agency pays the net after the stay */
-  agency?: { feePercent: number; checkOut: string | Date } | null;
+  agency?: { feePercent: number; checkOut: string | Date; priceHT: number } | null;
 }) {
   const rent = p.payments.filter((x) => x.kind !== "extra");
   const ledger = rent.reduce((s, x) => s + (x.kind === "refund" ? -Math.abs(x.amount) : x.amount), 0);
@@ -36,7 +48,7 @@ export function paymentSummary(p: {
   const flagOnly = p.depositReceived && !rent.some((x) => x.kind === "deposit") && p.depositAmount > 0;
   const received = Math.round((ledger + (flagOnly ? p.depositAmount : 0)) * 100) / 100;
   const agency = p.agency ?? null;
-  const due = agency ? rentDue(p.totalTTC, agency.feePercent) : p.totalTTC;
+  const due = agency ? rentDue(p.totalTTC, agency.priceHT, agency.feePercent) : p.totalTTC;
   const depositRequired = agency ? 0 : depositFor(p.totalTTC);
   const remaining = Math.round((due - received) * 100) / 100;
   return {
