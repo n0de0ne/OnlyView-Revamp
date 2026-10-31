@@ -192,7 +192,7 @@ export async function decideDateChange(
       priceTTC: quote.totalTTC,
       depositAmount,
       balanceReceived: paid.length
-        ? quote.totalTTC > 0 && paidTotal >= rentDue(quote.totalTTC, r.agencyId ? r.agencyFeePercent : 0) - 0.01
+        ? quote.totalTTC > 0 && paidTotal >= rentDue(quote.totalTTC, quote.finalHT, r.agencyId ? r.agencyFeePercent : 0) - 0.01
         : r.balanceReceived,
     },
   });

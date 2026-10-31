@@ -207,7 +207,7 @@ export function AgenciesBoard() {
               onChange={(e) => setForm({ ...form, commissionPercent: parseFloat(e.target.value) || 0 })}
             />
             <span className="text-[0.65rem] text-slate-400">
-              Ex. sur {fmtUSD(example)} : commission {fmtUSD((example * form.commissionPercent) / 100)} → net{" "}
+              Ex. sur {fmtUSD(example)} HT : commission {fmtUSD((example * form.commissionPercent) / 100)} → net{" "}
               {fmtUSD(example - (example * form.commissionPercent) / 100)}
             </span>
           </div>
