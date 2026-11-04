@@ -171,7 +171,7 @@ export const POST = adminRoute<Ctx>("manager", async (req, { params }, user) => 
           depositReceived: paid > 0,
           balanceReceived:
             reservation.priceTTC > 0 &&
-            paid >= rentDue(reservation.priceTTC, reservation.agencyId ? reservation.agencyFeePercent : 0) - 0.01,
+            paid >= rentDue(reservation.priceTTC, reservation.priceHT, reservation.agencyId ? reservation.agencyFeePercent : 0) - 0.01,
         },
       });
       await afterPayment(id);

@@ -322,7 +322,11 @@ export function ReservationEditor({
   // no deposit, only its net once the stay is done
   const isAgency = form.agencyId != null;
   const agencyTerms = isAgency
-    ? { feePercent: form.agencyFeePercent, checkOut: form.endDate || loaded?.endDate || form.startDate }
+    ? {
+        feePercent: form.agencyFeePercent,
+        checkOut: form.endDate || loaded?.endDate || form.startDate,
+        priceHT: quote?.finalHT ?? loaded?.priceHT ?? 0,
+      }
     : null;
   useEffect(() => {
     if (!quote || depositTouched.current) return;
@@ -1317,19 +1321,26 @@ export function ReservationEditor({
               value={fmtUSD(quote.finalHT)}
               bold
             />
-            {quote.agencyFeeAmount > 0 && (
-              <Row
-                label={`Commission agence (${form.agencyFeePercent}%)`}
-                value={`-${fmtUSD(quote.agencyFeeAmount)}`}
-                accent="text-red-300"
-              />
-            )}
-            <Row label="Revenu net (HT − commission)" value={fmtUSD(quote.netRevenue)} bold accent="text-emerald-300" />
             {!form.noTax && (
               <Row label="Taxe de séjour (5%)" value={`+${fmtUSD(quote.taxAmount)}`} accent="text-white/70" />
             )}
             <div className="!my-2.5 border-t border-gold/50" />
-            <Row label="Total TTC (à encaisser)" value={fmtUSD(quote.totalTTC)} bold accent="text-gold" big />
+            <Row label={isAgency ? "Total TTC (payé par le client)" : "Total TTC (à encaisser)"} value={fmtUSD(quote.totalTTC)} bold accent="text-gold" big />
+            {quote.agencyFeeAmount > 0 && (
+              <>
+                <Row
+                  label={`Commission agence (${form.agencyFeePercent}% du HT)`}
+                  value={`-${fmtUSD(quote.agencyFeeAmount)}`}
+                  accent="text-red-300"
+                />
+                <Row
+                  label="Versé par l'agence"
+                  value={fmtUSD(quote.totalTTC - quote.agencyFeeAmount)}
+                  accent="text-white/70"
+                />
+              </>
+            )}
+            <Row label="Revenu net (HT − commission)" value={fmtUSD(quote.netRevenue)} bold accent="text-emerald-300" />
           </div>
         )}
 

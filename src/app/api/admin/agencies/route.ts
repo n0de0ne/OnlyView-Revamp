@@ -11,7 +11,7 @@ export const GET = adminRoute("viewer", async () => {
     include: {
       reservations: {
         where: { status: "confirmed" },
-        select: { priceTTC: true, agencyFeePercent: true },
+        select: { priceTTC: true, priceHT: true, agencyFeePercent: true },
       },
     },
   });
@@ -30,7 +30,7 @@ export const GET = adminRoute("viewer", async () => {
         reservations: a.reservations.length,
         volume: a.reservations.reduce((s, r) => s + r.priceTTC, 0),
         commissions: a.reservations.reduce(
-          (s, r) => s + (r.priceTTC * r.agencyFeePercent) / 100,
+          (s, r) => s + (r.priceHT * r.agencyFeePercent) / 100,
           0
         ),
       },

@@ -501,7 +501,8 @@ export function computeQuote(opts: QuoteOptions, rates: RateConfig = DEFAULT_RAT
   const totalTTC = finalHT + taxAmount;
 
   const agencyFeePercent = Math.max(0, opts.agencyFeePercent ?? 0);
-  const agencyFeeAmount = Math.round(totalTTC * (agencyFeePercent / 100));
+  // on the rent HT, never on the tourist tax
+  const agencyFeeAmount = Math.round(finalHT * (agencyFeePercent / 100));
   const netRevenue = finalHT - agencyFeeAmount;
 
   const depositAmount = Math.round(totalTTC * rates.depositPercent);

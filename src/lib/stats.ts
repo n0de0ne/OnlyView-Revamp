@@ -133,7 +133,7 @@ export async function seasonStats(season: number): Promise<{
     const nights = nightsBetween(start, end);
     if (nights <= 0) continue;
     const perNightHT = r.priceHT / nights;
-    const perNightCommission = (r.priceTTC * (r.agencyFeePercent / 100)) / nights;
+    const perNightCommission = (r.priceHT * (r.agencyFeePercent / 100)) / nights;
     const perNightTax = r.taxAmount / nights;
     for (const night of eachNight(start, end)) {
       if (night < seasonStart || night >= seasonEnd) continue;
