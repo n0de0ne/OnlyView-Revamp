@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requestIp } from "@/lib/request-guard";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { audit } from "@/lib/audit";
@@ -47,10 +48,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, error: "name_mismatch" }, { status: 400 });
   }
 
-  const ip =
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    req.headers.get("x-real-ip") ||
-    null;
+  const seen = requestIp(req.headers); // night GN-508: the proxy's word, not the browser's
+  const ip = seen === "local" ? null : seen;
   const signed = await prisma.contract.update({
     where: { id: contract.id },
     data: {

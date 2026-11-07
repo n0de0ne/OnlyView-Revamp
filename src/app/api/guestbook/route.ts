@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { hourlyLimit, requestIp } from "@/lib/request-guard"; // night GN-508
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +14,11 @@ const Body = z.object({
   website: z.string().max(0).optional(), // honeypot
 });
 
+/** night GN-508: as the booking form */
+const rateLimited = hourlyLimit(8);
+
 export async function POST(req: NextRequest) {
+  if (rateLimited(requestIp(req.headers))) return NextResponse.json({ success: false, error: "rate_limited" }, { status: 429 });
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ success: false, error: "invalid_input" }, { status: 400 });
