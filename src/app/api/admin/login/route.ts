@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requestIp } from "@/lib/request-guard";
 import { z } from "zod";
 import { login } from "@/lib/auth";
 import { audit } from "@/lib/audit";
@@ -13,7 +14,7 @@ const Body = z.object({
 const attempts = new Map<string, { count: number; at: number }>();
 
 export async function POST(req: NextRequest) {
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
+  const ip = requestIp(req.headers); // night GN-508: a spoofed first X-Forwarded-For entry no longer resets the limit
   const now = Date.now();
   const a = attempts.get(ip);
   if (a && now - a.at < 15 * 60_000 && a.count >= 10) {

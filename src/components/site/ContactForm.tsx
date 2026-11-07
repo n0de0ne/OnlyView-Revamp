@@ -7,6 +7,7 @@ import { track } from "./Analytics";
 export function ContactForm({ locale }: { locale: Locale }) {
   const t = getDict(locale);
   const [state, setState] = useState<"idle" | "sending" | "done" | "error">("idle");
+  const [why, setWhy] = useState<string | null>(null); // night GN-510
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [started, setStarted] = useState(false);
   const onStart = () => {
@@ -24,6 +25,7 @@ export function ContactForm({ locale }: { locale: Locale }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
+      if (!res.ok) setWhy(((await res.json().catch(() => null)) as { error?: string } | null)?.error ?? null);
       setState(res.ok ? "done" : "error");
       if (res.ok) track("contact_submit");
     } catch {
@@ -47,6 +49,8 @@ export function ContactForm({ locale }: { locale: Locale }) {
           <input
             id="c-name"
             required
+            minLength={2}
+            maxLength={120}
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
           />
@@ -68,11 +72,21 @@ export function ContactForm({ locale }: { locale: Locale }) {
           id="c-msg"
           rows={5}
           required
+          minLength={5}
+          maxLength={4000}
           value={form.message}
           onChange={(e) => setForm({ ...form, message: e.target.value })}
         />
       </div>
-      {state === "error" && <p className="text-sm text-red-600">{t.booking.error}</p>}
+      {state === "error" && (
+        <p className="text-sm text-red-600">
+          {why === "invalid_input"
+            ? locale === "fr" ? "Vérifiez votre nom (2 caractères au moins), votre email et votre message (5 caractères au moins)." : "Please check your name (at least 2 characters), email and message (at least 5 characters)."
+            : why === "rate_limited"
+              ? locale === "fr" ? "Trop de messages envoyés : réessayez dans une heure ou écrivez-nous directement." : "Too many messages sent: try again in an hour or email us directly."
+              : t.booking.error}
+        </p>
+      )}
       <button type="submit" disabled={state === "sending"} className="btn-gold">
         {state === "sending" ? t.booking.sending : t.contact.send}
       </button>
