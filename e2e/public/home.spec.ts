@@ -26,6 +26,8 @@ test.describe("home page", () => {
     await page.goto("/");
     const broken = await page.locator("main img").evaluateAll(async (imgs) => {
       const firsts = (imgs as HTMLImageElement[]).slice(0, 6);
+      // images below the fold are lazy: ask for them now rather than depend on the layout
+      for (const img of firsts) img.loading = "eager";
       await Promise.all(firsts.map((img) => (img.complete ? null : new Promise((done) => ((img.onload = done), (img.onerror = done))))));
       return firsts.filter((img) => img.naturalWidth === 0).map((img) => img.currentSrc || img.src);
     });
