@@ -722,7 +722,8 @@ html.lenis body {
   vertical-align: 0;
   position: relative;
   top: -1.15em;
-  margin-left: 0.04em;
+  /* Cormorant's m and n carry a wide right bearing: pull the mark in */
+  margin-left: -0.12em;
 }
 .ov-num {
   font-family: var(--font-serif);

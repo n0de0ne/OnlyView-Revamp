@@ -52,3 +52,23 @@ framework's bare 404) → `[...rest]` catch-all; a dev-only hydration warning fr
 transition template.
 
 Before/after screenshots: `docs/screenshots/redesign/`.
+
+## Second pass: phones first
+
+References on Refero: Airbnb listing and date picker (sticky price bar, swipeable photos), onefinestay,
+Airbnb's host "Today" screen and Fresha (bottom tab bar for the people who run the place).
+
+- **Header**: the floating capsules are dark glass only over a picture (the home film); on paper
+  pages, and once the film has scrolled away, they turn to paper glass with ink lettering.
+- **Home**: one set of actions at every width (stacked on a phone) with tonight's sunset on one
+  line above them; the four figures as a two-column ledger; the spaces as a swipeable row of tall
+  frames on a phone, the hanging gallery from `md` up; tighter section rhythm on a phone.
+- **Booking**: the bottom bar on paper glass, the total in display type, dates in mono.
+- **Back office**: a bottom tab bar on phones (Accueil, Calendrier, Séjours, Demandes, Menu, with
+  the pending counts); the top bar keeps the wordmark and a link to the site; the reservation save
+  bar and the toasts sit above the tab bar.
+- Checked at 390 px: no sideways scroll on 18 public pages and 22 back-office screens; flow audit
+  66/66; public, gallery, map, SEO, smoke and booking E2E suites (PR #59) against a production
+  build: 100 passed, 1 failed (`home › photos load` waits on lazy images below the fold).
+
+Screenshots: `docs/screenshots/redesign/mobile/`.

@@ -191,7 +191,7 @@ export default async function HomePage({
       </section>
 
       {/* ── 02 · The figures: a staggered ledger, not a row of small stats ── */}
-      <section className="ov-shell pb-24 md:pb-36" aria-label={t.seo.factsTitle}>
+      <section className="ov-shell pb-16 md:pb-36" aria-label={t.seo.factsTitle}>
         {/* two columns from the phone up: four tall single rows read as a list on a phone */}
         <div className="ov-rule grid grid-cols-2 border-t">
           {t.intro.figures.map((f, i) => (
@@ -212,7 +212,7 @@ export default async function HomePage({
       </section>
 
       {/* ── 03 · The spaces: a hanging gallery of unequal images ── */}
-      <section className="bg-ivory py-24 md:py-36">
+      <section className="bg-ivory py-16 md:py-36">
         <div className="ov-shell">
           <SectionHead
             label={t.spaces.label}
