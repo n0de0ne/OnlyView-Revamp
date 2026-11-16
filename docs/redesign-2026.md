@@ -48,7 +48,7 @@ Admin: wrong password refused, login, every sidebar section answers, reservation
 new reservation form, dashboard blocks.
 
 Found and fixed on the way: the designed 404 page never showed (unknown URLs fell through to the
-framework's bare 404) → `[...missing]` catch-all; a dev-only hydration warning from the route
+framework's bare 404) → `[...rest]` catch-all; a dev-only hydration warning from the route
 transition template.
 
 Before/after screenshots: `docs/screenshots/redesign/`.
