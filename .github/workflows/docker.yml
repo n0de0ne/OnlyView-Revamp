@@ -14,7 +14,16 @@ permissions:
   packages: write
 
 jobs:
+  # Nothing is published unless every check passes (types, lint, unit tests,
+  # dependency audit, schema safety, boot test). See ci.yml.
+  checks:
+    uses: ./.github/workflows/ci.yml
+    with:
+      # what production runs today: the branch tip before this push
+      base_ref: ${{ github.event.before }}
+
   docker:
+    needs: checks
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
