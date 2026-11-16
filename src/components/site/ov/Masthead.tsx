@@ -99,7 +99,7 @@ export function Masthead(props: {
           </p>
         </div>
 
-        <div className="flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
+        <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
           <div className="min-w-0">
             <p className="ov-label rise-in mb-2 text-white/60 md:mb-0" style={{ animationDelay: "0.5s" }}>
               {coords}
@@ -118,19 +118,22 @@ export function Masthead(props: {
               ))}
               <span className="sr-only">{props.headingSuffix}</span>
             </h1>
-            <div className="rise-in mt-7 flex flex-wrap gap-3 xl:hidden" style={{ animationDelay: "0.9s" }}>
-              <Link href={localePath(props.locale, "/booking")} className="ov-btn ov-btn-gold">
-                {props.cta}
-              </Link>
-              <a href="#intro" className="ov-btn ov-btn-glass">
-                {props.discover}
-              </a>
-            </div>
           </div>
 
           {/* the destination cluster: tonight's sunset, then the two actions */}
-          <div className="rise-in hidden w-[27rem] shrink-0 space-y-3 xl:block" style={{ animationDelay: "1s" }}>
-            <a href="#golden-hour" className="ov-glass-tile group flex h-40 overflow-hidden rounded-lg">
+          <div className="rise-in w-full shrink-0 space-y-3 xl:w-[27rem]" style={{ animationDelay: "1s" }}>
+            {/* on a phone the tile folds to one line: tonight's sunset, a tap away */}
+            <a
+              href="#golden-hour"
+              className="ov-label flex items-center justify-between border-b border-white/20 pb-3 text-white/70 xl:hidden"
+            >
+              <span>{props.sunsetLabel}</span>
+              <span className="flex items-center gap-2 font-mono text-sm tracking-normal text-white" suppressHydrationWarning>
+                {sunset ?? "—:—"}
+                <ArrowUpRight className="h-4 w-4 text-gold" strokeWidth={1.25} aria-hidden />
+              </span>
+            </a>
+            <a href="#golden-hour" className="ov-glass-tile group hidden h-40 overflow-hidden rounded-lg xl:flex">
               {props.sunsetImage && (
                 <div className="ov-photo relative w-40 shrink-0">
                   <Image src={props.sunsetImage.url} alt="" fill sizes="160px" className="object-cover" aria-hidden />
@@ -150,7 +153,7 @@ export function Masthead(props: {
                 </p>
               </div>
             </a>
-            <div className="flex gap-3">
+            <div className="flex flex-col gap-2.5 sm:flex-row sm:gap-3">
               <Magnetic className="flex-1">
                 <Link href={localePath(props.locale, "/booking")} className="ov-btn ov-btn-gold w-full">
                   {props.cta}

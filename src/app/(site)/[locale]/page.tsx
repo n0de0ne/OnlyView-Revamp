@@ -192,19 +192,20 @@ export default async function HomePage({
 
       {/* ── 02 · The figures: a staggered ledger, not a row of small stats ── */}
       <section className="ov-shell pb-24 md:pb-36" aria-label={t.seo.factsTitle}>
-        <div className="ov-rule grid border-t md:grid-cols-2">
+        {/* two columns from the phone up: four tall single rows read as a list on a phone */}
+        <div className="ov-rule grid grid-cols-2 border-t">
           {t.intro.figures.map((f, i) => (
             <div
               key={f.value + i}
-              className={`ov-rule reveal flex min-h-[15rem] flex-col justify-between gap-8 border-b py-7 md:min-h-[22rem] ${
-                i % 2 === 0 ? "md:border-r md:pr-10" : "md:pl-10 md:pt-24"
+              className={`ov-rule reveal flex min-h-[11rem] flex-col justify-between gap-4 border-b py-5 md:min-h-[22rem] md:gap-8 md:py-7 ${
+                i % 2 === 0 ? "border-r pr-4 md:pr-10" : "pl-4 md:pl-10 md:pt-24"
               }`}
             >
-              <span className="ov-num text-ink/85">
+              <span className="ov-num !text-[clamp(3.1rem,12.5vw,9.5rem)] text-ink/85">
                 {/* ° and ² as small raised marks, not the font's oversized glyphs */}
                 {f.value.split(/([°²³])/).map((part, k) => (/^[°²³]$/.test(part) ? <sup key={k}>{part}</sup> : part))}
               </span>
-              <span className="max-w-xs text-[0.95rem] leading-snug text-ink/60">{f.text}</span>
+              <span className="max-w-xs text-[0.84rem] leading-snug text-ink/60 md:text-[0.95rem]">{f.text}</span>
             </div>
           ))}
         </div>
@@ -222,7 +223,9 @@ export default async function HomePage({
               </Link>
             }
           />
-          <div className="grid grid-cols-12 gap-x-4 gap-y-12 md:gap-x-6 md:gap-y-20">
+          {/* a phone gets a swipeable row of tall frames (as in a listing app);
+              wider screens the hanging gallery of unequal images */}
+          <div className="scroll-none -mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-5 px-5 pb-2 md:mx-0 md:grid md:snap-none md:grid-cols-12 md:gap-x-6 md:gap-y-20 md:overflow-visible md:px-0 md:pb-0">
             {spaces.map((s, i) => {
               // lead image wide, the rest alternate sides and sizes
               const layout = [
@@ -232,19 +235,25 @@ export default async function HomePage({
                 "col-span-12 md:col-span-5 md:col-start-8 md:mt-32",
                 "col-span-12 md:col-span-7 md:col-start-4",
               ][i];
-              const ratio = ["aspect-[16/11]", "aspect-[3/4]", "aspect-[4/5]", "aspect-[4/3]", "aspect-[16/9]"][i];
+              const ratio = [
+                "md:aspect-[16/11]",
+                "md:aspect-[3/4]",
+                "md:aspect-[4/5]",
+                "md:aspect-[4/3]",
+                "md:aspect-[16/9]",
+              ][i];
               return (
                 <Link
                   key={s.cat}
                   href={localePath(locale, `/gallery?c=${s.cat}`)}
-                  className={`group reveal block ${layout}`}
+                  className={`group reveal block w-[78%] shrink-0 snap-start md:w-auto ${layout}`}
                 >
-                  <div className={`ov-photo relative ${ratio}`}>
+                  <div className={`ov-photo relative aspect-[4/5] ${ratio}`}>
                     <Image
                       src={s.photo!.url}
                       alt={s.photo!.alt}
                       fill
-                      sizes={i === 0 ? "(max-width: 768px) 100vw, 66vw" : "(max-width: 768px) 100vw, 42vw"}
+                      sizes={i === 0 ? "(max-width: 768px) 80vw, 66vw" : "(max-width: 768px) 80vw, 42vw"}
                       className="object-cover"
                     />
                   </div>

@@ -546,13 +546,15 @@ export function BookingWidget({
 
       {/* Phone: the booking bar replaces the tab bar on this page */}
       <div
-        className="fixed inset-x-0 bottom-0 z-[60] border-t border-ink/10 bg-white/95 px-4 pt-3 shadow-[0_-8px_24px_rgba(16,24,32,0.06)] backdrop-blur lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-[60] border-t border-ink/10 bg-paper/90 px-5 pt-3 backdrop-blur-xl backdrop-saturate-150 lg:hidden"
         style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
       >
         <div className="mx-auto flex max-w-xl items-center gap-3">
           <div className="min-w-0 flex-1" aria-live="polite">
-            <p className="truncate text-[0.95rem] font-semibold text-ink">{barTitle}</p>
-            <p className="truncate text-xs text-ink/65">{barSub}</p>
+            <p className="truncate font-display text-[1.35rem] leading-tight text-ink [font-variant-numeric:lining-nums]">
+              {barTitle}
+            </p>
+            <p className="ov-label mt-0.5 truncate text-ink/55">{barSub}</p>
           </div>
           <button
             type="button"

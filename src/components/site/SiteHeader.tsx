@@ -20,13 +20,18 @@ export function SiteHeader({ locale }: { locale: Locale }) {
   const t = getDict(locale);
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
+  const [pastHero, setPastHero] = useState(false);
   const [open, setOpen] = useState(false);
 
   const publicPath = pathname.replace(/^\/en(?=\/|$)/, "") || "/";
   const darkTop = DARK_TOP.test(publicPath);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
+    const onScroll = () => {
+      setScrolled(window.scrollY > 40);
+      // the opening picture fills the first screen: past it, the page is paper
+      setPastHero(window.scrollY > window.innerHeight - 96);
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -43,6 +48,8 @@ export function SiteHeader({ locale }: { locale: Locale }) {
 
   /** over the opening picture: transparent, white lettering */
   const overPicture = darkTop && !scrolled;
+  /** mobile capsules: dark glass over a picture, paper glass with ink on paper */
+  const lightBar = !darkTop || pastHero;
 
   /** [href, label, only on wide screens] — seven links do not fit 1280px */
   const links: Array<[string, string, boolean?]> = [
@@ -52,6 +59,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
     [localePath(locale, "/rates"), t.nav.rates],
     [localePath(locale, "/pointe-milou"), t.nav.pointeMilou, true],
     [localePath(locale, "/guide"), t.nav.guide],
+    [localePath(locale, "/reviews"), t.nav.reviews],
     [localePath(locale, "/contact"), t.nav.contact],
   ];
   /** the mobile menu: everything the tab bar doesn't carry */
@@ -63,6 +71,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
     [localePath(locale, "/why-book-direct"), t.footer.whyDirect],
     [localePath(locale, "/faq"), "FAQ"],
     [localePath(locale, "/contact"), t.nav.contact],
+    [localePath(locale, "/account"), t.nav.account],
   ];
 
   // Language switch keeps the current page. Static pages are prerendered
@@ -99,7 +108,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
             </span>
           </Link>
 
-          <nav className="flex items-center gap-6 2xl:gap-8" aria-label="Main">
+          <nav className="flex items-center gap-5 2xl:gap-8" aria-label="Main">
             {links.map(([href, label, wide]) => {
               const current = isCurrent(href.replace(/^\/en(?=\/|$)/, "") || "/");
               return (
@@ -145,7 +154,12 @@ export function SiteHeader({ locale }: { locale: Locale }) {
           background, which showed as a white strip above the hero. The
           home-screen app draws under its status bar instead, so the band is
           hidden there (.browser-only). */}
-      <div aria-hidden className="browser-only pointer-events-none fixed inset-x-0 top-0 z-50 h-1.5 bg-night xl:hidden" />
+      <div
+        aria-hidden
+        className={`browser-only pointer-events-none fixed inset-x-0 top-0 z-50 h-1.5 transition-colors duration-500 xl:hidden ${
+          lightBar ? "bg-paper" : "bg-night"
+        }`}
+      />
       <header
         className="fixed inset-x-0 top-0 z-50 xl:hidden"
         style={{ paddingTop: "max(0.6rem, env(safe-area-inset-top))" }}
@@ -153,7 +167,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
         <div className="mx-3 flex items-center justify-between gap-2">
           <Link
             href={localePath(locale, "/")}
-            className="glass-dark flex min-w-0 flex-col justify-center overflow-hidden rounded-full leading-none"
+            className={`${lightBar ? "glass-bar" : "glass-dark"} flex min-w-0 flex-col justify-center overflow-hidden rounded-full leading-none`}
             aria-label="Villa ONLY VIEW"
             style={{
               flex: scrolled ? "0 1 auto" : "1 1 auto",
@@ -163,7 +177,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
             }}
           >
             <span
-              className="whitespace-nowrap font-display tracking-[0.3em] text-white"
+              className={`whitespace-nowrap font-display tracking-[0.3em] ${lightBar ? "text-ink" : "text-white"}`}
               style={{
                 fontSize: scrolled ? "0.92rem" : "1.05rem",
                 transition: `font-size 520ms ${SPRING}`,
@@ -173,7 +187,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
             </span>
             {/* the subtitle folds away as the page scrolls, like an iOS large title */}
             <span
-              className="block overflow-hidden whitespace-nowrap font-mono text-[0.5rem] uppercase tracking-[0.3em] text-gold"
+              className={`block overflow-hidden whitespace-nowrap font-mono text-[0.5rem] uppercase tracking-[0.3em] ${lightBar ? "text-gold-dark" : "text-gold"}`}
               style={{
                 maxHeight: scrolled ? 0 : "0.9rem",
                 opacity: scrolled ? 0 : 1,
@@ -186,7 +200,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
           </Link>
 
           <button
-            className="glass-dark tap flex shrink-0 items-center justify-center rounded-full text-white"
+            className={`${lightBar ? "glass-bar text-ink" : "glass-dark text-white"} tap flex shrink-0 items-center justify-center rounded-full`}
             onClick={() => setOpen(true)}
             aria-label={t.navShort.more}
             aria-expanded={open}
@@ -214,9 +228,9 @@ export function SiteHeader({ locale }: { locale: Locale }) {
             open ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
           }`}
           style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
-          role="dialog"
-          aria-modal="true"
-          aria-label={t.navShort.more}
+          role={open ? "dialog" : undefined}
+          aria-modal={open || undefined}
+          aria-label={open ? t.navShort.more : undefined}
         >
           <div className="flex items-center justify-between px-5 pb-2 pt-4">
             <span className="ov-label text-ink/45">Saint-Barthélemy</span>
@@ -260,9 +274,6 @@ export function SiteHeader({ locale }: { locale: Locale }) {
                 FR
               </Link>
             </div>
-            <Link href={localePath(locale, "/account")} className="ov-btn ov-btn-line">
-              {t.nav.account}
-            </Link>
           </div>
         </div>
       </div>

@@ -160,7 +160,9 @@ body {
   nav[aria-label="Principal"],
   nav[aria-label="Principal"] *,
   header .glass-dark,
-  header .glass-dark * {
+  header .glass-dark *,
+  header .glass-bar,
+  header .glass-bar * {
     transition-duration: 0.01ms !important;
   }
 }

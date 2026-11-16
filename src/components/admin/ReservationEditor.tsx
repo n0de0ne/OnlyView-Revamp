@@ -1743,7 +1743,7 @@ export function ReservationEditor({
       )}
 
       {/* Sticky save on mobile */}
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur lg:hidden">
+      <div className="fixed inset-x-0 bottom-[calc(3.6rem+env(safe-area-inset-bottom))] z-30 border-t border-slate-200 bg-[#f6f3ed]/92 px-4 py-2.5 backdrop-blur-xl lg:hidden">
         <button onClick={save} disabled={saving} className="abtn-primary w-full">
           {saving ? "Enregistrement…" : <><Save className="h-4 w-4" strokeWidth={1.5} aria-hidden /> Enregistrer</>}
         </button>

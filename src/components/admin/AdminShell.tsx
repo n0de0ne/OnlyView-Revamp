@@ -20,6 +20,7 @@ import {
   LayoutDashboard,
   LogOut,
   MapPinned,
+  Menu,
   Settings2,
   ShieldCheck,
   Sparkles,
@@ -101,6 +102,14 @@ const NAV: Array<{ title: string | null; items: NavItem[] }> = [
   },
 ];
 
+/** The phone's tab bar: the four screens opened most, then the whole menu. */
+const TABS: Array<{ href: string; label: string; icon: LucideIcon; badge?: keyof Badges }> = [
+  { href: "/admin", label: "Accueil", icon: LayoutDashboard },
+  { href: "/admin/calendar", label: "Calendrier", icon: CalendarDays },
+  { href: "/admin/reservations", label: "Séjours", icon: BedDouble },
+  { href: "/admin/requests", label: "Demandes", icon: Inbox, badge: "requests" },
+];
+
 export function AdminShell({
   user,
   children,
@@ -135,7 +144,6 @@ export function AdminShell({
       window.removeEventListener(BADGES_EVENT, load);
     };
   }, [pathname]);
-  const pending = badges.requests + badges.concierge;
 
   const canSee = (item: NavItem) => {
     if (item.feature && !features?.[item.feature]) return false;
@@ -283,24 +291,21 @@ export function AdminShell({
           <span className="font-display text-lg tracking-[0.22em] text-slate-900">ONLY&nbsp;VIEW</span>
           <span className="admin-label text-gold-dark">Admin</span>
         </Link>
-        <button
-          onClick={() => setMenuOpen((v) => !v)}
-          className="flex h-11 items-center gap-2 rounded-full border border-slate-300 bg-white px-4 text-sm text-slate-800"
-          aria-expanded={menuOpen}
+        {/* the menu lives in the tab bar below; up here, the way back to the site */}
+        <a
+          href="/"
+          target="_blank"
+          rel="noopener"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-600"
+          aria-label="Voir le site"
         >
-          {menuOpen ? <X className="h-4 w-4" strokeWidth={1.5} /> : null}
-          Menu
-          {!menuOpen && pending > 0 && (
-            <span className="min-w-[1.35rem] rounded-full bg-gold px-1.5 text-center font-mono text-[0.68rem] leading-[1.35rem] text-night">
-              {pending}
-            </span>
-          )}
-        </button>
+          <ExternalLink className="h-4 w-4" strokeWidth={1.5} aria-hidden />
+        </a>
       </div>
       {menuOpen && (
         <div
           className="fixed inset-0 z-30 overflow-y-auto overscroll-contain bg-[#efebe3] px-3 pt-20 lg:hidden"
-          style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
+          style={{ paddingBottom: "calc(5.5rem + env(safe-area-inset-bottom))" }}
         >
           <NavLinks />
           <div className="mt-6 grid grid-cols-3 gap-2 border-t border-slate-200 pt-4">
@@ -328,11 +333,66 @@ export function AdminShell({
 
       {/* Content */}
       <main
-        className="min-h-screen w-full min-w-0 overflow-x-hidden px-4 pb-16 pt-20 lg:ml-64 lg:px-10 lg:pt-9"
-        style={{ paddingBottom: "max(4rem, env(safe-area-inset-bottom))" }}
+        className="min-h-screen w-full min-w-0 overflow-x-hidden px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-20 lg:ml-64 lg:px-10 lg:pb-16 lg:pt-9"
       >
         <div className="mx-auto max-w-[1400px]">{children}</div>
       </main>
+
+      {/* Phone tab bar, as in the hosting apps: the daily screens a thumb away,
+          the rest of the back office behind "Menu" (with what waits for an answer) */}
+      <nav
+        aria-label="Raccourcis"
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-[#f6f3ed]/92 backdrop-blur-xl lg:hidden"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      >
+        <div className="mx-auto grid max-w-md grid-cols-5">
+          {TABS.map((tab) => {
+            const active =
+              !menuOpen &&
+              (tab.href === "/admin" ? pathname === "/admin" : pathname === tab.href || pathname.startsWith(tab.href + "/"));
+            const count = tab.badge ? badges[tab.badge] : 0;
+            const Icon = tab.icon;
+            return (
+              <Link
+                key={tab.href}
+                href={tab.href}
+                onClick={() => setMenuOpen(false)}
+                aria-current={active ? "page" : undefined}
+                className={`relative flex h-[3.6rem] flex-col items-center justify-center gap-1 text-[0.66rem] ${
+                  active ? "font-medium text-slate-900" : "text-slate-500"
+                }`}
+              >
+                <Icon aria-hidden strokeWidth={1.5} className={`h-[1.3rem] w-[1.3rem] ${active ? "text-gold-dark" : ""}`} />
+                {tab.label}
+                {count > 0 && (
+                  <span className="absolute left-1/2 top-1.5 ml-2 min-w-[1.15rem] rounded-full bg-gold px-1 text-center font-mono text-[0.6rem] leading-[1.15rem] text-night">
+                    {count}
+                  </span>
+                )}
+              </Link>
+            );
+          })}
+          <button
+            onClick={() => setMenuOpen((v) => !v)}
+            aria-expanded={menuOpen}
+            className={`relative flex h-[3.6rem] flex-col items-center justify-center gap-1 text-[0.66rem] ${
+              menuOpen ? "font-medium text-slate-900" : "text-slate-500"
+            }`}
+          >
+            {menuOpen ? (
+              <X aria-hidden strokeWidth={1.5} className="h-[1.3rem] w-[1.3rem] text-gold-dark" />
+            ) : (
+              <Menu aria-hidden strokeWidth={1.5} className="h-[1.3rem] w-[1.3rem]" />
+            )}
+            Menu
+            {!menuOpen && badges.concierge > 0 && (
+              <span className="absolute left-1/2 top-1.5 ml-2 min-w-[1.15rem] rounded-full bg-gold px-1 text-center font-mono text-[0.6rem] leading-[1.15rem] text-night">
+                {badges.concierge}
+              </span>
+            )}
+          </button>
+        </div>
+      </nav>
 
       {/* Change password modal */}
       <Modal
