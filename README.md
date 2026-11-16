@@ -134,6 +134,18 @@ overflow and the elements causing it, tap targets under 40 px, text under
 each other — with a screenshot of each page under `./mobile-audit/`.
 Exit code 1 on any overflow.
 
+## End-to-end tests
+
+Playwright suites split by area of the app (public site, booking, contracts,
+guest portal, concierge & extras, analytics, four back-office suites…), run
+against a staging or a local server — see [`e2e/README.md`](e2e/README.md):
+
+```bash
+E2E_BASE_URL=https://staging.example.com E2E_ADMIN_USER=… E2E_ADMIN_PASS=… npm run e2e
+npm run e2e:booking     # one suite
+npm run e2e:changed     # only the suites the current change calls for
+```
+
 ## Smoke test
 
 `scripts/e2e-audit.mjs` drives the core back-office flows against a running

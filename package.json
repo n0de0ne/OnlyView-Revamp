@@ -12,7 +12,26 @@
     "db:push": "prisma db push",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
-    "media:prepare": "tsx scripts/prepare-media.ts"
+    "media:prepare": "tsx scripts/prepare-media.ts",
+    "e2e": "playwright test",
+    "e2e:changed": "node e2e/select-suites.mjs --run",
+    "e2e:cleanup": "playwright test --project=cleanup",
+    "e2e:report": "playwright show-report e2e/.report",
+    "e2e:types": "tsc --noEmit -p e2e",
+    "e2e:smoke": "playwright test --project=smoke",
+    "e2e:public": "playwright test --project=public",
+    "e2e:seo": "playwright test --project=seo",
+    "e2e:gallery": "playwright test --project=gallery",
+    "e2e:map": "playwright test --project=map",
+    "e2e:booking": "playwright test --project=booking",
+    "e2e:contracts": "playwright test --project=contracts",
+    "e2e:guest-portal": "playwright test --project=guest-portal",
+    "e2e:concierge-extras": "playwright test --project=concierge-extras",
+    "e2e:analytics": "playwright test --project=analytics",
+    "e2e:admin-core": "playwright test --project=admin-core",
+    "e2e:admin-reservations": "playwright test --project=admin-reservations",
+    "e2e:admin-finance": "playwright test --project=admin-finance",
+    "e2e:admin-content": "playwright test --project=admin-content"
   },
   "prisma": {
     "seed": "node prisma/seed.mjs"
@@ -44,6 +63,7 @@
   },
   "devDependencies": {
     "@huggingface/transformers": "^4.2.0",
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4.1.13",
     "@types/leaflet": "^1.9.22",
     "@types/leaflet.markercluster": "^1.5.6",

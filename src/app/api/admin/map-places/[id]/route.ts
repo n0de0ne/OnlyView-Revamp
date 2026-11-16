@@ -1,7 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { adminRoute, jsonError, jsonOk, jsonInvalid } from "@/lib/admin-api";
-import { MapPlaceInput } from "@/lib/admin-schemas";
+import { MapPlaceInput, parsePatch } from "@/lib/admin-schemas";
 import { audit } from "@/lib/audit";
 import { withOnlineBooking } from "@/lib/map-places";
 
@@ -21,7 +21,7 @@ const revalidateMap = () => {
 export const PUT = adminRoute<Ctx>("manager", async (req, { params }, user) => {
   const { id: idRaw } = await params;
   const id = parseInt(idRaw, 10);
-  const parsed = MapPlaceInput.partial().safeParse(await req.json().catch(() => null));
+  const parsed = parsePatch(MapPlaceInput, await req.json().catch(() => null));
   if (!parsed.success) return jsonInvalid(parsed.error);
   if (!Number.isFinite(id)) return jsonError("not_found", 404);
   const previous = await prisma.mapPlace.findUnique({

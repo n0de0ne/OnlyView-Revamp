@@ -24,8 +24,14 @@ export function requestIp(h: Headers): string {
   return h.get("x-real-ip")?.trim() || "local";
 }
 
-/** A naive in-memory limit (per runtime instance): `max` hits per key per hour. */
+/**
+ * A naive in-memory limit (per runtime instance): `max` hits per key per hour.
+ * PUBLIC_FORMS_HOURLY_LIMIT replaces every such limit: for a staging copy that
+ * automated tests fill in many times an hour. Never set it on the live site.
+ */
 export function hourlyLimit(max: number) {
+  const override = parseInt(process.env.PUBLIC_FORMS_HOURLY_LIMIT ?? "", 10);
+  if (override > 0) max = override;
   const hits = new Map<string, { count: number; at: number }>();
   return (key: string): boolean => {
     const now = Date.now();

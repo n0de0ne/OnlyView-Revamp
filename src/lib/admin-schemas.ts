@@ -87,6 +87,21 @@ export const UserInput = z.object({
   isActive: z.boolean().default(true),
 });
 
+/**
+ * A partial update: only the fields the caller sent. zod 4 fills in the
+ * defaults of absent keys even through `.partial()`, which silently reset
+ * e.g. a role or an "active" switch on every edit that did not repeat them.
+ */
+export function parsePatch<S extends z.ZodObject>(schema: S, body: unknown) {
+  const parsed = schema.partial().safeParse(body);
+  if (!parsed.success) return parsed;
+  const sent = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
+  const data = Object.fromEntries(
+    Object.entries(parsed.data as Record<string, unknown>).filter(([key]) => key in sent)
+  );
+  return { success: true as const, data: data as typeof parsed.data };
+}
+
 export const dateOrNull = (s: string | null | undefined) =>
   s ? new Date(`${s}T00:00:00Z`) : null;
 

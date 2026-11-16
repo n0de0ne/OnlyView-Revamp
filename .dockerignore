@@ -12,3 +12,5 @@ README.md
 unraid
 .github
 scripts/prepare-media.ts
+e2e
+playwright.config.ts
