@@ -63,9 +63,9 @@ export function TourExperience({
   return (
     <div className="relative lg:grid lg:grid-cols-2">
       {/* Sticky visual (desktop) */}
-      <div className="sticky top-0 hidden h-screen flex-col items-center justify-center gap-5 overflow-hidden bg-night px-8 py-10 lg:flex">
+      <div className="sticky top-0 hidden h-screen flex-col items-center justify-center gap-5 overflow-hidden bg-sea-deep px-8 py-10 lg:flex">
         <div
-          className="relative w-full max-w-[44rem] overflow-hidden rounded-sm bg-black/40 shadow-2xl"
+          className="relative w-full max-w-[44rem] overflow-hidden bg-black/40"
           style={{ aspectRatio: currentPhoto ? ratio(currentPhoto) : "4 / 3", maxHeight: "72vh" }}
         >
           {stops.map((stop, i) => {
@@ -89,10 +89,10 @@ export function TourExperience({
 
         <div className="flex w-full max-w-[44rem] items-end justify-between gap-6">
           <div>
-            <div className="text-[0.65rem] uppercase tracking-[0.3em] text-gold">
+            <div className="ov-label text-gold">
               {String(active + 1).padStart(2, "0")} / {String(stops.length).padStart(2, "0")}
             </div>
-            <div className="mt-1 font-display text-2xl text-white">{current?.title}</div>
+            <div className="ov-h3 mt-2 text-white">{current?.title}</div>
           </div>
           {/* progress rail */}
           <div className="flex gap-2.5 pb-1.5">
@@ -140,9 +140,11 @@ export function TourExperience({
                   />
                 </div>
               )}
-              <p className="eyebrow mb-4">{String(i + 1).padStart(2, "0")}</p>
-              <h2 className="font-display text-4xl text-ink md:text-5xl">{stop.title}</h2>
-              <p className="mt-5 max-w-md leading-relaxed text-ink/70">{stop.text}</p>
+              <p className="ov-label mb-4 text-gold-dark">
+                {String(i + 1).padStart(2, "0")} / {String(stops.length).padStart(2, "0")}
+              </p>
+              <h2 className="ov-h2 text-ink">{stop.title}</h2>
+              <p className="ov-body mt-5 max-w-md">{stop.text}</p>
 
               {stop.photos.length > 1 && (
                 <div className="mt-8 grid grid-cols-3 gap-3 sm:max-w-xl lg:max-w-none">
@@ -158,7 +160,7 @@ export function TourExperience({
                       aria-current={pi === shown}
                       className={`relative aspect-[4/3] overflow-hidden transition ${
                         pi === shown
-                          ? "ring-2 ring-gold ring-offset-2 ring-offset-sand"
+                          ? "ring-2 ring-gold ring-offset-2 ring-offset-paper"
                           : "opacity-80 hover:opacity-100"
                       }`}
                     >
@@ -175,7 +177,7 @@ export function TourExperience({
               )}
 
               {i === stops.length - 1 && (
-                <Link href={localePath(locale, "/booking")} className="btn-gold mt-10 self-start">
+                <Link href={localePath(locale, "/booking")} className="ov-btn ov-btn-gold mt-10 self-start">
                   {bookCta}
                 </Link>
               )}

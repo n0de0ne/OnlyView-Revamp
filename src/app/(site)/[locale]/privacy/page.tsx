@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { isLocale, type Locale } from "@/lib/i18n";
 import { pageMetadata } from "@/lib/seo";
-import { PageHero } from "@/components/site/PageHero";
+import { EditorialHero } from "@/components/site/ov/EditorialHero";
 import { AnalyticsOptOut } from "@/components/site/AnalyticsOptOut";
 
 export const revalidate = 3600;
@@ -88,21 +88,23 @@ export default async function PrivacyPage({
 
   return (
     <>
-      <PageHero title={fr ? "Politique de confidentialité" : "Privacy Policy"} />
-      <section className="mx-auto max-w-3xl px-5 py-16 lg:px-8">
+      <EditorialHero title={fr ? "Politique de confidentialité" : "Privacy Policy"} compact />
+      <section className="ov-shell pb-20 md:pb-28">
+        <div className="ov-prose ov-rule max-w-3xl border-t pt-4">
         {blocks.map(([h, p]) => (
-          <div key={h} className="mb-8">
-            <h2 className="font-display mb-3 text-2xl text-ink">{h}</h2>
-            <p className="leading-relaxed text-ink/75">{p}</p>
+          <div key={h}>
+            <h2>{h}</h2>
+            <p>{p}</p>
             {(h === "Mesure d'audience" || h === "Audience measurement") && <AnalyticsOptOut fr={fr} />}
           </div>
         ))}
-        <p className="text-xs text-ink/45">
+        <p className="mt-10 text-xs text-ink/45">
           {fr ? "Géolocalisation IP : " : "IP geolocation: "}
           <a href="https://db-ip.com" className="underline" rel="noopener">
             IP Geolocation by DB-IP
           </a>
         </p>
+        </div>
       </section>
     </>
   );

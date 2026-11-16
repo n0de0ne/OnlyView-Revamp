@@ -1,5 +1,7 @@
 "use client";
 
+import { Eye, EyeOff, Trash2 } from "lucide-react";
+
 /* eslint-disable @next/next/no-img-element */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, Card, ConfirmButton, fmtDate, Spinner, StatusBadge, useToast } from "./ui";
@@ -190,9 +192,9 @@ export function SiteContentBoard() {
       <div className="flex gap-2">
         {(
           [
-            ["photos", "🖼️ Photos"],
-            ["reviews", "⭐ Avis"],
-            ["emails", "✉️ Emails"],
+            ["photos", "Photos"],
+            ["reviews", "Avis"],
+            ["emails", "Emails"],
           ] as const
         ).map(([k, label]) => (
           <button
@@ -269,7 +271,7 @@ export function SiteContentBoard() {
                           />
                           {p.id === coverId && (
                             <div className="absolute left-1.5 top-1.5 rounded bg-gold px-1.5 py-0.5 text-[0.6rem] font-semibold text-white shadow">
-                              ★ Couverture
+                               Couverture
                             </div>
                           )}
                           <div className="absolute inset-x-0 bottom-0 bg-black/60 px-2 py-1 text-[0.6rem] text-white">
@@ -292,7 +294,7 @@ export function SiteContentBoard() {
                                 title="Mettre en couverture"
                                 className="rounded bg-white/90 px-1.5 py-0.5 text-xs shadow"
                               >
-                                ★
+                                
                               </button>
                             )}
                             <button
@@ -300,14 +302,14 @@ export function SiteContentBoard() {
                               title={p.published ? "Masquer" : "Publier"}
                               className="rounded bg-white/90 px-1.5 py-0.5 text-xs shadow"
                             >
-                              {p.published ? "👁" : "🚫"}
+                              {p.published ? <Eye className="h-4 w-4" strokeWidth={1.5} aria-label="Publiée" /> : <EyeOff className="h-4 w-4" strokeWidth={1.5} aria-label="Masquée" />}
                             </button>
                             <ConfirmButton
                               className="rounded bg-white/90 px-1.5 py-0.5 text-xs text-red-600 shadow"
                               confirmLabel="✓?"
                               onConfirm={() => deletePhoto(p.id)}
                             >
-                              🗑
+                              <Trash2 className="h-4 w-4" strokeWidth={1.5} aria-label="Supprimer" />
                             </ConfirmButton>
                           </div>
                         </div>
@@ -345,7 +347,7 @@ export function SiteContentBoard() {
                     <div className="text-sm">
                       <span className="font-semibold">{r.name}</span>
                       {r.country && <span className="text-slate-400"> · {r.country}</span>}
-                      <span className="ml-2 text-gold">{"★".repeat(r.rating)}</span>
+                      <span className="ml-2 text-gold">{"".repeat(r.rating)}</span>
                       <span className="ml-2 text-xs uppercase text-slate-400">{r.language}</span>
                     </div>
                     <div className="flex gap-2 text-xs">
@@ -359,7 +361,7 @@ export function SiteContentBoard() {
                         onClick={() => patchTestimonial(r.id, { isFeatured: !r.isFeatured })}
                         className="text-navy hover:underline"
                       >
-                        {r.isFeatured ? "★ En avant" : "☆ Mettre en avant"}
+                        {r.isFeatured ? "En avant" : "Mettre en avant"}
                       </button>
                       <ConfirmButton
                         className="text-red-500 hover:underline"

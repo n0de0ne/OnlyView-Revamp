@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Plus } from "lucide-react";
 import { isLoyaltyEnabled } from "@/lib/features";
 import { isLocale, localePath, type Locale } from "@/lib/i18n";
 import { getContent } from "@/lib/site-content";
 import { breadcrumbJsonLd, faqJsonLd, jsonLd, pageMetadata } from "@/lib/seo";
-import { PageHero } from "@/components/site/PageHero";
+import { EditorialHero } from "@/components/site/ov/EditorialHero";
 
 export const revalidate = 3600;
 
@@ -49,24 +50,34 @@ export default async function FaqPage({
           ]),
         }}
       />
-      <PageHero eyebrow="FAQ" title={t.faq.title} />
-      <section className="mx-auto max-w-3xl px-5 py-16 lg:px-8">
-        <div className="divide-y divide-ink/10">
-          {items.map((item, i) => (
-            <details key={i} className="group py-5" open={i === 0}>
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-display text-xl text-ink transition hover:text-gold [&::-webkit-details-marker]:hidden">
-                {item.q}
-                <span className="text-gold transition-transform group-open:rotate-45">+</span>
-              </summary>
-              <p className="mt-3 leading-relaxed text-ink/70">{item.a}</p>
-            </details>
-          ))}
-        </div>
-        <div className="mt-12 border-t border-ink/10 pt-10 text-center">
-          <p className="mb-5 text-ink/60">{t.cta.text}</p>
-          <Link href={localePath(locale, "/contact")} className="btn-gold">
-            {t.nav.contact}
-          </Link>
+      <EditorialHero eyebrow="FAQ" title={t.faq.title} meta={`${items.length} questions`} />
+      <section className="ov-shell pb-20 md:pb-28">
+        <div className="grid gap-12 lg:grid-cols-12">
+          <div className="ov-rule border-t lg:col-span-8">
+            {items.map((item, i) => (
+              <details key={i} className="ov-rule group border-b" open={i === 0}>
+                <summary className="flex cursor-pointer list-none items-start gap-5 py-6 text-ink transition hover:text-gold-dark [&::-webkit-details-marker]:hidden">
+                  <span className="ov-label w-7 shrink-0 pt-2 text-ink/40">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="flex-1 font-display text-[1.45rem] leading-snug md:text-[1.7rem]">{item.q}</span>
+                  <Plus
+                    className="mt-2 h-5 w-5 shrink-0 text-gold-dark transition-transform duration-300 group-open:rotate-45"
+                    strokeWidth={1.25}
+                    aria-hidden
+                  />
+                </summary>
+                <p className="ov-body max-w-2xl pb-7 pl-12">{item.a}</p>
+              </details>
+            ))}
+          </div>
+          <aside className="lg:col-span-3 lg:col-start-10">
+            <div className="rounded-2xl bg-ivory p-6 lg:sticky lg:top-28">
+              <p className="ov-label text-gold-dark">{t.nav.contact}</p>
+              <p className="mt-3 text-[0.95rem] leading-relaxed text-ink/70">{t.cta.text}</p>
+              <Link href={localePath(locale, "/contact")} className="ov-btn ov-btn-ink mt-6">
+                {t.nav.contact}
+              </Link>
+            </div>
+          </aside>
         </div>
       </section>
     </>

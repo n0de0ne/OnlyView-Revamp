@@ -8,7 +8,7 @@ import { getRateConfig } from "@/lib/settings";
 import { publicRateTable } from "@/lib/pricing";
 import { usd } from "@/lib/money";
 import { formatDateShort, addDays, todayISO } from "@/lib/dates";
-import { PageHero } from "@/components/site/PageHero";
+import { EditorialHero, SectionHead } from "@/components/site/ov/EditorialHero";
 import { prisma } from "@/lib/db";
 
 export const revalidate = 300;
@@ -87,24 +87,24 @@ export default async function RatesPage({
           ]),
         }}
       />
-      <PageHero eyebrow={t.nav.rates} title={t.rates.title} intro={loyalty ? t.rates.intro : t.rates.introNoLoyalty} />
+      <EditorialHero eyebrow={t.nav.rates} title={t.rates.title} intro={loyalty ? t.rates.intro : t.rates.introNoLoyalty} />
 
-      <section className="mx-auto max-w-5xl px-5 py-16 lg:px-8">
-        {/* Season rates — cards on a phone (a five-column table can't be read
-            at 390px), the table from small screens up */}
-        <div className="grid gap-4 sm:hidden">
+      <section className="ov-shell pb-20 md:pb-28">
+        {/* Season rates — ruled blocks on a phone (a five-column table can't be
+            read at 390px), a ledger from small screens up */}
+        <div className="ov-rule border-t sm:hidden">
           {table.seasons.map((s) => (
-            <div key={s.key} className="border border-ink/10 bg-white p-5">
+            <div key={s.key} className="ov-rule border-b py-6">
               <div className="flex items-baseline justify-between gap-3">
-                <h3 className="font-display text-2xl">{t.rates.seasonNames[s.key]}</h3>
-                <span className="text-right text-xs text-ink/55">{fr ? s.datesFr : s.datesEn}</span>
+                <h3 className="font-display text-[1.75rem] leading-none">{t.rates.seasonNames[s.key]}</h3>
+                <span className="ov-label text-right !text-[0.62rem] text-ink/55">{fr ? s.datesFr : s.datesEn}</span>
               </div>
-              <dl className="mt-4 divide-y divide-ink/10 border-t border-ink/10">
+              <dl className="mt-4 space-y-1.5">
                 {([2, 3, 4] as const).map((b) => (
-                  <div key={b} className="flex items-center justify-between py-2.5">
-                    <dt className="text-sm text-ink/70">{t.rates[`br${b}` as "br2" | "br3" | "br4"]}</dt>
+                  <div key={b} className="flex items-baseline justify-between">
+                    <dt className="text-sm text-ink/65">{t.rates[`br${b}` as "br2" | "br3" | "br4"]}</dt>
                     <dd className="text-right">
-                      <span className="font-semibold">{usd(s.weekly[b])}</span>
+                      <span className="font-display text-xl [font-variant-numeric:lining-nums]">{usd(s.weekly[b])}</span>
                       <span className="ml-1.5 text-xs text-ink/45">{t.rates.weekly}</span>
                     </dd>
                   </div>
@@ -113,28 +113,30 @@ export default async function RatesPage({
             </div>
           ))}
         </div>
-        <div className="hidden overflow-x-auto border border-ink/10 bg-white sm:block">
-          <table className="w-full min-w-[560px] text-left text-sm">
+        <div className="hidden overflow-x-auto sm:block">
+          <table className="w-full min-w-[560px] text-left">
             <thead>
-              <tr className="border-b border-ink/10 bg-sand-dark text-[0.68rem] uppercase tracking-[0.2em] text-ink/60">
-                <th className="px-6 py-4 font-semibold">{t.rates.season}</th>
-                <th className="px-6 py-4 font-semibold">{t.rates.dates}</th>
-                <th className="px-6 py-4 text-right font-semibold">{t.rates.br2}</th>
-                <th className="px-6 py-4 text-right font-semibold">{t.rates.br3}</th>
-                <th className="px-6 py-4 text-right font-semibold">{t.rates.br4}</th>
+              <tr className="ov-rule border-b">
+                <th className="ov-label py-4 pr-6 font-medium text-ink/50">{t.rates.season}</th>
+                <th className="ov-label py-4 pr-6 font-medium text-ink/50">{t.rates.dates}</th>
+                <th className="ov-label py-4 pl-6 text-right font-medium text-ink/50">{t.rates.br2}</th>
+                <th className="ov-label py-4 pl-6 text-right font-medium text-ink/50">{t.rates.br3}</th>
+                <th className="ov-label py-4 pl-6 text-right font-medium text-ink/50">{t.rates.br4}</th>
               </tr>
             </thead>
             <tbody>
               {table.seasons.map((s) => (
-                <tr key={s.key} className="border-b border-ink/5 last:border-0">
-                  <td className="px-6 py-5 font-display text-lg">
+                <tr key={s.key} className="ov-rule border-b">
+                  <td className="py-7 pr-6 font-display text-[clamp(1.6rem,2.4vw,2.2rem)] leading-none">
                     {t.rates.seasonNames[s.key]}
                   </td>
-                  <td className="px-6 py-5 text-ink/60">{fr ? s.datesFr : s.datesEn}</td>
+                  <td className="py-7 pr-6 text-sm text-ink/60">{fr ? s.datesFr : s.datesEn}</td>
                   {[2, 3, 4].map((b) => (
-                    <td key={b} className="px-6 py-5 text-right">
-                      <span className="font-semibold">{usd(s.weekly[b as 2 | 3 | 4])}</span>
-                      <span className="block text-[0.65rem] text-ink/45">{t.rates.weekly}</span>
+                    <td key={b} className="py-7 pl-6 text-right">
+                      <span className="font-display text-[clamp(1.4rem,2vw,1.85rem)] leading-none [font-variant-numeric:lining-nums]">
+                        {usd(s.weekly[b as 2 | 3 | 4])}
+                      </span>
+                      <span className="ov-label mt-1.5 block !text-[0.6rem] text-ink/40">{t.rates.weekly}</span>
                     </td>
                   ))}
                 </tr>
@@ -142,113 +144,110 @@ export default async function RatesPage({
             </tbody>
           </table>
         </div>
+      </section>
 
-        {/* Holiday packages */}
-        <h2 className="section-title mt-16 mb-6 !text-3xl">{t.rates.holidayTitle}</h2>
-        <div className="grid gap-4 sm:grid-cols-2">
-          {table.holidays.map((h) => (
-            <div
-              key={h.key}
-              className="flex items-center justify-between border border-gold/40 bg-gradient-to-br from-white to-sand-dark px-7 py-6"
-            >
-              <div>
-                <div className="font-display text-2xl">{t.rates.seasonNames[h.key]}</div>
-                <div className="mt-1 text-xs uppercase tracking-[0.18em] text-ink/50">
-                  {fr ? h.datesFr : h.datesEn}
+      {/* Festive weeks, on the deep-sea panel */}
+      <section className="bg-sea py-20 text-white md:py-28">
+        <div className="ov-shell">
+          <SectionHead title={t.rates.holidayTitle} light aside={<p className="max-w-sm text-sm leading-relaxed text-white/65">{t.rates.holidayNote}</p>} />
+          <div className="grid border-t border-white/15 md:grid-cols-2">
+            {table.holidays.map((h, i) => (
+              <div
+                key={h.key}
+                className={`flex flex-col justify-between gap-10 border-b border-white/15 py-8 md:min-h-[16rem] ${i === 0 ? "md:border-r md:pr-10" : "md:pl-10"}`}
+              >
+                <div>
+                  <p className="ov-label text-gold">{fr ? h.datesFr : h.datesEn}</p>
+                  <h3 className="ov-h3 mt-3">{t.rates.seasonNames[h.key]}</h3>
                 </div>
+                <p className="flex items-baseline gap-3">
+                  <span className="font-display text-[clamp(2.6rem,5vw,4.2rem)] leading-none text-white [font-variant-numeric:lining-nums]">
+                    {usd(h.weekly)}
+                  </span>
+                  <span className="ov-label text-white/50">{t.rates.weekly}</span>
+                </p>
               </div>
-              <div className="text-right">
-                <div className="font-display text-3xl text-gold">{usd(h.weekly)}</div>
-                <div className="text-[0.72rem] uppercase tracking-widest text-ink/45">
-                  {t.rates.weekly}
-                </div>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-        <p className="mt-4 text-sm text-ink/60">{t.rates.holidayNote}</p>
+      </section>
 
+      <section className="ov-shell py-20 md:py-28">
         {/* Dated periods the owner published (regatta weeks…) */}
         {table.specials.length > 0 && (
-          <>
-            <h2 className="section-title mt-16 mb-6 !text-3xl">{t.rates.specialTitle}</h2>
-            <div className="space-y-3">
+          <div className="mb-16">
+            <SectionHead title={t.rates.specialTitle} className="!mb-8" />
+            <div className="ov-rule border-t">
               {table.specials.map((sp) => (
-                <div
-                  key={sp.id}
-                  className="flex flex-wrap items-center justify-between gap-3 border border-ink/10 bg-white px-6 py-4"
-                >
+                <div key={sp.id} className="ov-rule flex flex-wrap items-center justify-between gap-3 border-b py-6">
                   <div>
-                    <div className="font-display text-xl">{sp.name}</div>
-                    <div className="mt-1 text-xs uppercase tracking-[0.18em] text-ink/50">
+                    <div className="font-display text-2xl">{sp.name}</div>
+                    <div className="ov-label mt-2 text-ink/50">
                       {formatDateShort(sp.start, locale)} → {formatDateShort(addDays(sp.end, 1), locale)}
                       {sp.minStay ? ` · ${tpl(t.rates.specialMinStay, { n: sp.minStay })}` : ""}
                     </div>
                   </div>
                   <div className="text-right">
                     {sp.mode === "percent" ? (
-                      <div className="font-display text-2xl text-gold">
+                      <div className="font-display text-2xl text-gold-dark [font-variant-numeric:lining-nums]">
                         {tpl(t.rates.specialPercent, {
                           pct: `${sp.adjustPercent >= 0 ? "+" : ""}${sp.adjustPercent}%`,
                         })}
                       </div>
                     ) : (
                       <>
-                        <div className="font-display text-2xl text-gold">
+                        <div className="font-display text-2xl text-gold-dark [font-variant-numeric:lining-nums]">
                           {([2, 3, 4] as const)
                             .filter((b) => sp.weekly[b] != null)
                             .map((b) => `${b} ${t.common.bedrooms} ${usd(sp.weekly[b]!)}`)
                             .join(" · ")}
                         </div>
-                        <div className="text-[0.72rem] uppercase tracking-widest text-ink/45">
-                          {t.rates.specialFixed}
-                        </div>
+                        <div className="ov-label mt-1 text-ink/45">{t.rates.specialFixed}</div>
                       </>
                     )}
                   </div>
                 </div>
               ))}
             </div>
-          </>
+          </div>
         )}
 
         {/* Active promotions */}
         {promos.length > 0 && (
-          <div className="mt-12 space-y-3">
+          <div className="mb-16 grid gap-3 md:grid-cols-2">
             {promos.map((p) => (
-              <div
-                key={p.id}
-                className="flex flex-wrap items-center justify-between gap-3 border-l-2 border-gold bg-white px-6 py-4"
-              >
+              <div key={p.id} className="flex items-center justify-between gap-4 rounded-2xl bg-ivory px-6 py-5">
                 <div>
-                  <div className="font-semibold">{p.name}</div>
-                  {p.description && (
-                    <div className="text-sm text-ink/60">{p.description}</div>
-                  )}
+                  <div className="font-medium">{p.name}</div>
+                  {p.description && <div className="mt-0.5 text-sm text-ink/60">{p.description}</div>}
                 </div>
-                <div className="font-display text-2xl text-gold">
+                <div className="shrink-0 font-display text-3xl leading-none text-gold-dark [font-variant-numeric:lining-nums]">
                   {p.discountType === "percent"
                     ? `-${p.discountValue}%`
                     : p.discountType === "fixed"
                       ? `-${usd(p.discountValue)}`
-                      : `${p.discountValue} ${t.common.nights} ✦`}
+                      : `${p.discountValue} ${t.common.nights}`}
                 </div>
               </div>
             ))}
           </div>
         )}
 
-        {/* Terms */}
-        <ul className="mt-12 space-y-2.5 border-t border-ink/10 pt-8 text-sm text-ink/65">
-          <li>• {tpl(t.rates.minStay, { n: rates.minStay, p: rates.minStayPeak })}</li>
-          <li>• {t.rates.tax}</li>
-          <li>• {t.rates.deposit}</li>
-        </ul>
-
-        <div className="mt-10 text-center">
-          <Link href={localePath(locale, "/booking")} className="btn-gold">
-            {t.rates.quote}
-          </Link>
+        {/* Terms, then the one action */}
+        <div className="grid gap-10 lg:grid-cols-12 lg:items-end">
+          <ol className="ov-rule border-t lg:col-span-7">
+            {[tpl(t.rates.minStay, { n: rates.minStay, p: rates.minStayPeak }), t.rates.tax, t.rates.deposit].map((line, i) => (
+              <li key={i} className="ov-rule flex gap-5 border-b py-4 text-[0.95rem] text-ink/70">
+                <span className="ov-label pt-1 text-gold-dark">{String(i + 1).padStart(2, "0")}</span>
+                {line}
+              </li>
+            ))}
+          </ol>
+          <div className="lg:col-span-4 lg:col-start-9 lg:justify-self-end">
+            <Link href={localePath(locale, "/booking")} className="ov-btn ov-btn-gold">
+              {t.rates.quote}
+            </Link>
+          </div>
         </div>
       </section>
     </>

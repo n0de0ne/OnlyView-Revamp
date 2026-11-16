@@ -2,15 +2,15 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { isLocale, localePath, type Locale } from "@/lib/i18n";
-import { getContent, getIcons, villaFacts } from "@/lib/site-content";
+import { getContent, getIcons } from "@/lib/site-content";
 import { ICON_SLOTS } from "@/lib/icon-slots";
 import { LineIcon } from "@/components/LineIcon";
 import { breadcrumbJsonLd, jsonLd, pageMetadata, schemaImages, vacationRentalJsonLd } from "@/lib/seo";
 import { getContact } from "@/lib/contact";
 import { KeyFacts } from "@/components/site/KeyFacts";
 import { getPhotos, firstOf } from "@/lib/photos";
-import { PageHero } from "@/components/site/PageHero";
-import { CountUp } from "@/components/motion/CountUp";
+import { EditorialHero, SectionHead } from "@/components/site/ov/EditorialHero";
+import { ArrowUpRight } from "lucide-react";
 import { Parallax } from "@/components/motion/Parallax";
 
 export const revalidate = 300;
@@ -40,7 +40,6 @@ export default async function VillaPage({
   const { locale: raw } = await params;
   const locale = (isLocale(raw) ? raw : "en") as Locale;
   const t = await getContent(locale);
-  const VILLA = villaFacts();
   const [photos, { sameAs }, icons] = await Promise.all([getPhotos(), getContact(), getIcons()]);
 
   const rooms: Array<{ cat: string; title: string; text: string }> = [
@@ -71,32 +70,34 @@ export default async function VillaPage({
           ]),
         }}
       />
-      <PageHero
+      <EditorialHero
         eyebrow={t.intro.label}
         title={t.nav.villa}
         intro={t.meta.descVilla}
         image={firstOf(photos, "exterior")}
       />
 
-      {/* Key figures */}
-      <section className="border-b border-ink/10 bg-white">
-        <div className="mx-auto grid max-w-7xl grid-cols-2 divide-x divide-ink/10 px-5 text-center md:grid-cols-5 lg:px-8">
-          {[
-            [String(VILLA.bedrooms), t.common.bedrooms],
-            [String(VILLA.bathrooms), locale === "fr" ? "salles de bain" : "bathrooms"],
-            [String(VILLA.guests), t.common.guestsWord],
-            [`${VILLA.sizeM2} m²`, locale === "fr" ? "surface" : "living space"],
-            ["180°", locale === "fr" ? "vue mer" : "ocean view"],
-          ].map(([n, label]) => (
-            <div key={label} className="px-4 py-8">
-              <div className="font-display text-4xl text-gold">
-                <CountUp value={n} />
+      {/* the figures, as a ruled ledger (the same lines as the home page) */}
+      <section className="ov-page" aria-label={t.seo.factsTitle}>
+        <div className="ov-shell py-16 md:py-24">
+          <dl className="ov-rule grid grid-cols-2 border-t lg:grid-cols-4">
+            {t.intro.figures.map((f, i) => (
+              <div
+                key={f.value + i}
+                className={`ov-rule reveal flex flex-col justify-between gap-6 border-b py-6 pr-4 md:min-h-[13rem] md:py-8 ${
+                  i % 2 === 0 ? "border-r" : "pl-4 md:pl-8"
+                } ${i > 0 && i % 2 === 0 ? "lg:pl-8" : ""} ${i === 1 ? "lg:border-r" : ""}`}
+              >
+                <dt className="sr-only">{f.text}</dt>
+                <dd className="ov-num !text-[clamp(2.6rem,5vw,4.6rem)] text-ink/85">
+                  {f.value.split(/([°²³])/).map((part, k) => (/^[°²³]$/.test(part) ? <sup key={k}>{part}</sup> : part))}
+                </dd>
+                <dd className="max-w-[16rem] text-[0.9rem] leading-snug text-ink/60" aria-hidden>
+                  {f.text}
+                </dd>
               </div>
-              <div className="mt-1 text-[0.72rem] uppercase tracking-[0.2em] text-ink/50">
-                {label}
-              </div>
-            </div>
-          ))}
+            ))}
+          </dl>
         </div>
       </section>
 
@@ -106,63 +107,71 @@ export default async function VillaPage({
         toggle={t.seo.factsToggle}
         facts={t.seo.facts}
         icons={icons.facts}
-        className="border-b border-ink/10" />
+        className="ov-rule border-y" />
 
-      {/* Rooms — alternating layout */}
-      <section className="mx-auto max-w-7xl space-y-24 px-5 py-24 lg:px-8">
-        {rooms.map((room, i) => {
-          const photo = firstOf(photos, room.cat);
-          if (!photo) return null;
-          return (
-            <div
-              key={room.cat}
-              className={`grid items-center gap-10 lg:grid-cols-2 ${
-                i % 2 === 1 ? "lg:[&>*:first-child]:order-2" : ""
-              }`}
-            >
-              <Link
-                href={localePath(locale, `/gallery?c=${room.cat}`)}
-                className="group block reveal"
-              >
-                <Parallax className="aspect-[4/3]">
-                  <Image
-                    src={photo.url}
-                    alt={photo.alt}
-                    width={900}
-                    height={640}
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                    className="aspect-[4/3] w-full object-cover transition duration-700 group-hover:scale-105"
-                  />
-                </Parallax>
-              </Link>
-              <div className="reveal">
-                <p className="eyebrow mb-3">{String(i + 1).padStart(2, "0")}</p>
-                <h2 className="font-display text-3xl text-ink md:text-4xl">{room.title}</h2>
-                <p className="mt-4 max-w-lg leading-relaxed text-ink/70">{room.text}</p>
-              </div>
-            </div>
-          );
-        })}
+      {/* the rooms: a numbered index, photographs alternating sides */}
+      <section className="ov-page">
+        <div className="ov-shell py-24 md:py-36">
+          <SectionHead label={t.spaces.label} title={t.spaces.title} />
+          <div className="space-y-20 md:space-y-32">
+            {rooms.map((room, i) => {
+              const photo = firstOf(photos, room.cat);
+              if (!photo) return null;
+              const flip = i % 2 === 1;
+              return (
+                <article key={room.cat} className="grid items-end gap-8 lg:grid-cols-12 lg:gap-10">
+                  <Link
+                    href={localePath(locale, `/gallery?c=${room.cat}`)}
+                    className={`group reveal block lg:col-span-7 ${flip ? "lg:order-2 lg:col-start-6" : ""}`}
+                    aria-label={`${room.title} — ${t.nav.gallery}`}
+                  >
+                    <Parallax className="ov-photo aspect-[4/3]">
+                      <Image
+                        src={photo.url}
+                        alt={photo.alt}
+                        width={1100}
+                        height={825}
+                        sizes="(max-width: 1024px) 100vw, 58vw"
+                        className="aspect-[4/3] w-full object-cover"
+                      />
+                    </Parallax>
+                  </Link>
+                  <div className={`reveal lg:col-span-4 ${flip ? "lg:order-1 lg:col-start-1" : "lg:col-start-9"}`}>
+                    <p className="ov-label text-gold-dark">
+                      {String(i + 1).padStart(2, "0")} / {String(rooms.length).padStart(2, "0")}
+                    </p>
+                    <h3 className="ov-h3 mt-4 text-ink">{room.title}</h3>
+                    <p className="ov-body mt-4 max-w-md">{room.text}</p>
+                    <Link href={localePath(locale, `/gallery?c=${room.cat}`)} className="ov-link group mt-6 text-ink">
+                      {t.nav.gallery}
+                      <ArrowUpRight className="ov-arrow h-4 w-4" strokeWidth={1.4} aria-hidden />
+                    </Link>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </div>
       </section>
 
-      {/* Amenity list */}
-      <section className="bg-night py-20 text-white">
-        <div className="mx-auto max-w-7xl px-5 lg:px-8">
-          <h2 className="section-title mb-10 !text-white">{t.amenities.title}</h2>
-          <ul className="grid grid-cols-1 gap-x-10 gap-y-4 text-sm text-white/80 sm:grid-cols-2 lg:grid-cols-3">
+      {/* amenities, on the deep-sea panel */}
+      <section className="bg-sea py-24 text-white md:py-32">
+        <div className="ov-shell">
+          <SectionHead label={t.amenities.label} title={t.amenities.title} light />
+          <ul className="grid grid-cols-1 border-t border-white/12 sm:grid-cols-2 lg:grid-cols-3">
             {amenities.map(([icon, a]) => (
-              <li key={a} className="flex items-center gap-3.5 border-b border-white/10 pb-3">
+              <li key={a} className="flex items-center gap-4 border-b border-white/12 py-4 pr-6 text-[0.95rem] text-white/85">
                 <LineIcon name={icon} />
                 {a}
               </li>
             ))}
           </ul>
-          <div className="mt-12 flex flex-wrap gap-4">
-            <Link href={localePath(locale, "/tour")} className="btn-gold">
-              {t.spaces.tourCta}
-            </Link>
-            <Link href={localePath(locale, "/booking")} className="btn-outline-light">
+          <div className="mt-12 flex flex-wrap gap-3">
+            <Link href={localePath(locale, "/booking")} className="ov-btn ov-btn-gold">
               {t.hero.cta}
+            </Link>
+            <Link href={localePath(locale, "/tour")} className="ov-btn ov-btn-glass">
+              {t.spaces.tourCta}
             </Link>
           </div>
         </div>

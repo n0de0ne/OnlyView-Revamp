@@ -1,5 +1,7 @@
 "use client";
 
+import { ChefHat, ConciergeBell, Phone, Sailboat, UtensilsCrossed, Waves } from "lucide-react";
+
 import Link from "next/link";
 import { useState } from "react";
 import type { SerializedReservationExtra } from "@/lib/extras";
@@ -26,7 +28,7 @@ export const CONCIERGE_STATUS: Record<string, { label: string; className: string
   cancelled: { label: "Annulé", className: "bg-slate-100 text-slate-500 line-through" },
 };
 
-const ICON: Record<string, string> = { restaurant: "🍽️", boat: "⛵", chef: "👨‍🍳", activity: "🤿" };
+const ICON: Record<string, typeof ConciergeBell> = { restaurant: UtensilsCrossed, boat: Sailboat, chef: ChefHat, activity: Waves };
 
 /** "sam. 2 oct." */
 const day = (iso: string | null) =>
@@ -112,7 +114,7 @@ export function ConciergeRequestList({
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span aria-hidden>{ICON[i.category ?? ""] ?? "🛎️"}</span>
+                    {(() => { const Ic = ICON[i.category ?? ""] ?? ConciergeBell; return <Ic className="h-4 w-4 shrink-0 text-gold-dark" strokeWidth={1.5} aria-hidden />; })()}
                     <span className="font-semibold text-slate-800">{i.label}</span>
                     <span className={`rounded px-1.5 py-0.5 text-[0.65rem] font-semibold uppercase ${st.className}`}>
                       {st.label}
@@ -141,7 +143,7 @@ export function ConciergeRequestList({
                     <div className="mt-1 flex flex-wrap gap-3 text-xs">
                       {i.placePhone && (
                         <a href={`tel:${i.placePhone.replace(/\s/g, "")}`} className="text-navy underline">
-                          ☎ {i.placePhone}
+                          <Phone className="inline h-3.5 w-3.5 -mt-0.5 mr-1" strokeWidth={1.5} aria-hidden />{i.placePhone}
                         </a>
                       )}
                       {i.placeBookingUrl && (

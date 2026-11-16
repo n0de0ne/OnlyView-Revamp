@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { isLocale, type Locale } from "@/lib/i18n";
 import { pageMetadata } from "@/lib/seo";
-import { PageHero } from "@/components/site/PageHero";
+import { EditorialHero } from "@/components/site/ov/EditorialHero";
 import { OWNER_EMAIL } from "@/lib/contact";
 
 export const revalidate = 3600;
@@ -34,25 +34,26 @@ export default async function LegalPage({
 
   return (
     <>
-      <PageHero title={fr ? "Mentions légales" : "Legal Notice"} />
-      <section className="prose-sm mx-auto max-w-3xl px-5 py-16 leading-relaxed text-ink/75 lg:px-8">
-        <h2 className="font-display mb-3 text-2xl text-ink">{fr ? "Éditeur" : "Publisher"}</h2>
-        <p className="mb-8">
+      <EditorialHero title={fr ? "Mentions légales" : "Legal Notice"} compact />
+      <section className="ov-shell pb-20 md:pb-28">
+        <div className="ov-prose ov-rule max-w-3xl border-t pt-4">
+        <h2>{fr ? "Éditeur" : "Publisher"}</h2>
+        <p>
           Villa ONLY VIEW — SCI Efis
           <br />
           Pointe Milou, 97133 Saint-Barthélemy, France
           <br />
           {OWNER_EMAIL}
         </p>
-        <h2 className="font-display mb-3 text-2xl text-ink">
+        <h2>
           {fr ? "Location saisonnière" : "Seasonal rental"}
         </h2>
-        <p className="mb-8">
+        <p>
           {fr
             ? "La location de la Villa ONLY VIEW est une location saisonnière meublée de courte durée régie par le droit applicable à Saint-Barthélemy. Un contrat de location est établi et signé pour chaque séjour ; un acompte de 30 % est demandé à la réservation, le solde 30 jours avant l'arrivée. Une taxe de séjour locale de 5 % s'applique."
             : "Villa ONLY VIEW is rented as a short-term furnished seasonal rental governed by the law applicable in Saint-Barthélemy. A rental agreement is issued and signed for every stay; a 30% deposit is due at booking and the balance 30 days before arrival. A 5% local tourist tax applies."}
         </p>
-        <h2 className="font-display mb-3 text-2xl text-ink">
+        <h2>
           {fr ? "Propriété intellectuelle" : "Intellectual property"}
         </h2>
         <p>
@@ -60,6 +61,7 @@ export default async function LegalPage({
             ? "L'ensemble des textes, photographies et éléments graphiques de ce site sont la propriété de la Villa ONLY VIEW et ne peuvent être reproduits sans autorisation écrite."
             : "All texts, photographs and graphic elements on this site are the property of Villa ONLY VIEW and may not be reproduced without written permission."}
         </p>
+        </div>
       </section>
     </>
   );

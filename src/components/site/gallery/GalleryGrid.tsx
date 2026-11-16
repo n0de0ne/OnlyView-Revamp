@@ -180,8 +180,8 @@ export function GalleryGrid({ photos, categories, labels, allLabel, initialCateg
   return (
     <div>
       {/* pinned room filters */}
-      <div className="sticky top-[calc(max(0.6rem,env(safe-area-inset-top))+3.1rem)] z-30 -mx-5 mb-6 bg-sand/80 py-2.5 backdrop-blur-xl backdrop-saturate-150 xl:top-[4.75rem] lg:-mx-8">
-        <div className="scroll-none flex gap-2 overflow-x-auto px-5 lg:px-8" role="group" aria-label={allLabel}>
+      <div className="sticky top-[calc(max(0.6rem,env(safe-area-inset-top))+3.1rem)] z-30 -mx-5 mb-8 bg-paper/85 py-2.5 backdrop-blur-xl backdrop-saturate-150 md:-mx-10 xl:top-[4.5rem]">
+        <div className="scroll-none flex gap-2 overflow-x-auto px-5 md:px-10" role="group" aria-label={allLabel}>
           {["all", ...sections.map((s) => s.cat)].map((c) => {
             const active = cat === c;
             const count = c === "all" ? photos.length : sections.find((s) => s.cat === c)?.photos.length ?? 0;
@@ -192,7 +192,7 @@ export function GalleryGrid({ photos, categories, labels, allLabel, initialCateg
                 onClick={() => pickCat(c)}
                 aria-pressed={active}
                 className={`tap flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[0.8rem] font-medium transition-colors ${
-                  active ? "bg-ink text-white shadow-sm" : "bg-ink/[0.06] text-ink/75 hover:bg-ink/10"
+                  active ? "bg-ink text-white" : "border border-ink/12 text-ink/75 hover:border-ink/40"
                 }`}
               >
                 {c === "all" ? allLabel : labels[c] ?? c}
@@ -205,12 +205,12 @@ export function GalleryGrid({ photos, categories, labels, allLabel, initialCateg
 
       <div ref={gridRef} style={{ touchAction: "pan-y" }}>
         {shown.map((s) => (
-          <section key={s.cat} className="mb-10 last:mb-0" aria-labelledby={`room-${s.cat}`}>
-            <div className="mb-3 flex items-baseline justify-between gap-3">
-              <h2 id={`room-${s.cat}`} className="font-display text-[1.6rem] leading-none text-ink sm:text-3xl">
+          <section key={s.cat} className="mb-14 last:mb-0" aria-labelledby={`room-${s.cat}`}>
+            <div className="mb-4 flex items-baseline justify-between gap-3">
+              <h2 id={`room-${s.cat}`} className="ov-h3 leading-none text-ink">
                 {labels[s.cat] ?? s.cat}
               </h2>
-              <span className="text-[0.8rem] tabular-nums text-ink/45">
+              <span className="ov-label text-ink/45">
                 {s.photos.length} {i18n.photos}
               </span>
             </div>

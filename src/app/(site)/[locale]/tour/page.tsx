@@ -6,7 +6,7 @@ import { getPhotos } from "@/lib/photos";
 import { getSettings } from "@/lib/settings";
 import { TourExperience, type TourStop } from "@/components/site/TourExperience";
 import { Tour3D } from "@/components/site/Tour3D";
-import { PageHero } from "@/components/site/PageHero";
+import { EditorialHero } from "@/components/site/ov/EditorialHero";
 
 export const revalidate = 300;
 
@@ -70,7 +70,7 @@ export default async function TourPage({
           ),
         }}
       />
-      <PageHero eyebrow={t.tour.label} title={t.tour.title} intro={t.tour.intro} />
+      <EditorialHero eyebrow={t.tour.label} title={t.tour.title} intro={t.tour.intro} />
       {tour3dUrl && (
         <Tour3D
           url={tour3dUrl}

@@ -158,7 +158,7 @@ export function MobileTabBar({ locale }: { locale: Locale }) {
                 tabIndex={hidden ? -1 : undefined}
                 onClick={interceptWhenCollapsed}
                 className={`tap relative flex min-w-0 flex-col items-center justify-center gap-[3px] overflow-hidden rounded-full ${
-                  active ? "text-navy" : "text-ink/55"
+                  active ? "text-ink" : "text-ink/55"
                 }`}
                 style={{
                   flex: hidden ? "0 0 0px" : "1 1 0px",
@@ -181,7 +181,7 @@ export function MobileTabBar({ locale }: { locale: Locale }) {
                 </span>
                 <span
                   className={`relative block max-w-full truncate text-[0.6rem] font-semibold tracking-[0.01em] ${
-                    active ? "text-navy" : "text-ink/65"
+                    active ? "text-ink" : "text-ink/65"
                   }`}
                   style={{
                     maxHeight: collapsed ? 0 : "0.85rem",
@@ -199,7 +199,7 @@ export function MobileTabBar({ locale }: { locale: Locale }) {
         <Link
           href={bookHref}
           aria-current={onBooking ? "page" : undefined}
-          className="tap flex shrink-0 flex-col items-center justify-center gap-[3px] overflow-hidden rounded-full text-white"
+          className="tap flex shrink-0 flex-col items-center justify-center gap-[3px] overflow-hidden rounded-full text-night"
           style={{
             height: collapsed ? "2.7rem" : "3.4rem",
             paddingInline: collapsed ? "0.9rem" : "1rem",

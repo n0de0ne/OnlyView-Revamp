@@ -35,7 +35,7 @@ export function ContactForm({ locale }: { locale: Locale }) {
 
   if (state === "done") {
     return (
-      <p className="border border-st-free/40 bg-st-free/10 px-5 py-4 text-sm text-st-free">
+      <p className="rounded-2xl border border-st-free/30 bg-st-free/[0.07] px-5 py-4 text-sm text-st-free">
         ✓ {t.contact.sent}
       </p>
     );
@@ -87,7 +87,7 @@ export function ContactForm({ locale }: { locale: Locale }) {
               : t.booking.error}
         </p>
       )}
-      <button type="submit" disabled={state === "sending"} className="btn-gold">
+      <button type="submit" disabled={state === "sending"} className="ov-btn ov-btn-gold">
         {state === "sending" ? t.booking.sending : t.contact.send}
       </button>
     </form>

@@ -195,7 +195,7 @@ export function AdminPlaceMap(props: AdminPlaceMapProps) {
       <div ref={elRef} className="h-72 w-full overflow-hidden rounded-xl border border-slate-200 sm:h-80" />
       <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600">
         <button type="button" className="abtn-ghost !px-3 !py-1.5 text-xs" onClick={runTest} disabled={props.lat == null}>
-          🚗 Tester l&apos;itinéraire
+          Tester l&apos;itinéraire
         </button>
         {test?.status === "loading" && <span>Calcul…</span>}
         {test?.status === "ok" && (

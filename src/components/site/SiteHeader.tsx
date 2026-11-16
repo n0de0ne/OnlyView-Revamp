@@ -3,10 +3,18 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { ArrowUpRight, X } from "lucide-react";
 import { getDict, localePath, type Locale } from "@/lib/i18n";
 
 /** Apple's interruptible-spring curve, shared with the tab bar. */
 const SPRING = "cubic-bezier(0.32, 0.72, 0, 1)";
+
+/**
+ * Pages that open on a dark picture: the header starts transparent with
+ * white lettering there. Everywhere else the pages open on warm paper and
+ * the header is ink on paper from the first pixel.
+ */
+const DARK_TOP = /^\/(fr\/?)?$|^\/(fr\/)?(account|contracts)(\/|$)/;
 
 export function SiteHeader({ locale }: { locale: Locale }) {
   const t = getDict(locale);
@@ -14,8 +22,8 @@ export function SiteHeader({ locale }: { locale: Locale }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
-  // Transparent over the home hero, glass everywhere else / on scroll
-  const isHome = pathname === "/" || pathname === "/fr";
+  const publicPath = pathname.replace(/^\/en(?=\/|$)/, "") || "/";
+  const darkTop = DARK_TOP.test(publicPath);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -33,29 +41,28 @@ export function SiteHeader({ locale }: { locale: Locale }) {
     };
   }, [open]);
 
-  const solid = scrolled || !isHome;
+  /** over the opening picture: transparent, white lettering */
+  const overPicture = darkTop && !scrolled;
 
-  const links: Array<[string, string]> = [
+  /** [href, label, only on wide screens] — seven links do not fit 1280px */
+  const links: Array<[string, string, boolean?]> = [
     [localePath(locale, "/villa"), t.nav.villa],
     [localePath(locale, "/tour"), t.nav.tour],
     [localePath(locale, "/gallery"), t.nav.gallery],
     [localePath(locale, "/rates"), t.nav.rates],
+    [localePath(locale, "/pointe-milou"), t.nav.pointeMilou, true],
     [localePath(locale, "/guide"), t.nav.guide],
-    [localePath(locale, "/reviews"), t.nav.reviews],
     [localePath(locale, "/contact"), t.nav.contact],
   ];
-  /** the tab bar already carries villa / tour / gallery / rates / booking;
-      the island map is one link too many for the desktop bar (it wraps) and
-      lives in the menu, the footer, the guide hub and the location page */
+  /** the mobile menu: everything the tab bar doesn't carry */
   const secondary: Array<[string, string]> = [
+    [localePath(locale, "/pointe-milou"), t.nav.pointeMilou],
     [localePath(locale, "/guide"), t.nav.guide],
     [localePath(locale, "/map"), t.nav.map],
     [localePath(locale, "/reviews"), t.nav.reviews],
     [localePath(locale, "/why-book-direct"), t.footer.whyDirect],
-    [localePath(locale, "/pointe-milou"), t.nav.pointeMilou],
     [localePath(locale, "/faq"), "FAQ"],
     [localePath(locale, "/contact"), t.nav.contact],
-    [localePath(locale, "/account"), t.nav.account],
   ];
 
   // Language switch keeps the current page. Static pages are prerendered
@@ -63,66 +70,66 @@ export function SiteHeader({ locale }: { locale: Locale }) {
   // HTML crawlers read carries `/en/villa` and `/fr/en/villa` links.
   const pathNoLocale = pathname.replace(/^\/(fr|en)(?=\/|$)/, "") || "/";
   const frHref = pathNoLocale === "/" ? "/fr" : `/fr${pathNoLocale}`;
+  const isCurrent = (href: string) => publicPath === href || (href !== "/" && publicPath.startsWith(href + "/"));
+
+  const ink = overPicture ? "text-white" : "text-ink";
+  const soft = overPicture ? "text-white/75 hover:text-white" : "text-ink/65 hover:text-ink";
 
   return (
     <>
       {/* ── Desktop / large screens ── */}
       <header
-        className={`fixed inset-x-0 top-0 z-50 hidden transition-all duration-500 xl:block ${
-          solid ? "glass-dark" : "bg-gradient-to-b from-black/55 to-transparent"
+        className={`fixed inset-x-0 top-0 z-50 hidden transition-[background-color,box-shadow,backdrop-filter] duration-500 xl:block ${
+          overPicture
+            ? "bg-gradient-to-b from-black/35 to-transparent"
+            : "bg-paper/85 shadow-[0_1px_0_rgba(16,24,32,0.08)] backdrop-blur-xl backdrop-saturate-150"
         }`}
       >
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-8 py-4">
+        <div className="ov-shell flex h-[4.5rem] items-center justify-between gap-8">
           <Link
             href={localePath(locale, "/")}
-            className="group flex flex-col leading-none"
+            className="group flex shrink-0 items-baseline gap-3 leading-none"
             aria-label="Villa ONLY VIEW — home"
           >
-            <span className="font-display text-[1.35rem] tracking-[0.32em] text-white transition group-hover:text-gold">
+            <span className={`font-display text-[1.45rem] tracking-[0.26em] transition group-hover:text-gold ${ink}`}>
               ONLY&nbsp;VIEW
             </span>
-            <span className="mt-1 text-[0.55rem] font-medium uppercase tracking-[0.42em] text-gold">
-              Saint-Barthélemy
+            <span className={`ov-label !text-[0.6rem] ${overPicture ? "text-white/60" : "text-ink/45"}`}>
+              St&nbsp;Barth
             </span>
           </Link>
 
-          <nav className="flex items-center gap-7" aria-label="Main">
-            {links.map(([href, label]) => (
-              <Link
-                key={href}
-                href={href}
-                className={`text-[0.72rem] font-medium uppercase tracking-[0.18em] transition hover:text-gold ${
-                  pathname === href ? "text-gold" : "text-white/85"
-                }`}
-              >
-                {label}
-              </Link>
-            ))}
+          <nav className="flex items-center gap-6 2xl:gap-8" aria-label="Main">
+            {links.map(([href, label, wide]) => {
+              const current = isCurrent(href.replace(/^\/en(?=\/|$)/, "") || "/");
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  aria-current={current ? "page" : undefined}
+                  className={`relative py-2 text-[0.84rem] transition ${current ? ink : soft} ${wide ? "hidden 2xl:block" : ""}`}
+                >
+                  {label}
+                  {current && <span className="absolute inset-x-0 -bottom-0.5 h-px bg-gold" aria-hidden />}
+                </Link>
+              );
+            })}
           </nav>
 
-          <div className="flex items-center gap-5">
-            <div className="flex items-center gap-2 text-[0.72rem] font-semibold uppercase tracking-widest">
-              <Link
-                href={pathNoLocale}
-                className={locale === "en" ? "text-gold" : "text-white/60 hover:text-white"}
-              >
+          <div className="flex shrink-0 items-center gap-5">
+            <div className="ov-label flex items-center gap-1.5">
+              <Link href={pathNoLocale} className={locale === "en" ? "text-gold" : soft} hrefLang="en">
                 EN
               </Link>
-              <span className="text-white/30">·</span>
-              <Link
-                href={frHref}
-                className={locale === "fr" ? "text-gold" : "text-white/60 hover:text-white"}
-              >
+              <span className={overPicture ? "text-white/30" : "text-ink/25"}>/</span>
+              <Link href={frHref} className={locale === "fr" ? "text-gold" : soft} hrefLang="fr">
                 FR
               </Link>
             </div>
-            <Link
-              href={localePath(locale, "/account")}
-              className="text-[0.72rem] font-medium uppercase tracking-[0.18em] text-white/85 transition hover:text-gold"
-            >
+            <Link href={localePath(locale, "/account")} className={`text-[0.84rem] transition ${soft}`}>
               {t.nav.account}
             </Link>
-            <Link href={localePath(locale, "/booking")} className="btn-gold !px-5 !py-2.5">
+            <Link href={localePath(locale, "/booking")} className="ov-btn ov-btn-gold !min-h-[2.6rem] !px-5">
               {t.nav.booking}
             </Link>
           </div>
@@ -135,9 +142,9 @@ export function SiteHeader({ locale }: { locale: Locale }) {
           and the menu sits in its own glass button on the right. */}
       {/* Safari 26 ignores theme-color and tints the status bar from an opaque,
           full-width fixed element (≥6px) at the top edge, else from the body's
-          sand background, which showed as a white strip above the hero. The
-          home-screen app draws under its translucent status bar instead, so
-          the band is hidden there (.browser-only). */}
+          background, which showed as a white strip above the hero. The
+          home-screen app draws under its status bar instead, so the band is
+          hidden there (.browser-only). */}
       <div aria-hidden className="browser-only pointer-events-none fixed inset-x-0 top-0 z-50 h-1.5 bg-night xl:hidden" />
       <header
         className="fixed inset-x-0 top-0 z-50 xl:hidden"
@@ -166,11 +173,11 @@ export function SiteHeader({ locale }: { locale: Locale }) {
             </span>
             {/* the subtitle folds away as the page scrolls, like an iOS large title */}
             <span
-              className="block overflow-hidden whitespace-nowrap text-[0.45rem] font-medium uppercase tracking-[0.4em] text-gold"
+              className="block overflow-hidden whitespace-nowrap font-mono text-[0.5rem] uppercase tracking-[0.3em] text-gold"
               style={{
                 maxHeight: scrolled ? 0 : "0.9rem",
                 opacity: scrolled ? 0 : 1,
-                marginTop: scrolled ? 0 : "0.125rem",
+                marginTop: scrolled ? 0 : "0.2rem",
                 transition: `max-height 520ms ${SPRING}, opacity 260ms ease, margin-top 520ms ${SPRING}`,
               }}
             >
@@ -190,75 +197,72 @@ export function SiteHeader({ locale }: { locale: Locale }) {
             }}
           >
             <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
-              <path
-                d="M4 7h16M4 12h16M4 17h16"
-                stroke="currentColor"
-                strokeWidth="1.7"
-                strokeLinecap="round"
-              />
+              <path d="M4 9h16M4 15h16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
           </button>
         </div>
       </header>
 
-      {/* ── Mobile sheet: everything the tab bar doesn't carry ── */}
-      <div
-        className={`fixed inset-0 z-[60] xl:hidden ${open ? "" : "pointer-events-none"}`}
-        aria-hidden={!open}
-      >
+      {/* ── Mobile menu: an editorial sheet on warm paper ── */}
+      <div className={`fixed inset-0 z-[60] xl:hidden ${open ? "" : "pointer-events-none"}`} aria-hidden={!open}>
         <div
-          className={`absolute inset-0 bg-night/45 transition-opacity duration-300 ${
-            open ? "opacity-100" : "opacity-0"
-          }`}
+          className={`absolute inset-0 bg-night/50 transition-opacity duration-300 ${open ? "opacity-100" : "opacity-0"}`}
           onClick={() => setOpen(false)}
         />
         <div
-          className={`glass absolute inset-x-2 bottom-2 rounded-[2rem] p-5 transition-all duration-400 ${
+          className={`absolute inset-x-2 bottom-2 overflow-hidden rounded-[1.75rem] bg-paper text-ink shadow-2xl transition-all duration-400 ${
             open ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
           }`}
-          style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}
+          style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
           role="dialog"
           aria-modal="true"
+          aria-label={t.navShort.more}
         >
-          <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-ink/20" />
-          <nav className="grid gap-0.5" aria-label="Secondaire">
-            {secondary.map(([href, label]) => (
-              <Link
-                key={href}
-                href={href}
-                className={`tap rounded-2xl px-4 py-3 text-[0.95rem] font-medium ${
-                  pathname === href ? "bg-white/70 text-navy" : "text-ink/80 hover:bg-white/50"
-                }`}
-              >
-                {label}
-              </Link>
-            ))}
+          <div className="flex items-center justify-between px-5 pb-2 pt-4">
+            <span className="ov-label text-ink/45">Saint-Barthélemy</span>
+            <button
+              onClick={() => setOpen(false)}
+              className="tap flex h-11 w-11 items-center justify-center rounded-full bg-ink/6 text-ink/70"
+              aria-label="Close"
+            >
+              <X className="h-5 w-5" strokeWidth={1.5} />
+            </button>
+          </div>
+          <nav className="px-5" aria-label="Secondaire">
+            {secondary.map(([href, label]) => {
+              const current = isCurrent(href.replace(/^\/en(?=\/|$)/, "") || "/");
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`tap ov-rule flex items-center justify-between border-b py-3 font-display text-[1.65rem] leading-tight ${
+                    current ? "text-gold-dark" : "text-ink"
+                  }`}
+                >
+                  {label}
+                  <ArrowUpRight className="h-5 w-5 text-ink/35" strokeWidth={1.25} aria-hidden />
+                </Link>
+              );
+            })}
           </nav>
-          <div className="mt-4 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-1 rounded-full bg-white/60 p-1 text-xs font-semibold uppercase tracking-widest">
+          <div className="mt-4 flex items-center justify-between gap-3 px-5">
+            <div className="flex items-center gap-1 rounded-full bg-ink/6 p-1 font-mono text-xs uppercase tracking-widest">
               <Link
                 href={pathNoLocale}
-                className={`rounded-full px-4 py-3 ${
-                  locale === "en" ? "bg-navy text-white" : "text-ink/60"
-                }`}
+                className={`rounded-full px-4 py-3 ${locale === "en" ? "bg-ink text-white" : "text-ink/60"}`}
               >
                 EN
               </Link>
               <Link
                 href={frHref}
-                className={`rounded-full px-4 py-3 ${
-                  locale === "fr" ? "bg-navy text-white" : "text-ink/60"
-                }`}
+                className={`rounded-full px-4 py-3 ${locale === "fr" ? "bg-ink text-white" : "text-ink/60"}`}
               >
                 FR
               </Link>
             </div>
-            <button
-              onClick={() => setOpen(false)}
-              className="tap rounded-full bg-ink/8 px-5 py-2.5 text-sm font-medium text-ink/70"
-            >
-              ✕
-            </button>
+            <Link href={localePath(locale, "/account")} className="ov-btn ov-btn-line">
+              {t.nav.account}
+            </Link>
           </div>
         </div>
       </div>

@@ -1,5 +1,7 @@
 "use client";
 
+import { Archive, ArchiveRestore, Ban, Calculator, ChartColumn, CircleCheck, CreditCard, FilePenLine, FileText, Gift, Link2, Mail, Repeat, Save, Sparkles, Tag, Trash2, TriangleAlert } from "lucide-react";
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -122,15 +124,15 @@ type StatusBtn = [string, string, string];
 
 /** The business uses two statuses, exactly like the PHP admin. */
 const STATUS_BTNS: StatusBtn[] = [
-  ["option", "🟠 Option", "border-amber-400 bg-amber-50 text-amber-700"],
-  ["confirmed", "🔴 Confirmé", "border-red-400 bg-red-50 text-red-700"],
+  ["option", "Option", "border-amber-400 bg-amber-50 text-amber-700"],
+  ["confirmed", "Confirmé", "border-red-400 bg-red-50 text-red-700"],
 ];
 
 /** Statuses that only exist in older rows — shown when set, never offered. */
 const LEGACY_STATUS_BTNS: StatusBtn[] = [
-  ["pending", "🟣 En attente", "border-violet-400 bg-violet-50 text-violet-700"],
-  ["blocked", "⬛ Bloqué", "border-slate-400 bg-slate-100 text-slate-700"],
-  ["cancelled", "✖ Annulé", "border-slate-300 bg-white text-slate-400"],
+  ["pending", "En attente", "border-violet-400 bg-violet-50 text-violet-700"],
+  ["blocked", "Bloqué", "border-slate-400 bg-slate-100 text-slate-700"],
+  ["cancelled", "Annulé", "border-slate-300 bg-white text-slate-400"],
 ];
 
 export function ReservationEditor({
@@ -700,7 +702,7 @@ export function ReservationEditor({
           </div>
         )}
         <button onClick={save} disabled={saving} className="abtn-primary">
-          {saving ? "Enregistrement…" : "💾 Enregistrer"}
+          {saving ? "Enregistrement…" : <><Save className="h-4 w-4" strokeWidth={1.5} aria-hidden /> Enregistrer</>}
         </button>
       </div>
 
@@ -715,17 +717,18 @@ export function ReservationEditor({
             <button
               key={value}
               onClick={() => set("status", value)}
-              className={`rounded-xl border-2 px-4 py-2 text-sm font-semibold transition ${
+              className={`inline-flex items-center gap-2 rounded-full border-2 px-4 py-2 text-sm font-semibold transition ${
                 form.status === value ? cls : "border-slate-200 bg-white text-slate-400 hover:border-slate-300"
               }`}
             >
+              <span className="h-2 w-2 rounded-full bg-current" aria-hidden />
               {label}
             </button>
           ))}
         </div>
         {form.status === "option" && (
           <div className="afield mt-4 max-w-56">
-            <label>⏳ Option valable jusqu&apos;au</label>
+            <label>Option valable jusqu&apos;au</label>
             <input
               type="date"
               value={form.optionExpires}
@@ -763,7 +766,7 @@ export function ReservationEditor({
                     onChange={(e) => setSendConfirmation(e.target.checked)}
                     className="h-5 w-5 accent-navy"
                   />
-                  ✉️ Envoyer l&apos;email de confirmation au client à l&apos;enregistrement
+                  Envoyer l&apos;email de confirmation au client à l&apos;enregistrement
                 </label>
                 {reservationId && (
                   <button
@@ -853,10 +856,10 @@ export function ReservationEditor({
               <span className="font-semibold text-navy">
                 {linkedClient.firstname} {linkedClient.lastname}
               </span>
-              {linkedClient.isVip && " ⭐ VIP"}
+              {linkedClient.isVip && " · VIP"}
               {linkedClient.blacklisted && (
                 <span className="ml-2 rounded bg-red-100 px-1.5 py-0.5 text-xs text-red-700">
-                  ⛔ Liste noire
+                  <Ban className="inline h-4 w-4 -mt-0.5 mr-1.5 align-middle" strokeWidth={1.5} aria-hidden />Liste noire
                 </span>
               )}
               {linkedClient.discountPercent > 0 && (
@@ -881,7 +884,7 @@ export function ReservationEditor({
           form.discountPercent !== linkedClient.discountPercent && (
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm">
               <span className="text-emerald-800">
-                🎁 Remise client habituelle de <strong>{linkedClient.discountPercent}%</strong>
+                <Gift className="inline h-4 w-4 -mt-0.5 mr-1.5 align-middle" strokeWidth={1.5} aria-hidden />Remise client habituelle de <strong>{linkedClient.discountPercent}%</strong>
                 {linkedClient.discountReason ? ` — ${linkedClient.discountReason}` : ""}
               </span>
               <button
@@ -927,8 +930,8 @@ export function ReservationEditor({
                   className="flex w-full items-center justify-between px-4 py-2.5 text-left text-sm hover:bg-slate-50"
                 >
                   <span>
-                    {c.firstname} {c.lastname} {c.isVip && "⭐"}
-                    {c.blacklisted && " ⛔"}
+                    {c.firstname} {c.lastname} {c.isVip && "· VIP"}
+                    {c.blacklisted && " · liste noire"}
                   </span>
                   <span className="text-xs text-slate-400">{c.email}</span>
                 </button>
@@ -1055,7 +1058,7 @@ export function ReservationEditor({
               onChange={(e) => set("useVariable", e.target.checked)}
               className="h-5 w-5 accent-navy"
             />
-            🔄 Chambres / tarifs variables par période
+            <Repeat className="inline h-4 w-4 -mt-0.5 mr-1.5 align-middle" strokeWidth={1.5} aria-hidden />Chambres / tarifs variables par période
           </label>
         }
         action={
@@ -1156,7 +1159,7 @@ export function ReservationEditor({
             })}
             {coveredNights && coveredNights.uncovered > 0 && (
               <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
-                ⚠ {coveredNights.uncovered} nuit(s) hors périodes — facturées au tarif saison avec{" "}
+                <TriangleAlert className="inline h-4 w-4 -mt-0.5 mr-1.5 align-middle" strokeWidth={1.5} aria-hidden />{coveredNights.uncovered} nuit(s) hors périodes — facturées au tarif saison avec{" "}
                 {form.bedrooms} chambres.
               </p>
             )}
@@ -1165,7 +1168,7 @@ export function ReservationEditor({
       </Card>
 
       {/* Pricing */}
-      <Card title="💰 Tarification">
+      <Card title={<span className="inline-flex items-center gap-2"><Calculator className="h-4 w-4 text-gold-dark" strokeWidth={1.5} aria-hidden />Tarification</span>}>
         {ratePin && loaded && (
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900">
             <span>
@@ -1270,10 +1273,10 @@ export function ReservationEditor({
               onChange={(e) => set("offerOneRoom", e.target.checked)}
               className="h-5 w-5 accent-gold"
             />
-            🏷️ Offrir 1 chambre
+            <Tag className="inline h-4 w-4 -mt-0.5 mr-1.5 align-middle" strokeWidth={1.5} aria-hidden />Offrir 1 chambre
           </label>
           <label className="flex items-center gap-2">
-            🎁 Nuits offertes :
+            <Gift className="inline h-4 w-4 -mt-0.5 mr-1.5 align-middle" strokeWidth={1.5} aria-hidden />Nuits offertes :
             <input
               type="number"
               min="0"
@@ -1290,7 +1293,7 @@ export function ReservationEditor({
               onChange={(e) => set("noTax", e.target.checked)}
               className="h-5 w-5 accent-gold"
             />
-            🎁 Offrir la taxe de séjour
+            <Gift className="inline h-4 w-4 -mt-0.5 mr-1.5 align-middle" strokeWidth={1.5} aria-hidden />Offrir la taxe de séjour
           </label>
         </div>
 
@@ -1299,11 +1302,11 @@ export function ReservationEditor({
           <div className="mt-5 space-y-1.5 rounded-xl bg-gradient-to-br from-navy to-navy-deep p-5 text-sm text-white">
             <Row label="Prix de base HT" value={fmtUSD(quote.baseBeforeOffers)} />
             {quote.offerOneRoomDiscount > 0 && (
-              <Row label="🏷️ 1 chambre offerte" value={`-${fmtUSD(quote.offerOneRoomDiscount)}`} accent="text-amber-300" />
+              <Row label="1 chambre offerte" value={`-${fmtUSD(quote.offerOneRoomDiscount)}`} accent="text-amber-300" />
             )}
             {quote.freeNightsDiscount > 0 && (
               <Row
-                label={`🎁 Nuits offertes (${form.freeNights})`}
+                label={`Nuits offertes (${form.freeNights})`}
                 value={`-${fmtUSD(quote.freeNightsDiscount)}`}
                 accent="text-amber-300"
               />
@@ -1351,7 +1354,7 @@ export function ReservationEditor({
               onClick={() => setShowProfit((v) => !v)}
               className="flex w-full items-center justify-between rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50"
             >
-              📊 Analyse de rentabilité
+              <ChartColumn className="inline h-4 w-4 -mt-0.5 mr-1.5 align-middle" strokeWidth={1.5} aria-hidden />Analyse de rentabilité
               <span>{showProfit ? "▲" : "▼"}</span>
             </button>
             {showProfit && (
@@ -1389,7 +1392,7 @@ export function ReservationEditor({
 
       {/* Payments */}
       <Card
-        title="💳 Paiement"
+        title={<span className="inline-flex items-center gap-2"><CreditCard className="h-4 w-4 text-gold-dark" strokeWidth={1.5} aria-hidden />Paiement</span>}
         action={
           reservationId && (
             <button onClick={() => setPayModal(true)} className="abtn-ghost !px-2.5 !py-1 text-xs">
@@ -1405,10 +1408,10 @@ export function ReservationEditor({
             onChange={(e) => set("balanceReceived", e.target.checked)}
             className="h-4 w-4 accent-emerald-600"
           />
-          ✔ Paiement complet reçu
+          <CircleCheck className="inline h-4 w-4 -mt-0.5 mr-1.5 align-middle" strokeWidth={1.5} aria-hidden />Paiement complet reçu
           {loyaltyEnabled && form.balanceReceived && form.clientId && (
             <span className="ml-auto text-xs font-normal">
-              ✦ points fidélité attribués à l&apos;enregistrement
+              <Sparkles className="inline h-4 w-4 -mt-0.5 mr-1.5 align-middle" strokeWidth={1.5} aria-hidden />points fidélité attribués à l&apos;enregistrement
             </span>
           )}
         </label>
@@ -1603,7 +1606,7 @@ export function ReservationEditor({
 
       {/* Documents & actions */}
       {reservationId && (
-        <Card title="📄 Contrat & espace client">
+        <Card title={<span className="inline-flex items-center gap-2"><FileText className="h-4 w-4 text-gold-dark" strokeWidth={1.5} aria-hidden />Contrat & espace client</span>}>
           <div className="flex flex-wrap items-center gap-2">
             <button onClick={() => generateContract("en", false)} className="abtn-ghost">
               Contrat EN — lien
@@ -1616,14 +1619,14 @@ export function ReservationEditor({
               onClick={() => generateContract(undefined, true)}
               className="abtn-primary"
             >
-              ✍️ Envoyer pour signature
+              <FilePenLine className="inline h-4 w-4 -mt-0.5 mr-1.5 align-middle" strokeWidth={1.5} aria-hidden />Envoyer pour signature
             </button>
             <span className="mx-2 hidden h-6 w-px bg-slate-200 sm:block" />
             <button onClick={() => portalLink(false)} className="abtn-ghost">
-              🔗 Lien espace client
+              <Link2 className="inline h-4 w-4 -mt-0.5 mr-1.5 align-middle" strokeWidth={1.5} aria-hidden />Lien espace client
             </button>
             <button onClick={() => portalLink(true)} className="abtn-ghost">
-              ✉️ Envoyer l&apos;accès client
+              <Mail className="inline h-4 w-4 -mt-0.5 mr-1.5 align-middle" strokeWidth={1.5} aria-hidden />Envoyer l&apos;accès client
             </button>
           </div>
           {unsavedDates && (
@@ -1730,11 +1733,11 @@ export function ReservationEditor({
               }}
               className="abtn-ghost"
             >
-              {loaded?.isArchived ? "📤 Désarchiver" : "🗄️ Archiver"}
+              {loaded?.isArchived ? <><ArchiveRestore className="h-4 w-4" strokeWidth={1.5} aria-hidden /> Désarchiver</> : <><Archive className="h-4 w-4" strokeWidth={1.5} aria-hidden /> Archiver</>}
             </button>
           </div>
           <ConfirmButton onConfirm={remove} confirmLabel="Vraiment supprimer ?">
-            🗑 Supprimer la réservation
+            <Trash2 className="inline h-4 w-4 -mt-0.5 mr-1.5 align-middle" strokeWidth={1.5} aria-hidden />Supprimer la réservation
           </ConfirmButton>
         </div>
       )}
@@ -1742,7 +1745,7 @@ export function ReservationEditor({
       {/* Sticky save on mobile */}
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur lg:hidden">
         <button onClick={save} disabled={saving} className="abtn-primary w-full">
-          {saving ? "Enregistrement…" : "💾 Enregistrer"}
+          {saving ? "Enregistrement…" : <><Save className="h-4 w-4" strokeWidth={1.5} aria-hidden /> Enregistrer</>}
         </button>
       </div>
 

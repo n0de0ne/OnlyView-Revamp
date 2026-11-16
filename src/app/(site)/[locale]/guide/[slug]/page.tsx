@@ -7,7 +7,7 @@ import { getContent } from "@/lib/site-content";
 import { breadcrumbJsonLd, jsonLd, organizationJsonLd, ownerJsonLd, pageMetadata, SITE_URL } from "@/lib/seo";
 import { getGuide } from "@/lib/guides";
 import { formatDate } from "@/lib/dates";
-import { PageHero } from "@/components/site/PageHero";
+import { EditorialHero } from "@/components/site/ov/EditorialHero";
 import { FlightSearch } from "@/components/site/FlightSearch";
 import { getMapPlaces, slugify } from "@/lib/map-places";
 
@@ -98,26 +98,27 @@ export default async function GuidePage({
           ]),
         }}
       />
-      <PageHero eyebrow={t.nav.guide} title={title} intro={fr ? guide.description.fr : guide.description.en} />
-      <article className="mx-auto max-w-3xl px-5 py-16 lg:px-8">
+      <EditorialHero eyebrow={t.nav.guide} title={title} intro={fr ? guide.description.fr : guide.description.en} />
+      <article className="ov-shell pb-20 md:pb-28">
+        <div className="ov-rule max-w-3xl border-t pt-6">
         {/* dated and signed: engines rank fresh, attributed guides; readers trust them */}
-        <p className="mb-10 text-xs uppercase tracking-[0.18em] text-ink/45">
+        <p className="ov-label mb-10 text-ink/45">
           {t.guideHub.updated}{" "}
           <time dateTime={guide.updated}>{formatDate(guide.updated, locale, { month: "long", year: "numeric" })}</time>
           {" · "}
           {t.guideHub.byline}
         </p>
         {sections.map((s, i) => (
-          <section key={i} className="mb-12">
-            <h2 className="font-display mb-4 text-3xl text-ink">{s.h}</h2>
+          <section key={i} className="ov-prose mb-14">
+            <h2 className="!mt-0">{s.h}</h2>
             {s.p.map((p, j) => (
-              <p key={j} className="mb-4 leading-relaxed text-ink/75">
+              <p key={j}>
                 {p}
               </p>
             ))}
             {s.places && s.places.length > 0 && (
               <p className="mt-5 flex flex-wrap items-center gap-2 text-sm">
-                <span className="text-xs font-semibold uppercase tracking-wider text-ink/50">
+                <span className="ov-label text-ink/50">
                   {fr ? "Sur la carte" : "On the map"}
                 </span>
                 {s.places
@@ -127,7 +128,7 @@ export default async function GuidePage({
                     <Link
                       key={p.slug}
                       href={`${localePath(locale, "/map")}#${p.slug}`}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-ink/15 px-3 py-1 text-ink/80 transition hover:border-gold hover:text-ink"
+                      className="inline-flex items-center gap-1.5 rounded-full border border-ink/15 px-3 py-1 text-ink/80 no-underline transition hover:border-gold hover:text-ink"
                     >
                       <MapPin aria-hidden className="h-3.5 w-3.5 text-gold" strokeWidth={1.5} />
                       {p.name}
@@ -143,8 +144,8 @@ export default async function GuidePage({
           </section>
         ))}
         {guide.links && guide.links.length > 0 && (
-          <section className="mb-12 border-t border-ink/10 pt-8" aria-labelledby="guide-links">
-            <h2 id="guide-links" className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-ink/50">
+          <section className="ov-rule mb-12 border-t pt-8" aria-labelledby="guide-links">
+            <h2 id="guide-links" className="ov-label mb-4 text-ink/50">
               {t.guideHub.linksTitle}
             </h2>
             <ul className="space-y-1.5 text-sm">
@@ -154,7 +155,7 @@ export default async function GuidePage({
                     href={l.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-navy underline decoration-gold/50 underline-offset-4 hover:text-gold"
+                    className="text-ink underline decoration-gold/60 underline-offset-4 hover:text-gold-dark"
                   >
                     {fr ? l.label.fr : l.label.en}
                   </a>
@@ -163,13 +164,12 @@ export default async function GuidePage({
             </ul>
           </section>
         )}
-        <div className="border-t border-ink/10 pt-10 text-center">
-          <p className="mb-5 font-display text-2xl italic text-ink/70">
-            “{t.footer.tagline}”
-          </p>
-          <Link href={localePath(locale, "/booking")} className="btn-gold">
+        <div className="mt-6 rounded-2xl bg-sea p-8 text-white md:p-10">
+          <p className="font-display text-[1.7rem] italic leading-snug text-white/90 md:text-3xl">“{t.footer.tagline}”</p>
+          <Link href={localePath(locale, "/booking")} className="ov-btn ov-btn-gold mt-7">
             {t.hero.cta}
           </Link>
+        </div>
         </div>
       </article>
     </>

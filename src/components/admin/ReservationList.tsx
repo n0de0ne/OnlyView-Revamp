@@ -1,5 +1,7 @@
 "use client";
 
+import { CreditCard, Hourglass, Repeat, Star } from "lucide-react";
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -143,18 +145,18 @@ export function ReservationList() {
                     <div className="min-w-0">
                       <div className="truncate font-semibold text-slate-800">
                         {r.clientName ?? "Sans nom"}
-                        {r.client?.isVip && <span title="VIP"> ⭐</span>}
+                        {r.client?.isVip && <Star className="ml-1 inline h-3.5 w-3.5 -mt-0.5 fill-gold text-gold" strokeWidth={1.5} aria-label="VIP" />}
                         <span className="ml-1.5 text-xs font-normal text-slate-400">#{r.id}</span>
                       </div>
                       <div className="mt-0.5 text-sm text-slate-600">
                         {fmtDate(r.startDate)} → {fmtDate(r.endDate)}
-                        <span className="text-slate-400"> · {nights} n · {r.periods.length > 0 ? "🔄" : `${r.bedrooms} ch.`}</span>
+                        <span className="text-slate-400"> · {nights} n · {r.periods.length > 0 ? <Repeat className="inline h-3.5 w-3.5" strokeWidth={1.5} aria-label="Chambres variables" /> : `${r.bedrooms} ch.`}</span>
                       </div>
                       <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500">
                         <StatusBadge status={r.status} />
                         <span>{r.agency?.name ?? "Direct"}</span>
                         {r.status === "option" && r.optionExpires && (
-                          <span className="text-amber-600">⏳ {fmtDate(r.optionExpires)}</span>
+                          <span className="inline-flex items-center gap-1 text-amber-600"><Hourglass className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden /> {fmtDate(r.optionExpires)}</span>
                         )}
                       </div>
                     </div>
@@ -177,7 +179,7 @@ export function ReservationList() {
                   <th className="pb-2.5 pr-3 font-medium">Ch.</th>
                   <th className="pb-2.5 pr-3 font-medium">Agence</th>
                   <th className="pb-2.5 pr-3 text-right font-medium">Total TTC</th>
-                  <th className="pb-2.5 pr-3 text-center font-medium">💳</th>
+                  <th className="pb-2.5 pr-3 text-center font-medium"><CreditCard className="mx-auto h-4 w-4" strokeWidth={1.5} aria-label="Paiement" /></th>
                   <th className="pb-2.5 font-medium">Statut</th>
                 </tr>
               </thead>
@@ -212,7 +214,7 @@ export function ReservationList() {
                           className="block font-semibold text-slate-800 group-hover:text-navy"
                         >
                           {r.clientName ?? "Sans nom"}
-                          {r.client?.isVip && <span title="VIP"> ⭐</span>}
+                          {r.client?.isVip && <Star className="ml-1 inline h-3.5 w-3.5 -mt-0.5 fill-gold text-gold" strokeWidth={1.5} aria-label="VIP" />}
                         </Link>
                         <span className="text-xs text-slate-400">#{r.id}</span>
                       </td>
@@ -220,14 +222,14 @@ export function ReservationList() {
                         {fmtDate(r.startDate)} → {fmtDate(r.endDate)}
                         {r.status === "option" && r.optionExpires && (
                           <div className="text-xs text-amber-600">
-                            ⏳ expire {fmtDate(r.optionExpires)}
+                            <Hourglass className="inline h-3.5 w-3.5 -mt-0.5" strokeWidth={1.5} aria-hidden /> expire {fmtDate(r.optionExpires)}
                           </div>
                         )}
                       </td>
                       <td className="py-3 pr-3 text-slate-600">{nights}</td>
                       <td className="py-3 pr-3 text-slate-600">
                         {r.periods.length > 0 ? (
-                          <span title="Chambres variables">🔄</span>
+                          <Repeat className="inline h-3.5 w-3.5" strokeWidth={1.5} aria-label="Chambres variables" />
                         ) : (
                           r.bedrooms
                         )}

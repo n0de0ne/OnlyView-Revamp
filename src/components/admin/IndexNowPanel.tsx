@@ -64,7 +64,7 @@ export function IndexNowPanel() {
       )}
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <button onClick={submit} disabled={busy || !state?.enabled} className="abtn-primary">
-          {busy ? "Envoi…" : "📡 Envoyer toutes les pages à Bing"}
+          {busy ? "Envoi…" : "Envoyer toutes les pages à Bing"}
         </button>
         {state?.enabled && (
           <a href={state.keyUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-slate-400 underline">

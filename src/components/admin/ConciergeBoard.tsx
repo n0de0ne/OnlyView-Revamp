@@ -1,5 +1,7 @@
 "use client";
 
+import { Phone } from "lucide-react";
+
 /* eslint-disable @next/next/no-img-element */
 
 /**
@@ -168,13 +170,13 @@ const DEFAULTS: Record<Exclude<Tab, "restaurants">, Record<string, unknown>> = {
 };
 
 const TABS: Array<[Tab, string]> = [
-  ["restaurants", "🍽️ Restaurants"],
-  ["boats", "⛵ Bateaux"],
-  ["chef-offers", "👨‍🍳 Chef"],
-  ["activities", "🤿 Activités"],
-  ["activity-categories", "🏷️ Types d'activités"],
-  ["taxis", "🚕 Taxis"],
-  ["partners", "🤝 Prestataires"],
+  ["restaurants", "Restaurants"],
+  ["boats", "Bateaux"],
+  ["chef-offers", "Chef"],
+  ["activities", "Activités"],
+  ["activity-categories", "Types d'activités"],
+  ["taxis", "Taxis"],
+  ["partners", "Prestataires"],
 ];
 
 const money = (n: number, currency = "EUR") =>
@@ -307,7 +309,7 @@ function RestaurantsTab() {
                   </div>
                 </td>
                 <td className="px-4 py-2.5 text-xs text-slate-600">
-                  {r.phone && <div>☎ {r.phone}</div>}
+                  {r.phone && <div><Phone className="inline h-3.5 w-3.5 -mt-0.5 mr-1" strokeWidth={1.5} aria-hidden />{r.phone}</div>}
                   {r.whatsapp && <div>WhatsApp {r.whatsapp}</div>}
                   {r.email && <div>{r.email}</div>}
                   {r.bookingUrl && (

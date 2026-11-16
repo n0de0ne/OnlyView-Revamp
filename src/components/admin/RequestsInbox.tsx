@@ -1,5 +1,6 @@
 "use client";
 
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -113,7 +114,7 @@ export function RequestsInbox() {
       </div>
 
       {dateChanges.length > 0 && (
-        <Card title={`📅 Changements de dates demandés (${dateChanges.length})`}>
+        <Card title={`Changements de dates demandés (${dateChanges.length})`}>
           <ul className="divide-y divide-slate-100 text-sm">
             {dateChanges.map((c) => (
               <li key={c.id} className="flex flex-wrap items-center justify-between gap-3 py-2.5">
@@ -242,7 +243,7 @@ export function RequestsInbox() {
                     : "border-slate-200 text-slate-400"
                 }`}
               >
-                {s === "option" ? "🟠 En option" : "🔴 Confirmée"}
+                <span className="inline-flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-current" aria-hidden />{s === "option" ? "En option" : "Confirmée"}</span>
               </button>
             ))}
           </div>

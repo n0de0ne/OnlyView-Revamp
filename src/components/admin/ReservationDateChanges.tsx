@@ -68,7 +68,7 @@ export function ReservationDateChanges({
   };
 
   return (
-    <Card title="📅 Changement de dates">
+    <Card title="Changement de dates">
       {pending && (
         <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm">
           <div className="font-semibold text-amber-800">Demande du client</div>

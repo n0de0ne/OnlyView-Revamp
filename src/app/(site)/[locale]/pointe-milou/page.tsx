@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Map as MapIcon } from "lucide-react";
+import { ArrowUpRight, Map as MapIcon, Plus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { isLocale, localePath, type Locale } from "@/lib/i18n";
@@ -17,7 +17,7 @@ import {
 } from "@/lib/seo";
 import { getPhotos, firstOf } from "@/lib/photos";
 import { getContact } from "@/lib/contact";
-import { PageHero } from "@/components/site/PageHero";
+import { EditorialHero, SectionHead } from "@/components/site/ov/EditorialHero";
 import { GoldenHour } from "@/components/site/golden-hour/GoldenHour";
 
 export const revalidate = 3600;
@@ -87,155 +87,155 @@ export default async function PointeMilouPage({
           ]),
         }}
       />
-      <PageHero eyebrow={pm.label} title={pm.title} intro={pm.intro} image={firstOf(photos, "night")} />
+      <EditorialHero eyebrow={pm.label} title={pm.title} intro={pm.intro} image={firstOf(photos, "night")} />
 
       {/* Why here — the reasons, with the honest one last */}
-      <section className="mx-auto max-w-7xl px-5 py-16 lg:px-8 lg:py-24" aria-labelledby="pm-why">
-        <p className="eyebrow mb-4">{pm.label}</p>
-        <h2 id="pm-why" className="section-title mb-5">
-          {pm.whyTitle}
-        </h2>
-        <p className="mb-10 max-w-3xl leading-relaxed text-ink/70">{pm.whyIntro}</p>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <section className="ov-shell py-24 md:py-32" aria-labelledby="pm-why">
+        <SectionHead label={pm.label} title={pm.whyTitle} id="pm-why" aside={<p className="ov-body max-w-md">{pm.whyIntro}</p>} />
+        <div className="ov-rule grid border-t sm:grid-cols-2 lg:grid-cols-3">
           {pm.why.map(([title, text], i) => (
-            <div key={title} className="reveal border border-ink/10 bg-white p-7">
-              <div className="font-display text-3xl text-gold/40">{String(i + 1).padStart(2, "0")}</div>
-              <h3 className="mt-2 font-display text-2xl text-ink">{title}</h3>
-              <p className="mt-3 text-sm leading-relaxed text-ink/70">{text}</p>
+            <div
+              key={title}
+              className={`ov-rule reveal flex flex-col gap-4 border-b py-8 sm:pr-8 lg:min-h-[17rem] `}
+            >
+              <span className="ov-label text-gold-dark">{String(i + 1).padStart(2, "0")}</span>
+              <h3 className="font-display text-[1.6rem] leading-tight text-ink md:text-[1.75rem]">{title}</h3>
+              <p className="text-[0.92rem] leading-relaxed text-ink/65">{text}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* The whole package — shops, hotels, tables, beaches, all close by.
-          Same cards as "Why stay", numbered on from it. */}
-      <section className="mx-auto max-w-7xl px-5 pb-16 lg:px-8 lg:pb-24" aria-labelledby="pm-package">
-        <p className="eyebrow mb-4">{pm.packageLabel}</p>
-        <h2 id="pm-package" className="section-title mb-5">
-          {pm.packageTitle}
-        </h2>
-        <p className="mb-10 max-w-3xl leading-relaxed text-ink/70">{pm.packageIntro}</p>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {/* The whole package — shops, hotels, tables, beaches, all close by,
+          numbered on from "Why stay". */}
+      <section className="ov-shell pb-24 md:pb-32" aria-labelledby="pm-package">
+        <SectionHead label={pm.packageLabel} title={pm.packageTitle} id="pm-package" aside={<p className="ov-body max-w-md">{pm.packageIntro}</p>} />
+        <div className="ov-rule grid border-t sm:grid-cols-2 lg:grid-cols-3">
           {pm.package.map(([title, text], i) => (
-            <div key={title} className="reveal border border-ink/10 bg-white p-7">
-              <div className="font-display text-3xl text-gold/40">{String(pm.why.length + i + 1).padStart(2, "0")}</div>
-              <h3 className="mt-2 font-display text-2xl text-ink">{title}</h3>
-              <p className="mt-3 text-sm leading-relaxed text-ink/70">{text}</p>
+            <div
+              key={title}
+              className={`ov-rule reveal flex flex-col gap-4 border-b py-8 sm:pr-8 lg:min-h-[17rem] `}
+            >
+              <span className="ov-label text-gold-dark">{String(pm.why.length + i + 1).padStart(2, "0")}</span>
+              <h3 className="font-display text-[1.6rem] leading-tight text-ink md:text-[1.75rem]">{title}</h3>
+              <p className="text-[0.92rem] leading-relaxed text-ink/65">{text}</p>
             </div>
           ))}
         </div>
-        <p className="mt-12 max-w-3xl font-display text-2xl leading-snug text-ink">{pm.packageOutro}</p>
+        <p className="ov-intro mt-16 max-w-4xl text-ink">{pm.packageOutro}</p>
       </section>
 
-      {/* What is there */}
-      <section className="border-y border-ink/10 bg-white" aria-labelledby="pm-whats">
-        <div className="mx-auto grid max-w-7xl gap-12 px-5 py-16 lg:grid-cols-2 lg:px-8 lg:py-24">
-          <div>
-            <h2 id="pm-whats" className="section-title mb-8 !text-3xl">
+      {/* What is there, and how far */}
+      <section className="bg-ivory" aria-labelledby="pm-whats">
+        <div className="ov-shell grid gap-16 py-24 md:py-32 lg:grid-cols-12">
+          <div className="lg:col-span-6">
+            <h2 id="pm-whats" className="ov-h3 mb-8 text-ink">
               {pm.whatsTitle}
             </h2>
-            <dl className="divide-y divide-ink/10 border-y border-ink/10">
+            <dl className="ov-rule border-t">
               {pm.whats.map(([term, detail]) => (
-                <div key={term} className="py-4">
-                  <dt className="font-semibold text-ink">{term}</dt>
-                  <dd className="mt-1 text-sm leading-relaxed text-ink/70">{detail}</dd>
+                <div key={term} className="ov-rule border-b py-5">
+                  <dt className="font-display text-xl text-ink">{term}</dt>
+                  <dd className="mt-1.5 text-[0.92rem] leading-relaxed text-ink/65">{detail}</dd>
                 </div>
               ))}
             </dl>
           </div>
-          <div>
-            <h2 className="section-title mb-8 !text-3xl">{pm.distancesTitle}</h2>
-            <ul className="divide-y divide-ink/10 border-y border-ink/10">
+          <div className="lg:col-span-5 lg:col-start-8">
+            <h2 className="ov-h3 mb-8 text-ink">{pm.distancesTitle}</h2>
+            <ul className="ov-rule border-t">
               {distances.map(([place, time]) => (
-                <li key={place} className="flex items-center justify-between py-3.5 text-sm">
-                  <span className="text-ink/80">{place}</span>
-                  <span className="font-semibold text-gold">{time}</span>
+                <li key={place} className="ov-rule flex items-baseline justify-between gap-4 border-b py-4">
+                  <span className="text-[0.95rem] text-ink/80">{place}</span>
+                  <span className="font-mono text-sm text-gold-dark">{time}</span>
                 </li>
               ))}
             </ul>
-            <div className="mt-8 flex flex-wrap gap-4">
-              <a href={mapUrl} target="_blank" rel="noopener noreferrer" className="btn-outline">
-                Google Maps ↗
-              </a>
-              <Link href={localePath(locale, "/guide/getting-here")} className="btn-gold">
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link href={localePath(locale, "/guide/getting-here")} className="ov-btn ov-btn-ink">
                 {t.location.mapCta}
               </Link>
+              <a href={mapUrl} target="_blank" rel="noopener noreferrer" className="ov-btn ov-btn-line">
+                Google Maps
+                <ArrowUpRight aria-hidden strokeWidth={1.4} />
+              </a>
             </div>
-            <Link
-              href={localePath(locale, "/map")}
-              className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-navy hover:text-gold"
-            >
-              <MapIcon aria-hidden className="h-4 w-4 text-gold" strokeWidth={1.5} />
-              {t.location.islandMapCta} →
+            <Link href={localePath(locale, "/map")} className="ov-link group mt-8 text-ink">
+              <MapIcon aria-hidden className="h-4 w-4 text-gold-dark" strokeWidth={1.5} />
+              {t.location.islandMapCta}
+              <ArrowUpRight className="ov-arrow h-4 w-4" strokeWidth={1.4} aria-hidden />
             </Link>
           </div>
         </div>
       </section>
 
       {/* The neighbourhood, named — the places people search for near here */}
-      <section className="mx-auto max-w-7xl px-5 py-16 lg:px-8" aria-labelledby="pm-nearby">
-        <h2 id="pm-nearby" className="section-title mb-5 !text-3xl">
-          {t.nearby.title}
-        </h2>
-        <p className="mb-10 max-w-3xl leading-relaxed text-ink/70">{t.nearby.intro}</p>
-        <ul className="grid gap-x-10 gap-y-4 sm:grid-cols-2">
+      <section className="ov-shell py-24 md:py-32" aria-labelledby="pm-nearby">
+        <SectionHead title={t.nearby.title} id="pm-nearby" aside={<p className="ov-body max-w-md">{t.nearby.intro}</p>} />
+        <ul className="grid gap-x-10 sm:grid-cols-2 lg:grid-cols-3">
           {t.nearby.items.map(([place, detail]) => (
-            <li key={place} className="border-t border-ink/10 pt-4">
-              <span className="font-semibold text-ink">{place}</span>
-              <span className="block text-sm text-ink/65">{detail}</span>
+            <li key={place} className="ov-rule border-t py-5">
+              <span className="font-display text-xl text-ink">{place}</span>
+              <span className="mt-1 block text-[0.9rem] leading-relaxed text-ink/60">{detail}</span>
             </li>
           ))}
         </ul>
       </section>
 
       {/* The villa in it */}
-      <section className="bg-sand-dark py-16 lg:py-24" aria-labelledby="pm-villa">
-        <div className="mx-auto grid max-w-7xl items-center gap-12 px-5 lg:grid-cols-2 lg:px-8">
-          <div className="reveal">
-            <p className="eyebrow mb-4">{VILLA.name}</p>
-            <h2 id="pm-villa" className="section-title mb-6">
+      <section className="bg-sea py-24 text-white md:py-32" aria-labelledby="pm-villa">
+        <div className="ov-shell grid items-center gap-12 lg:grid-cols-12">
+          <div className="reveal lg:col-span-5">
+            <p className="ov-label mb-5 text-white/55">
+              <span className="mr-3 inline-block h-px w-8 translate-y-[-0.25em] bg-gold align-middle" aria-hidden />
+              {VILLA.name}
+            </p>
+            <h2 id="pm-villa" className="ov-h2 mb-6">
               {pm.villaTitle}
             </h2>
-            <p className="max-w-xl leading-relaxed text-ink/70">{pm.villaText}</p>
-            <div className="mt-8 flex flex-wrap gap-4">
-              <Link href={localePath(locale, "/villa")} className="btn-gold">
-                {pm.villaCta}
-              </Link>
-              <Link href={localePath(locale, "/booking")} className="btn-outline">
+            <p className="max-w-xl leading-relaxed text-white/70">{pm.villaText}</p>
+            <div className="mt-10 flex flex-wrap gap-3">
+              <Link href={localePath(locale, "/booking")} className="ov-btn ov-btn-gold">
                 {t.hero.cta}
+              </Link>
+              <Link href={localePath(locale, "/villa")} className="ov-btn ov-btn-glass">
+                {pm.villaCta}
               </Link>
             </div>
           </div>
           {villaPhoto && (
-            <Link href={localePath(locale, "/villa")} className="reveal block">
-              <Image
-                src={villaPhoto.url}
-                alt={villaPhoto.alt}
-                width={900}
-                height={640}
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="aspect-[4/3] w-full object-cover shadow-2xl shadow-ink/20"
-              />
+            <Link href={localePath(locale, "/villa")} className="group reveal block lg:col-span-6 lg:col-start-7">
+              <div className="ov-photo relative aspect-[4/3]">
+                <Image
+                  src={villaPhoto.url}
+                  alt={villaPhoto.alt}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="object-cover"
+                />
+              </div>
             </Link>
           )}
         </div>
       </section>
 
       {/* Questions people ask about the place */}
-      <section className="mx-auto max-w-3xl px-5 py-16 lg:px-8" aria-labelledby="pm-faq">
-        <h2 id="pm-faq" className="section-title mb-8 !text-3xl">
-          {pm.faqTitle}
-        </h2>
-        <div className="divide-y divide-ink/10">
-          {pm.faq.map((item, i) => (
-            <details key={i} className="group py-5" open={i === 0}>
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-display text-xl text-ink transition hover:text-gold [&::-webkit-details-marker]:hidden">
-                {item.q}
-                <span className="text-gold transition-transform group-open:rotate-45">+</span>
-              </summary>
-              <p className="mt-3 leading-relaxed text-ink/70">{item.a}</p>
-            </details>
-          ))}
+      <section className="ov-shell py-24 md:py-32" aria-labelledby="pm-faq">
+        <div className="grid gap-10 lg:grid-cols-12">
+          <h2 id="pm-faq" className="ov-h3 text-ink lg:col-span-4">
+            {pm.faqTitle}
+          </h2>
+          <div className="ov-rule border-t lg:col-span-8">
+            {pm.faq.map((item, i) => (
+              <details key={i} className="ov-rule group border-b" open={i === 0}>
+                <summary className="flex cursor-pointer list-none items-start justify-between gap-5 py-6 font-display text-[1.4rem] leading-snug text-ink transition hover:text-gold-dark [&::-webkit-details-marker]:hidden">
+                  {item.q}
+                  <Plus className="mt-1.5 h-5 w-5 shrink-0 text-gold-dark transition-transform duration-300 group-open:rotate-45" strokeWidth={1.25} aria-hidden />
+                </summary>
+                <p className="ov-body max-w-2xl pb-7">{item.a}</p>
+              </details>
+            ))}
+          </div>
         </div>
       </section>
 

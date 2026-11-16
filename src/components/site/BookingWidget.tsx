@@ -1,5 +1,5 @@
 "use client";
-import { Sunset } from "lucide-react";
+import { Check, Sparkles, Sunset } from "lucide-react";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getDict, tpl, type Locale } from "@/lib/i18n";
@@ -203,13 +203,13 @@ export function BookingWidget({
     "flex h-11 w-11 items-center justify-center rounded-full border border-ink/20 bg-white text-lg text-ink transition hover:border-gold disabled:opacity-30";
 
   return (
-    <div ref={topRef} className="grid scroll-mt-24 gap-10 lg:grid-cols-[1.15fr_1fr]">
+    <div ref={topRef} className="grid scroll-mt-24 gap-6 lg:grid-cols-[1.2fr_1fr] lg:gap-8">
       {/* Left: calendar + selectors */}
-      <div className="border border-ink/10 bg-white p-4 md:p-8">
-        <h2 className="mb-6 hidden font-display text-2xl lg:block">{t.booking.calTitle}</h2>
+      <div className="rounded-2xl border border-ink/10 bg-white p-4 md:p-8">
+        <h2 className="ov-h3 mb-6 hidden text-ink lg:block">{t.booking.calTitle}</h2>
 
         {/* Phone: the picked dates read back above the calendar */}
-        <div className="mb-4 grid grid-cols-2 border border-ink/15 lg:hidden">
+        <div className="mb-4 grid grid-cols-2 overflow-hidden rounded-xl border border-ink/15 lg:hidden">
           {([
             ["start", t.booking.checkin, range.start, () => setRange({ start: null, end: null })],
             ["end", t.booking.checkout, range.end, () => range.start && setRange({ start: range.start, end: null })],
@@ -224,7 +224,7 @@ export function BookingWidget({
                   picking ? "shadow-[inset_0_0_0_2px_var(--color-gold)]" : ""
                 }`}
               >
-                <span className="block text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-ink/60">
+                <span className="ov-label block !text-[0.62rem] text-ink/60">
                   {label}
                 </span>
                 <span className={`mt-0.5 block text-[0.95rem] ${value ? "font-medium text-ink" : "text-ink/45"}`}>
@@ -248,7 +248,7 @@ export function BookingWidget({
           }}
         />
 
-        <div className="mt-8 hidden grid-cols-4 gap-4 lg:grid">
+        <div className="ov-rule mt-8 hidden grid-cols-4 gap-4 border-t pt-6 lg:grid">
           <div className="field">
             <label htmlFor="bk-start">{t.booking.checkin}</label>
             <input
@@ -299,7 +299,7 @@ export function BookingWidget({
         </div>
 
         {/* Phone: guests and bedrooms on one line, steppers on demand */}
-        <div className="mt-4 border border-ink/10 lg:hidden">
+        <div className="mt-4 rounded-xl border border-ink/10 lg:hidden">
           <div className="flex min-h-[3.25rem] items-center justify-between pl-3.5 pr-1">
             <p className="text-sm">
               <span className="font-semibold">{tpl(t.booking.guestsCount, { n: guests })}</span>
@@ -310,7 +310,7 @@ export function BookingWidget({
               type="button"
               onClick={() => setPartyOpen((o) => !o)}
               aria-expanded={partyOpen}
-              className="h-11 px-3 text-[0.72rem] font-semibold uppercase tracking-[0.15em] text-gold-dark"
+              className="ov-label h-11 px-3 text-gold-dark"
             >
               {partyOpen ? t.booking.done : t.booking.edit}
             </button>
@@ -389,11 +389,11 @@ export function BookingWidget({
         role={sheetOpen ? "dialog" : undefined}
         aria-modal={sheetOpen || undefined}
         aria-label={sheetOpen ? t.booking.formTitle : undefined}
-        className={`space-y-6 max-lg:fixed max-lg:inset-x-0 max-lg:bottom-0 max-lg:z-[70] max-lg:max-h-[88dvh] max-lg:space-y-4 max-lg:overflow-y-auto max-lg:overscroll-contain max-lg:bg-sand max-lg:px-4 max-lg:pb-[max(1rem,env(safe-area-inset-bottom))] max-lg:shadow-2xl ${
+        className={`space-y-6 lg:sticky lg:top-24 lg:self-start max-lg:fixed max-lg:inset-x-0 max-lg:bottom-0 max-lg:z-[70] max-lg:max-h-[88dvh] max-lg:space-y-4 max-lg:overflow-y-auto max-lg:overscroll-contain max-lg:rounded-t-[1.5rem] max-lg:bg-paper max-lg:px-4 max-lg:pb-[max(1rem,env(safe-area-inset-bottom))] max-lg:shadow-2xl ${
           sheetOpen ? "" : "max-lg:hidden"
         }`}
       >
-        <div className="sticky top-0 z-10 -mx-4 flex items-center justify-between bg-sand pl-4 pr-1 pt-2 lg:hidden">
+        <div className="sticky top-0 z-10 -mx-4 flex items-center justify-between bg-paper pl-4 pr-1 pt-2 lg:hidden">
           <span className="mx-auto h-1 w-10 translate-x-5 rounded-full bg-ink/20" aria-hidden="true" />
           <button
             type="button"
@@ -404,29 +404,29 @@ export function BookingWidget({
             ×
           </button>
         </div>
-        <div className="border border-ink/10 bg-night p-5 text-white md:p-8">
-          <h2 className="mb-5 font-display text-2xl">{t.booking.quoteTitle}</h2>
+        <div className="rounded-2xl bg-sea p-5 text-white md:p-8">
+          <p className="ov-label mb-2 text-gold">{t.nav.booking}</p>
+          <h2 className="ov-h3 mb-6">{t.booking.quoteTitle}</h2>
           {!range.start || !range.end ? (
             <p className="text-sm text-white/60">
-              {t.booking.checkin} + {t.booking.checkout} →{" "}
-              {locale === "fr" ? "devis instantané" : "instant quote"}
+              {t.booking.quoteHint}
             </p>
           ) : quoteLoading && !quote ? (
             <p className="text-sm text-white/60">{t.common.loading}</p>
           ) : quote ? (
             <div className={quoteLoading ? "opacity-60 transition" : "transition"}>
               {!quote.available && (
-                <p className="mb-4 border border-st-option/60 bg-st-option/15 px-4 py-3 text-sm text-st-option">
+                <p className="mb-4 rounded-lg border border-st-option/60 bg-st-option/15 px-4 py-3 text-sm text-st-option">
                   {t.booking.unavailable}
                 </p>
               )}
               {quote.available && (
-                <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-st-free">
-                  ✓ {t.booking.available}
+                <p className="ov-label mb-4 flex items-center gap-2 text-st-free">
+                  <Check className="h-3.5 w-3.5" strokeWidth={2} aria-hidden /> {t.booking.available}
                 </p>
               )}
               {!quote.quote.minStayOk && (
-                <p className="mb-4 border border-st-option/60 bg-st-option/15 px-4 py-3 text-sm text-st-option">
+                <p className="mb-4 rounded-lg border border-st-option/60 bg-st-option/15 px-4 py-3 text-sm text-st-option">
                   {tpl(t.booking.minStayWarning, { n: quote.quote.minStayRequired })}
                 </p>
               )}
@@ -461,7 +461,7 @@ export function BookingWidget({
                   <span>{tpl(t.booking.tax, { tax: quote.quote.taxPercent })}</span>
                   <span>+{usd(quote.quote.taxAmount)}</span>
                 </div>
-                <div className="flex justify-between border-t border-gold/40 pt-3 font-display text-xl text-gold">
+                <div className="flex items-baseline justify-between border-t border-gold/40 pt-4 font-display text-[1.7rem] leading-none text-gold [font-variant-numeric:lining-nums]">
                   <span>{t.booking.total}</span>
                   <span>{usd(quote.quote.totalTTC)}</span>
                 </div>
@@ -474,8 +474,8 @@ export function BookingWidget({
                   <span>{usd(quote.quote.balanceAmount)}</span>
                 </div>
                 {quote.loyaltyPoints > 0 && (
-                  <p className="mt-3 border border-gold/30 bg-gold/10 px-3 py-2 text-xs text-gold">
-                    ✦ {tpl(t.booking.loyaltyEarn, { points: quote.loyaltyPoints })}
+                  <p className="mt-3 flex items-center gap-2 rounded-lg border border-gold/30 bg-gold/10 px-3 py-2 text-xs text-gold">
+                    <Sparkles className="h-3.5 w-3.5 shrink-0" strokeWidth={1.5} aria-hidden /> {tpl(t.booking.loyaltyEarn, { points: quote.loyaltyPoints })}
                   </p>
                 )}
               </div>
@@ -486,8 +486,8 @@ export function BookingWidget({
         </div>
 
         {/* Request form */}
-        <form onSubmit={submit} onFocus={onFormStart} className="border border-ink/10 bg-white p-5 md:p-8">
-          <h2 className="mb-5 font-display text-2xl">{t.booking.formTitle}</h2>
+        <form onSubmit={submit} onFocus={onFormStart} className="rounded-2xl border border-ink/10 bg-white p-5 md:p-8">
+          <h2 className="ov-h3 mb-5 text-ink">{t.booking.formTitle}</h2>
           {/* the hero drops this line on a phone; it reassures best right here */}
           <p className="-mt-2 mb-5 text-sm leading-relaxed text-ink/65 lg:hidden">{t.booking.intro}</p>
           <div className="space-y-4">

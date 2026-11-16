@@ -1,5 +1,7 @@
 "use client";
 
+import { Save } from "lucide-react";
+
 import { useEffect, useState } from "react";
 import { api, Card, Spinner, useToast } from "./ui";
 import { RemindersPanel } from "./RemindersPanel";
@@ -200,7 +202,7 @@ export function SettingsBoard() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-xl font-bold text-slate-800">Réglages</h1>
         <button onClick={save} disabled={saving} className="abtn-primary">
-          {saving ? "Enregistrement…" : "💾 Enregistrer tout"}
+          {saving ? "Enregistrement…" : <><Save className="h-4 w-4" strokeWidth={1.5} aria-hidden /> Enregistrer tout</>}
         </button>
       </div>
 

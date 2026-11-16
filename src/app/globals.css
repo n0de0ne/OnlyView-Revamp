@@ -20,7 +20,16 @@
   --color-st-blocked: #64748b;
   --color-st-pending: #8b5cf6;
 
+  /* Redesign 2026 — "golden hour editorial": warm paper, ink, one gold accent,
+     a deep-sea chapter colour. The older tokens above stay for the guest portal. */
+  --color-paper: #fbf9f4;
+  --color-ivory: #f4efe5;
+  --color-stone: #e7dfd0;
+  --color-sea: #0e2a33;
+  --color-sea-deep: #0a1f26;
+
   --font-serif: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
+  --font-mono: var(--font-plex-mono), "IBM Plex Mono", ui-monospace, Menlo, monospace;
   --font-sans: var(--font-montserrat), "Montserrat", ui-sans-serif, system-ui, sans-serif;
 }
 
@@ -333,9 +342,57 @@ html.lenis body {
   scrollbar-color: var(--color-gold) transparent;
 }
 
-/* Admin app resets */
+/* Admin app resets.
+ * Redesign 2026: the back office moves from cool slate and navy to the
+ * site's warm neutrals, ink and gold. Every board is written with Tailwind's
+ * slate scale, so the scale itself is re-pointed here (scoped to the admin):
+ * one place, every screen follows, nothing outside the admin changes. */
 .admin-body {
-  @apply bg-slate-100 text-slate-900;
+  --color-slate-50: #faf8f4;
+  --color-slate-100: #f2eee6;
+  --color-slate-200: #e5dfd3;
+  --color-slate-300: #d2cabb;
+  --color-slate-400: #9f978a;
+  --color-slate-500: #776f64;
+  --color-slate-600: #5b544b;
+  --color-slate-700: #423c35;
+  --color-slate-800: #29251f;
+  --color-slate-900: #1a1714;
+  /* the admin's "navy" becomes ink with a hint of sea: primary buttons,
+     focus rings, active states, links */
+  --color-navy: #1d2b33;
+  --color-navy-deep: #111c22;
+  @apply bg-[#f6f3ed] text-slate-900;
+}
+/* page titles: the site's serif, regular weight, a little larger */
+.admin-body main h1 {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: 2rem;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--color-slate-900);
+}
+@media (max-width: 640px) {
+  .admin-body main h1 {
+    font-size: 1.7rem;
+  }
+}
+/* tables everywhere: mono column heads, hairline rows */
+.admin-body main table thead th {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-slate-500);
+}
+.admin-label {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 /* Form primitives (shared) */
@@ -352,6 +409,11 @@ html.lenis body {
 .afield label {
   @apply block text-xs font-medium text-slate-500 mb-1;
 }
+.admin-body .afield input,
+.admin-body .afield select,
+.admin-body .afield textarea {
+  border-radius: 0.6rem;
+}
 .afield input,
 .afield select,
 .afield textarea {
@@ -362,13 +424,14 @@ html.lenis body {
 .abtn-gold,
 .abtn-ghost,
 .abtn-danger {
-  @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed;
 }
 .abtn-primary {
   @apply bg-navy text-white hover:bg-navy-deep focus:ring-navy;
 }
+/* gold with ink lettering: white on gold is below AA contrast */
 .abtn-gold {
-  @apply bg-gold text-white hover:bg-gold-dark focus:ring-gold;
+  @apply bg-gold text-night hover:bg-gold-light focus:ring-gold;
 }
 .abtn-ghost {
   @apply border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 focus:ring-slate-300;
@@ -576,4 +639,364 @@ html.lenis body {
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-drift { animation: none; }
+}
+
+/* ═══════════════════════════ Redesign 2026 ═══════════════════════════
+ * "Golden hour editorial" — references (Refero): Wallpaper Projects for the
+ * warm paper canvas, monumental narrow serif and small capsule actions;
+ * Aker for the landscape masthead, ruled ledgers and staggered figures.
+ * Rules: color belongs to the photographs; gold is reserved for booking
+ * actions, line icons and the hour; no shadowed cards on the public site —
+ * hairlines and space do the structuring. Classes are prefixed `ov-` so the
+ * guest portal (still on the older primitives above) is left as it is.
+ */
+.ov-page {
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+.ov-shell {
+  @apply mx-auto w-full max-w-[1440px] px-5 md:px-10;
+}
+
+/* type */
+.ov-label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.4;
+}
+.ov-display {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(3.25rem, 9.5vw, 9.5rem);
+  line-height: 0.9;
+  letter-spacing: -0.035em;
+}
+.ov-h1 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(2.9rem, 7vw, 6.75rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+}
+.ov-h2 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(2.3rem, 4.6vw, 4.25rem);
+  line-height: 1;
+  letter-spacing: -0.025em;
+}
+.ov-h3 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(1.6rem, 2.4vw, 2.25rem);
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+}
+.ov-intro {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(1.45rem, 2.3vw, 2.2rem);
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+}
+.ov-body {
+  font-size: 0.95rem;
+  line-height: 1.75;
+  color: color-mix(in srgb, var(--color-ink) 72%, transparent);
+}
+.ov-num,
+.ov-display,
+.ov-h1,
+.ov-h2,
+.ov-h3 {
+  /* Cormorant's default old-style 1 reads as an I at display sizes */
+  font-variant-numeric: lining-nums;
+}
+.ov-num sup {
+  font-size: 0.38em;
+  vertical-align: 0;
+  position: relative;
+  top: -1.15em;
+  margin-left: 0.04em;
+}
+.ov-num {
+  font-family: var(--font-serif);
+  font-weight: 300;
+  font-size: clamp(4.5rem, 10vw, 9.5rem);
+  line-height: 0.85;
+  letter-spacing: -0.045em;
+}
+
+/* hairlines */
+.ov-rule {
+  border-color: color-mix(in srgb, var(--color-ink) 14%, transparent);
+}
+.ov-rule-light {
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+/* capsule actions */
+.ov-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 3rem;
+  padding: 0 1.4rem;
+  border-radius: 9999px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition:
+    background-color 0.35s cubic-bezier(0.23, 1, 0.32, 1),
+    color 0.35s cubic-bezier(0.23, 1, 0.32, 1),
+    border-color 0.35s cubic-bezier(0.23, 1, 0.32, 1),
+    transform 0.2s ease;
+}
+.ov-btn:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 3px;
+}
+.ov-btn:active {
+  transform: scale(0.97);
+}
+.ov-btn svg {
+  width: 1rem;
+  height: 1rem;
+  stroke-width: 1.4;
+}
+/* the booking action: gold with ink lettering (white on gold fails contrast) */
+.ov-btn-gold {
+  background: var(--color-gold);
+  color: var(--color-night);
+}
+.ov-btn-gold:hover {
+  background: var(--color-gold-light);
+}
+.ov-btn-ink {
+  background: var(--color-ink);
+  color: #fff;
+}
+.ov-btn-ink:hover {
+  background: var(--color-sea);
+}
+.ov-btn-line {
+  border: 1px solid color-mix(in srgb, var(--color-ink) 28%, transparent);
+  color: var(--color-ink);
+}
+.ov-btn-line:hover {
+  border-color: var(--color-ink);
+  background: var(--color-ink);
+  color: #fff;
+}
+.ov-btn-light {
+  background: #fff;
+  color: var(--color-ink);
+}
+.ov-btn-light:hover {
+  background: var(--color-ivory);
+}
+.ov-btn-glass {
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: #fff;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+.ov-btn-glass:hover {
+  background: rgba(255, 255, 255, 0.26);
+}
+@media (max-width: 640px) {
+  .ov-btn {
+    min-height: 3.1rem;
+    font-size: 0.74rem;
+  }
+}
+
+/* text link with a north-east arrow that travels on hover */
+.ov-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid currentColor;
+  transition: color 0.3s ease, gap 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.ov-link:hover {
+  color: var(--color-gold-dark);
+  gap: 0.85rem;
+}
+.ov-arrow {
+  transition: transform 0.45s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.group:hover .ov-arrow {
+  transform: translate(3px, -3px);
+}
+
+/* photographs: flush rectangles, a slow zoom on hover */
+.ov-photo {
+  overflow: hidden;
+  background: var(--color-stone);
+}
+.ov-photo img {
+  transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.group:hover .ov-photo img {
+  transform: scale(1.04);
+}
+
+/* the masthead glass tile over the hero */
+.ov-glass-tile {
+  background: rgba(10, 18, 24, 0.5);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  backdrop-filter: blur(22px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .ov-glass-tile {
+    background: rgba(10, 18, 24, 0.9);
+  }
+}
+
+/* form fields of the redesign: underlined, quiet, 16px on phones */
+.ov-field label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-ink) 60%, transparent);
+}
+.ov-field input,
+.ov-field select,
+.ov-field textarea {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-ink) 22%, transparent);
+  background: transparent;
+  padding: 0.65rem 0;
+  font-size: 1rem;
+  color: var(--color-ink);
+  outline: none;
+  border-radius: 0;
+  transition: border-color 0.25s ease;
+}
+.ov-field textarea {
+  border: 1px solid color-mix(in srgb, var(--color-ink) 18%, transparent);
+  padding: 0.75rem 0.9rem;
+}
+.ov-field input:focus,
+.ov-field select:focus,
+.ov-field textarea:focus {
+  border-color: var(--color-gold-dark);
+}
+
+/* prose for long editorial text (legal, guide articles) */
+.ov-prose {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: color-mix(in srgb, var(--color-ink) 78%, transparent);
+}
+.ov-prose h2 {
+  font-family: var(--font-serif);
+  font-size: clamp(1.75rem, 3vw, 2.4rem);
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  color: var(--color-ink);
+  margin: 3rem 0 1rem;
+}
+.ov-prose h3 {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  color: var(--color-ink);
+  margin: 2rem 0 0.6rem;
+}
+.ov-prose p,
+.ov-prose ul,
+.ov-prose ol {
+  margin: 0 0 1.1rem;
+}
+.ov-prose a:not([class]) {
+  color: var(--color-ink);
+  text-decoration: underline;
+  text-decoration-color: var(--color-gold);
+  text-underline-offset: 3px;
+}
+
+/* ── Public pages: the legacy primitives, re-cut to the redesign ──
+   Every public page opens on an .ov-page hero; the guest portal (account,
+   contract signing) does not, so it keeps the older look until its own pass.
+   This catches the shared pieces (forms, buttons, labels) the pages still use. */
+main:has(.ov-page) {
+  background: var(--color-paper);
+}
+main:has(.ov-page) .bg-sand {
+  background-color: var(--color-paper);
+}
+main:has(.ov-page) .eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+}
+main:has(.ov-page) .section-title {
+  font-size: clamp(2.1rem, 4.4vw, 3.6rem);
+  line-height: 1.02;
+  letter-spacing: -0.015em;
+  font-variant-numeric: lining-nums;
+}
+main:has(.ov-page) :is(.btn-gold, .btn-outline, .btn-outline-light) {
+  min-height: 3rem;
+  padding: 0 1.4rem;
+  border-radius: 9999px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  box-shadow: none;
+}
+main:has(.ov-page) .btn-gold {
+  color: var(--color-night);
+}
+main:has(.ov-page) .btn-gold:hover {
+  background: var(--color-gold-light);
+}
+main:has(.ov-page) .btn-gold:disabled {
+  opacity: 0.45;
+}
+main:has(.ov-page) .btn-outline {
+  border-color: color-mix(in srgb, var(--color-ink) 28%, transparent);
+}
+main:has(.ov-page) .btn-outline:hover {
+  background: var(--color-ink);
+  border-color: var(--color-ink);
+  color: #fff;
+}
+main:has(.ov-page) .field label {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+}
+main:has(.ov-page) :is(.field input, .field select, .field textarea) {
+  border-radius: 0.6rem;
+  border-color: color-mix(in srgb, var(--color-ink) 16%, transparent);
+  background: #fff;
+}
+main:has(.ov-page) :is(.field input, .field select, .field textarea):focus {
+  border-color: var(--color-gold-dark);
+  --tw-ring-color: var(--color-gold-dark);
 }
