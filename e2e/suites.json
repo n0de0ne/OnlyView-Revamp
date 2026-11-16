@@ -1,0 +1,156 @@
+{
+  "comment": "Which suites a changed file calls for. Used by e2e/select-suites.mjs (npm run e2e:changed). A file matching `everything` runs all suites; a file matching nothing under src/ or prisma/ runs all suites too (better safe); docs and other files run none. `smoke` always runs with any selection.",
+  "everything": [
+    "package.json",
+    "package-lock.json",
+    "next.config.ts",
+    "postcss.config.mjs",
+    "Dockerfile",
+    "scripts/docker-entrypoint.sh",
+    "prisma/schema.prisma",
+    "playwright.config.ts",
+    "e2e/support/**",
+    "e2e/auth.setup.ts",
+    "e2e/cleanup.teardown.ts",
+    "src/middleware.ts",
+    "src/app/globals.css",
+    "src/lib/db.ts",
+    "src/lib/dates.ts",
+    "src/lib/settings.ts",
+    "src/lib/mailer.ts",
+    "src/lib/email-templates.ts",
+    "src/lib/request-guard.ts",
+    "src/lib/seo.ts",
+    "src/lib/features.ts",
+    "src/lib/money.ts",
+    "src/components/LineIcon.tsx",
+    "src/instrumentation.ts",
+    "src/app/api/admin/email-logs/**"
+  ],
+  "suites": {
+    "public": [
+      "e2e/public/**",
+      "src/app/(site)/[[]locale]/*.tsx",
+      "src/app/(site)/[[]locale]/[[]...rest]/**",
+      "src/app/(site)/[[]locale]/{villa,pointe-milou,rates,faq,contact,reviews,tour,why-book-direct,legal,privacy}/**",
+      "src/app/api/{contact,guestbook}/**",
+      "src/components/site/{HomeHero,KeyFacts,PageHero,SiteHeader,SiteFooter,MobileTabBar,ContactForm,ReviewForm,Tour3D,TourExperience}.tsx",
+      "src/components/site/golden-hour/**",
+      "src/components/motion/**",
+      "src/lib/{site-content,site-facts,testimonials,contact,fonts,icon-slots,promotions,rate-periods,pricing}.ts",
+      "src/lib/i18n/**",
+      "prisma/seed.mjs",
+      "public/**",
+      "src/fonts/**"
+    ],
+    "seo": [
+      "e2e/seo/**",
+      "src/app/{robots,sitemap}.ts",
+      "src/app/{llms.txt,llms-full.txt,indexnow-key.txt}/**",
+      "src/app/(site)/[[]locale]/**",
+      "src/lib/{llms,indexnow,guides,site-facts,site-content,testimonials}.ts",
+      "src/lib/i18n/**",
+      "src/components/site/{KeyFacts,SiteHeader,SiteFooter}.tsx",
+      "src/app/*.webmanifest/**",
+      "src/app/{icon,apple-icon}.*",
+      "src/data/guides.ts"
+    ],
+    "gallery": [
+      "e2e/gallery/**",
+      "src/app/(site)/[[]locale]/gallery/**",
+      "src/components/site/gallery/**",
+      "src/lib/photos.ts",
+      "src/app/api/admin/photos/**",
+      "src/data/photos.json"
+    ],
+    "map": [
+      "e2e/map/**",
+      "src/app/(site)/[[]locale]/map/**",
+      "src/components/site/map/**",
+      "src/lib/map-places.ts",
+      "src/app/api/admin/map-places/**",
+      "src/components/admin/{MapPlacesBoard,AdminPlaceMap}.tsx",
+      "prisma/seed.mjs",
+      "src/data/map-places.json"
+    ],
+    "booking": [
+      "e2e/booking/**",
+      "src/app/(site)/[[]locale]/booking/**",
+      "src/app/api/{quote,availability,booking-request,ical}/**",
+      "src/app/api/admin/requests/**",
+      "src/components/site/{BookingWidget,AvailabilityCalendar}.tsx",
+      "src/components/admin/RequestsInbox.tsx",
+      "src/lib/{pricing,availability,promotions,rate-periods,booking-emails,reservations}.ts"
+    ],
+    "contracts": [
+      "e2e/contracts/**",
+      "src/app/(site)/[[]locale]/contracts/**",
+      "src/app/api/contracts/**",
+      "src/app/api/admin/contracts/**",
+      "src/app/api/admin/reservations/[[]id]/actions/**",
+      "src/components/site/SignaturePad.tsx",
+      "src/components/admin/{ContractsBoard,OwnerSignatureCard,ReservationDateChanges}.tsx",
+      "src/lib/{contracts,contract-content,contract-pdf,contract-render,date-changes,payment-summary}.ts"
+    ],
+    "guest-portal": [
+      "e2e/guest-portal/**",
+      "src/app/(site)/[[]locale]/account/**",
+      "src/app/api/account/**",
+      "src/app/api/admin/date-changes/**",
+      "src/components/site/{GuestLoginForm,StayPlanner,StayInfoCard,DateChangeRequest,FlightSearch}.tsx",
+      "src/lib/{guest-auth,guest-stay,stay-info,date-changes,payment-summary,loyalty}.ts"
+    ],
+    "concierge-extras": [
+      "e2e/concierge-extras/**",
+      "src/app/api/account/reservations/[[]id]/{extras,concierge}/**",
+      "src/app/api/admin/{extras,concierge,concierge-requests}/**",
+      "src/app/api/admin/reservations/[[]id]/extras/**",
+      "src/app/api/cron/extras-sync/**",
+      "src/app/(admin)/admin/(app)/{extras,concierge,concierge-requests}/**",
+      "src/components/site/{ExtrasPanel,ConciergePanel,ConciergeRequests,concierge-format}.*",
+      "src/components/admin/{ExtrasBoard,ConciergeBoard,ConciergeRequestList,ConciergeRequestsInbox,ReservationStayPanel}.tsx",
+      "src/lib/{extras,extras-sync,concierge,concierge-requests}.ts"
+    ],
+    "analytics": [
+      "e2e/analytics/**",
+      "src/app/api/analytics/**",
+      "src/app/api/admin/analytics/**",
+      "src/app/(admin)/admin/(app)/analytics/**",
+      "src/components/site/{Analytics,AnalyticsOptOut}.tsx",
+      "src/components/admin/{AnalyticsBoard,AnalyticsVisits,analytics-labels}.*",
+      "src/lib/analytics/**"
+    ],
+    "admin-core": [
+      "e2e/admin-core/**",
+      "src/app/(admin)/**",
+      "src/app/api/admin/{login,logout,change-password,users,audit,badges}/**",
+      "src/components/admin/{AdminShell,UsersBoard,ui,RouteModal,IconPicker}.tsx",
+      "src/lib/{auth,admin-api,admin-schemas,audit}.ts"
+    ],
+    "admin-reservations": [
+      "e2e/admin-reservations/**",
+      "src/app/api/admin/{reservations,clients,agencies,loyalty}/**",
+      "src/app/(admin)/admin/(app)/{reservations,calendar,clients,agencies,requests,contracts,loyalty,@modal}/**",
+      "src/components/admin/{ReservationEditor,ReservationList,ReservationStayPanel,ReservationDateChanges,AdminCalendar,ClientsCrm,AgenciesBoard,LoyaltyBoard}.tsx",
+      "src/lib/{reservations,reservation-editor-data,pricing,availability,payment-summary,booking-emails,loyalty,admin-schemas}.ts"
+    ],
+    "admin-finance": [
+      "e2e/admin-finance/**",
+      "src/app/api/admin/{stats,expenses,rate-periods,promotions,settings,reminders}/**",
+      "src/app/(admin)/admin/(app)/page.tsx",
+      "src/components/admin/{FinanceBoard,Dashboard,RatePeriodsBoard,PromotionsBoard,SettingsBoard,RemindersPanel}.tsx",
+      "src/lib/{stats,pricing,rate-periods,promotions,reminders,admin-schemas}.ts",
+      "src/app/api/cron/reminders/**",
+      "src/app/(admin)/admin/(app)/{finance,pricing,promotions,settings}/**"
+    ],
+    "admin-content": [
+      "e2e/admin-content/**",
+      "src/app/api/admin/{site-texts,guides,photos,map-places,testimonials,seo}/**",
+      "src/app/(admin)/admin/(app)/{site,texts,guide,map}/**",
+      "src/app/(site)/[[]locale]/guide/**",
+      "src/components/admin/{SiteContentBoard,SiteTextsBoard,GuidesBoard,MapPlacesBoard,IndexNowPanel}.tsx",
+      "src/lib/{site-content,guides,photos,map-places,indexnow,admin-schemas}.ts",
+      "src/data/guides.ts"
+    ]
+  }
+}

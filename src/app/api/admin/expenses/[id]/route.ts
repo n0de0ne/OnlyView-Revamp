@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import { adminRoute, jsonError, jsonOk, jsonInvalid } from "@/lib/admin-api";
-import { ExpenseInput, dateOrNull } from "@/lib/admin-schemas";
+import { ExpenseInput, dateOrNull, parsePatch } from "@/lib/admin-schemas";
 import { audit } from "@/lib/audit";
 
 export const dynamic = "force-dynamic";
@@ -10,7 +10,7 @@ type Ctx = { params: Promise<{ id: string }> };
 export const PUT = adminRoute<Ctx>("owner", async (req, { params }, user) => {
   const { id: idRaw } = await params;
   const id = parseInt(idRaw, 10);
-  const parsed = ExpenseInput.partial().safeParse(await req.json().catch(() => null));
+  const parsed = parsePatch(ExpenseInput, await req.json().catch(() => null));
   if (!parsed.success) return jsonInvalid(parsed.error);
   const d = parsed.data;
   try {

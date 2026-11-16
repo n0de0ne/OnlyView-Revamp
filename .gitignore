@@ -29,3 +29,10 @@ npm-debug.log*
 # analytics geolocation database (downloaded at runtime)
 .cache/
 /public/media/photos/uploads/
+
+# end-to-end tests: session, traces and reports of a run
+/e2e/.auth/
+/e2e/.results/
+/e2e/.report/
+/test-results/
+/playwright-report/

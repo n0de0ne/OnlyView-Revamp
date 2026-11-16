@@ -105,3 +105,20 @@ export const PUT = adminRoute<Ctx>("manager", async (req, { params }, user) => {
   });
   return jsonOk({ reservationId: reservation.id });
 });
+
+/** Remove a request from the inbox (spam, tests). A stay created from it is kept. */
+export const DELETE = adminRoute<Ctx>("manager", async (_req, { params }, user) => {
+  const id = parseInt((await params).id, 10);
+  const request = await prisma.bookingRequest.findUnique({ where: { id } });
+  if (!request) return jsonError("not_found", 404);
+  await prisma.bookingRequest.delete({ where: { id } });
+  await audit({
+    action: "request_delete",
+    entityType: "booking_request",
+    entityId: id,
+    details: { name: request.name, reservationId: request.reservationId },
+    userId: user.id,
+    username: user.username,
+  });
+  return jsonOk();
+});

@@ -6,7 +6,8 @@ import { getPhotos, PHOTO_CATEGORIES } from "@/lib/photos";
 import { GalleryGrid } from "@/components/site/gallery/GalleryGrid";
 import { PageHero } from "@/components/site/PageHero";
 
-export const revalidate = 300;
+// reads ?c= on the server: rendered per request (an ISR render of /fr/gallery threw DYNAMIC_SERVER_USAGE → 500)
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
