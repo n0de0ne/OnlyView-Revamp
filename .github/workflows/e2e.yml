@@ -5,9 +5,14 @@ name: E2E (staging)
 # (Actions → E2E (staging) → Run workflow) or call it from another workflow
 # once staging deploys are automated.
 #
-# Suites live in their own folders and are run by `npm run test:e2e`, which
-# receives the base URL and the suite to run. Until they land, this workflow
-# says so and passes.
+# Uses the Playwright suites in e2e/ (PR #59): `suite` picks Playwright
+# projects (e.g. "booking contracts"), "changed" runs only the suites the
+# commit's changes call for (e2e/select-suites.mjs, against main), and empty
+# runs everything. Until e2e/ lands, this workflow says so and passes.
+#
+# Secrets to add in GitHub (Settings → Secrets → Actions):
+#   STAGING_ADMIN_USER, STAGING_ADMIN_PASS, and STAGING_HTTP_USER /
+#   STAGING_HTTP_PASS if staging sits behind basic auth.
 
 on:
   workflow_dispatch:
@@ -17,7 +22,7 @@ on:
         required: true
         type: string
       suite:
-        description: Which suite (empty = all)
+        description: 'Suites, e.g. "booking contracts" (empty = all, "changed" = only what this commit touches)'
         required: false
         type: string
   workflow_call:
@@ -38,25 +43,50 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Refuse production
         run: |
           case "${{ inputs.base_url }}" in
             *://onlyviewstbarth.com*|*://www.onlyviewstbarth.com*)
               echo "::error::E2E suites create and delete data: run them on staging only"; exit 1 ;;
           esac
+      - name: Suites present?
+        id: has
+        run: |
+          if [ -f playwright.config.ts ] && [ -f e2e/select-suites.mjs ]; then echo "yes=1" >> "$GITHUB_OUTPUT"
+          else echo "::notice::no e2e/ suites on this commit yet"; fi
       - uses: actions/setup-node@v4
+        if: steps.has.outputs.yes
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
+      - if: steps.has.outputs.yes
+        run: npm ci
+      - if: steps.has.outputs.yes
+        run: npx playwright install --with-deps chromium
       - name: Run E2E
+        if: steps.has.outputs.yes
         env:
-          BASE_URL: ${{ inputs.base_url }}
-          E2E_SUITE: ${{ inputs.suite }}
-          ADMIN_USER: ${{ secrets.STAGING_ADMIN_USER }}
-          ADMIN_PASS: ${{ secrets.STAGING_ADMIN_PASS }}
+          E2E_BASE_URL: ${{ inputs.base_url }}
+          E2E_ADMIN_USER: ${{ secrets.STAGING_ADMIN_USER }}
+          E2E_ADMIN_PASS: ${{ secrets.STAGING_ADMIN_PASS }}
+          E2E_HTTP_USER: ${{ secrets.STAGING_HTTP_USER }}
+          E2E_HTTP_PASS: ${{ secrets.STAGING_HTTP_PASS }}
+          SUITE: ${{ inputs.suite }}
         run: |
-          if npm pkg get scripts.test:e2e | grep -q '{}'; then
-            echo "::notice::no test:e2e script yet: the E2E suites haven't landed"; exit 0
-          fi
-          npm run test:e2e
+          case "$SUITE" in
+            "") npx playwright test ;;
+            changed)
+              FLAGS=$(node e2e/select-suites.mjs --base=origin/main)
+              if [ -z "$FLAGS" ]; then echo "::notice::no suite concerned by this change"; exit 0; fi
+              npx playwright test $FLAGS ;;
+            *) npx playwright test $(for s in $SUITE; do printf -- "--project=%s " "$s"; done) ;;
+          esac
+      - name: Report
+        if: always() && steps.has.outputs.yes
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: e2e/.report
+          if-no-files-found: ignore

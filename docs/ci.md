@@ -19,7 +19,9 @@ looked at. Remove an entry once its upgrade lands.
 
 ## E2E suites
 
-Scenario suites (booking, contracts, payments, admin flows) run against
-staging through **E2E (staging)** (`.github/workflows/e2e.yml`, run by hand
-with the staging URL). It runs `npm run test:e2e` with `BASE_URL` and
-`E2E_SUITE`, and refuses the production domain.
+Scenario suites (`e2e/`, Playwright) run against staging through **E2E
+(staging)** (`.github/workflows/e2e.yml`): Actions → E2E (staging) → Run
+workflow, with the staging URL and the suites (empty = all, `changed` = only
+what the commit touches, via `e2e/select-suites.mjs`). It refuses the
+production domain. Secrets: `STAGING_ADMIN_USER`, `STAGING_ADMIN_PASS`
+(+ `STAGING_HTTP_USER`/`STAGING_HTTP_PASS` for basic auth).
