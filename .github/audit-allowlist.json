@@ -1,0 +1,71 @@
+{
+  "_comment": "Known high/critical advisories accepted until \"review\". The CI audit gate fails on anything not listed here, and on entries past their review date. Remove an entry once the upgrade lands.",
+  "advisories": {
+    "GHSA-ggr8-5vv4-36mx": {
+      "package": "deepmerge-ts",
+      "severity": "high",
+      "reason": "inside the Prisma CLI (db push at boot), never fed user input; fixed in Prisma 7 (major upgrade, planned)",
+      "review": "2026-12-15"
+    },
+    "GHSA-jrc7-96c5-q579": {
+      "package": "maplibre-gl",
+      "severity": "critical",
+      "reason": "client-side map renderer, our tiles/styles only; fix needs maplibre-gl 6 (major upgrade, planned)",
+      "review": "2026-12-15"
+    },
+    "GHSA-p6gq-j5cr-w38f": {
+      "package": "nodemailer",
+      "severity": "high",
+      "reason": "we send fixed templates with escaped fields (GN-507); fix needs nodemailer 10 (major upgrade, planned first)",
+      "review": "2026-12-15"
+    },
+    "GHSA-2x7j-588g-ccc2": {
+      "package": "nodemailer",
+      "severity": "high",
+      "reason": "we send fixed templates with escaped fields (GN-507); fix needs nodemailer 10 (major upgrade, planned first)",
+      "review": "2026-12-15"
+    },
+    "GHSA-v53p-9fqp-m79j": {
+      "package": "nodemailer",
+      "severity": "high",
+      "reason": "we send fixed templates with escaped fields (GN-507); fix needs nodemailer 10 (major upgrade, planned first)",
+      "review": "2026-12-15"
+    },
+    "GHSA-r7g4-qg5f-qqm2": {
+      "package": "nodemailer",
+      "severity": "high",
+      "reason": "we send fixed templates with escaped fields (GN-507); fix needs nodemailer 10 (major upgrade, planned first)",
+      "review": "2026-12-15"
+    },
+    "GHSA-6g55-p6wh-862q": {
+      "package": "postcss",
+      "severity": "high",
+      "reason": "build-time only (bundled in Next 15), no user CSS; fixed with Next 16 (major upgrade, planned)",
+      "review": "2026-12-15"
+    },
+    "GHSA-r28c-9q8g-f849": {
+      "package": "postcss",
+      "severity": "high",
+      "reason": "build-time only (bundled in Next 15), no user CSS; fixed with Next 16 (major upgrade, planned)",
+      "review": "2026-12-15"
+    },
+    "GHSA-f88m-g3jw-g9cj": {
+      "package": "sharp",
+      "severity": "high",
+      "reason": "resizes photos uploaded by the admin only; fix needs sharp 0.35 (breaking, planned)",
+      "review": "2026-12-15"
+    },
+    "GHSA-rgj7-g3m4-5g8c": {
+      "package": "sharp",
+      "severity": "high",
+      "reason": "resizes photos uploaded by the admin only; fix needs sharp 0.35 (breaking, planned)",
+      "review": "2026-12-15"
+    },
+    "GHSA-wq5f-xc86-pv6w": {
+      "package": "sharp",
+      "severity": "high",
+      "reason": "resizes photos uploaded by the admin only; fix needs sharp 0.35 (breaking, planned)",
+      "review": "2026-12-15"
+    }
+  }
+}

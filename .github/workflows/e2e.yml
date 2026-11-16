@@ -1,0 +1,62 @@
+name: E2E (staging)
+
+# Hook for the scenario E2E suites (booking, contracts, payments, admin…),
+# run against a deployed staging site, never production. Start it by hand
+# (Actions → E2E (staging) → Run workflow) or call it from another workflow
+# once staging deploys are automated.
+#
+# Suites live in their own folders and are run by `npm run test:e2e`, which
+# receives the base URL and the suite to run. Until they land, this workflow
+# says so and passes.
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: Staging URL (e.g. https://staging.onlyviewstbarth.com)
+        required: true
+        type: string
+      suite:
+        description: Which suite (empty = all)
+        required: false
+        type: string
+  workflow_call:
+    inputs:
+      base_url:
+        required: true
+        type: string
+      suite:
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Refuse production
+        run: |
+          case "${{ inputs.base_url }}" in
+            *://onlyviewstbarth.com*|*://www.onlyviewstbarth.com*)
+              echo "::error::E2E suites create and delete data: run them on staging only"; exit 1 ;;
+          esac
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Run E2E
+        env:
+          BASE_URL: ${{ inputs.base_url }}
+          E2E_SUITE: ${{ inputs.suite }}
+          ADMIN_USER: ${{ secrets.STAGING_ADMIN_USER }}
+          ADMIN_PASS: ${{ secrets.STAGING_ADMIN_PASS }}
+        run: |
+          if npm pkg get scripts.test:e2e | grep -q '{}'; then
+            echo "::notice::no test:e2e script yet: the E2E suites haven't landed"; exit 0
+          fi
+          npm run test:e2e

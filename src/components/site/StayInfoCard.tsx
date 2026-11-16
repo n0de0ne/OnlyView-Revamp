@@ -106,6 +106,8 @@ export function StayInfoCard({
           <div className="mt-4 space-y-3">
             {platform === "apple" && (
               <>
+                {/* a file download (.mobileconfig), not a page: a plain link on purpose */}
+                {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
                 <a href="/api/account/wifi" className="btn-gold inline-flex w-full items-center justify-center gap-2">
                   <Wifi className="h-4 w-4" strokeWidth={1.5} />
                   {t.joinApple}

@@ -1,0 +1,169 @@
+name: Checks
+
+# Runs on every pull request, and before every deploy: "Build & publish Docker
+# image" calls this workflow and only publishes the image if every job passes.
+#
+#   quality  types, lint, unit tests, Prisma schema format
+#   audit    no new high/critical advisory in the production dependencies
+#   schema   the schema change is additive and the boot's `db push` accepts it
+#   boot     the real image starts on a database holding the previous schema
+#            + data, and serves its public and admin pages
+#
+# Scenario E2E suites run on staging through e2e.yml (not here).
+
+on:
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      base_ref:
+        description: Commit the schema is compared with (what production runs today)
+        type: string
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checks-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  TZ: UTC
+  NEXT_TELEMETRY_DISABLED: "1"
+
+jobs:
+  quality:
+    name: Types, lint, unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Prisma schema is valid and formatted
+        run: npx prisma validate && npx prisma format --check
+        env:
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Unit tests
+        run: npm test
+
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: No new high/critical advisory (allowlist in .github/audit-allowlist.json)
+        run: node scripts/ci/audit-gate.mjs
+
+  schema:
+    name: Prisma schema safety
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:ci@localhost:5432/ci?schema=onlyview_app
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Resolve the commit production runs today
+        id: base
+        run: |
+          BASE="${{ inputs.base_ref || github.event.pull_request.base.sha }}"
+          if [ -z "$BASE" ] || ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then BASE=$(git rev-parse HEAD~1); fi
+          echo "sha=$BASE" >> "$GITHUB_OUTPUT"
+      - name: Static diff + upgrade rehearsal (base schema with data → this schema)
+        run: node scripts/ci/schema-safety.mjs "${{ steps.base.outputs.sha }}"
+
+  boot:
+    name: Image boots and serves pages
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:ci@localhost:5432/ci?schema=onlyview_app
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - uses: docker/setup-buildx-action@v3
+      - name: Build the production image (same Dockerfile and cache as the publish job)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          load: true
+          push: false
+          tags: onlyview:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Resolve the commit production runs today
+        id: base
+        run: |
+          BASE="${{ inputs.base_ref || github.event.pull_request.base.sha }}"
+          if [ -z "$BASE" ] || ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then BASE=$(git rev-parse HEAD~1); fi
+          echo "sha=$BASE" >> "$GITHUB_OUTPUT"
+      - name: Database on the previous schema, with data
+        run: node scripts/ci/schema-safety.mjs "${{ steps.base.outputs.sha }}" --prepare-only
+      - name: Start the image (its entrypoint upgrades the database, as in production)
+        run: |
+          mkdir -p "$RUNNER_TEMP/data"
+          docker run -d --name onlyview --network host \
+            -e DATABASE_URL="$DATABASE_URL" \
+            -v "$RUNNER_TEMP/data:/data" onlyview:ci
+      - name: Smoke test public site + admin
+        run: node scripts/ci/smoke.mjs
+        env:
+          BASE_URL: http://localhost:3000
+      - name: No server errors in the container log
+        run: |
+          docker logs onlyview > "$RUNNER_TEMP/onlyview.log" 2>&1
+          if grep -nE "⨯|Unhandled|PrismaClient.*Error|Invalid .*prisma" "$RUNNER_TEMP/onlyview.log"; then
+            echo "::error::the server logged errors while serving the smoke test (above)"; exit 1
+          fi
+          if grep -qE "EACCES" "$RUNNER_TEMP/onlyview.log"; then
+            echo "::warning::the server could not write some of its files (EACCES), see the container log"
+          fi
+      - name: Container log
+        if: always()
+        run: docker logs onlyview 2>&1 | tail -200 || true

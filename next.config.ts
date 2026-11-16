@@ -3,6 +3,8 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
+  // Lint runs as its own CI check ("Checks" workflow); the image build stays as before.
+  eslint: { ignoreDuringBuilds: true },
   images: {
     formats: ["image/avif", "image/webp"],
     deviceSizes: [480, 640, 828, 1080, 1400, 1800, 2200],
