@@ -3,13 +3,42 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import {
+  BedDouble,
+  BookOpen,
+  CalendarDays,
+  CalendarRange,
+  ChartLine,
+  ConciergeBell,
+  Euro,
+  ExternalLink,
+  FilePenLine,
+  Handshake,
+  Images,
+  Inbox,
+  KeyRound,
+  LayoutDashboard,
+  LogOut,
+  MapPinned,
+  Menu,
+  Settings2,
+  ShieldCheck,
+  Sparkles,
+  Tag,
+  Type,
+  Users,
+  UtensilsCrossed,
+  Wine,
+  X,
+  type LucideIcon,
+} from "lucide-react";
 import type { SessionUser } from "@/lib/auth";
 import { api, Modal, useToast } from "./ui";
 
 type NavItem = {
   href: string;
   label: string;
-  icon: string;
+  icon: LucideIcon;
   minRole?: "owner" | "manager";
   /** hidden unless the matching feature is enabled */
   feature?: "loyalty";
@@ -25,52 +54,60 @@ export const BADGES_EVENT = "onlyview:admin-badges";
 
 /** The menu, by what Alan is doing: bookings, selling, the guests' stay, the website, running the villa. */
 const NAV: Array<{ title: string | null; items: NavItem[] }> = [
-  { title: null, items: [{ href: "/admin", label: "Tableau de bord", icon: "📊" }] },
+  { title: null, items: [{ href: "/admin", label: "Tableau de bord", icon: LayoutDashboard }] },
   {
     title: "Réservations",
     items: [
-      { href: "/admin/calendar", label: "Calendrier", icon: "📅" },
-      { href: "/admin/reservations", label: "Réservations", icon: "🛏️" },
-      { href: "/admin/requests", label: "Demandes", icon: "📥", badge: "requests" },
-      { href: "/admin/concierge-requests", label: "Concierge", icon: "🍽️", badge: "concierge" },
-      { href: "/admin/contracts", label: "Contrats", icon: "✍️" },
-      { href: "/admin/clients", label: "Clients", icon: "👥" },
-      { href: "/admin/loyalty", label: "Fidélité", icon: "✦", feature: "loyalty" },
+      { href: "/admin/calendar", label: "Calendrier", icon: CalendarDays },
+      { href: "/admin/reservations", label: "Réservations", icon: BedDouble },
+      { href: "/admin/requests", label: "Demandes", icon: Inbox, badge: "requests" },
+      { href: "/admin/concierge-requests", label: "Concierge", icon: UtensilsCrossed, badge: "concierge" },
+      { href: "/admin/contracts", label: "Contrats", icon: FilePenLine },
+      { href: "/admin/clients", label: "Clients", icon: Users },
+      { href: "/admin/loyalty", label: "Fidélité", icon: Sparkles, feature: "loyalty" },
     ],
   },
   {
     title: "Tarifs & ventes",
     items: [
-      { href: "/admin/pricing", label: "Tarifs par date", icon: "📆", minRole: "owner" },
-      { href: "/admin/promotions", label: "Promotions", icon: "🏷️" },
-      { href: "/admin/agencies", label: "Agences", icon: "🤝" },
-      { href: "/admin/extras", label: "Extras", icon: "🍾" },
+      { href: "/admin/pricing", label: "Tarifs par date", icon: CalendarRange, minRole: "owner" },
+      { href: "/admin/promotions", label: "Promotions", icon: Tag },
+      { href: "/admin/agencies", label: "Agences", icon: Handshake },
+      { href: "/admin/extras", label: "Extras", icon: Wine },
     ],
   },
   {
     title: "Séjour des clients",
     items: [
-      { href: "/admin/concierge", label: "Conciergerie", icon: "🛎️" },
-      { href: "/admin/map", label: "Carte de l'île", icon: "🗺️" },
+      { href: "/admin/concierge", label: "Conciergerie", icon: ConciergeBell },
+      { href: "/admin/map", label: "Carte de l'île", icon: MapPinned },
     ],
   },
   {
     title: "Site web",
     items: [
-      { href: "/admin/site", label: "Site & contenu", icon: "🖼️" },
-      { href: "/admin/texts", label: "Textes du site", icon: "📝" },
-      { href: "/admin/guide", label: "Guide", icon: "📖" },
-      { href: "/admin/analytics", label: "Analytique", icon: "📈" },
+      { href: "/admin/site", label: "Site & contenu", icon: Images },
+      { href: "/admin/texts", label: "Textes du site", icon: Type },
+      { href: "/admin/guide", label: "Guide", icon: BookOpen },
+      { href: "/admin/analytics", label: "Analytique", icon: ChartLine },
     ],
   },
   {
     title: "Gestion",
     items: [
-      { href: "/admin/finance", label: "Finances", icon: "💶", minRole: "owner" },
-      { href: "/admin/settings", label: "Réglages", icon: "⚙️", minRole: "owner" },
-      { href: "/admin/users", label: "Utilisateurs", icon: "🔐", minRole: "owner" },
+      { href: "/admin/finance", label: "Finances", icon: Euro, minRole: "owner" },
+      { href: "/admin/settings", label: "Réglages", icon: Settings2, minRole: "owner" },
+      { href: "/admin/users", label: "Utilisateurs", icon: ShieldCheck, minRole: "owner" },
     ],
   },
+];
+
+/** The phone's tab bar: the four screens opened most, then the whole menu. */
+const TABS: Array<{ href: string; label: string; icon: LucideIcon; badge?: keyof Badges }> = [
+  { href: "/admin", label: "Accueil", icon: LayoutDashboard },
+  { href: "/admin/calendar", label: "Calendrier", icon: CalendarDays },
+  { href: "/admin/reservations", label: "Séjours", icon: BedDouble },
+  { href: "/admin/requests", label: "Demandes", icon: Inbox, badge: "requests" },
 ];
 
 export function AdminShell({
@@ -107,7 +144,6 @@ export function AdminShell({
       window.removeEventListener(BADGES_EVENT, load);
     };
   }, [pathname]);
-  const pending = badges.requests + badges.concierge;
 
   const canSee = (item: NavItem) => {
     if (item.feature && !features?.[item.feature]) return false;
@@ -146,40 +182,41 @@ export function AdminShell({
   };
 
   const NavLinks = () => (
-    <nav className="space-y-3">
+    <nav className="space-y-5">
       {visibleNav.map((group) => (
         <div key={group.title ?? "home"}>
           {group.title && (
-            <div className="mb-1 px-3.5 text-[0.6rem] font-semibold uppercase tracking-[0.2em] text-white/35">
-              {group.title}
-            </div>
+            <div className="admin-label mb-1.5 px-3 text-slate-400">{group.title}</div>
           )}
-          <div className="space-y-0.5">
+          <div className="space-y-px">
             {group.items.map((item) => {
               const active =
                 item.href === "/admin"
                   ? pathname === "/admin"
                   : pathname === item.href || pathname.startsWith(item.href + "/");
               const count = item.badge ? badges[item.badge] : 0;
+              const Icon = item.icon;
               return (
                 <Link
                   key={item.href}
                   href={item.href}
                   onClick={() => setMenuOpen(false)}
                   aria-current={active ? "page" : undefined}
-                  className={`flex min-h-[40px] items-center gap-3 rounded-xl px-3.5 py-2 text-sm transition lg:min-h-[34px] lg:py-1.5 ${
+                  className={`group flex min-h-[44px] items-center gap-3 rounded-lg px-3 py-2 text-[0.92rem] transition lg:min-h-[36px] lg:py-1.5 lg:text-[0.86rem] ${
                     active
-                      ? "bg-white/12 font-semibold text-white"
-                      : "text-white/65 hover:bg-white/8 hover:text-white"
+                      ? "bg-white font-medium text-slate-900 shadow-[0_0_0_1px_var(--color-slate-200)]"
+                      : "text-slate-600 hover:bg-white/70 hover:text-slate-900"
                   }`}
                 >
-                  <span aria-hidden className="w-5 text-center">
-                    {item.icon}
-                  </span>
+                  <Icon
+                    aria-hidden
+                    strokeWidth={1.5}
+                    className={`h-[1.05rem] w-[1.05rem] shrink-0 ${active ? "text-gold-dark" : "text-slate-400 group-hover:text-slate-600"}`}
+                  />
                   <span className="flex-1">{item.label}</span>
                   {count > 0 && (
                     <span
-                      className="min-w-[1.25rem] rounded-full bg-gold px-1.5 text-center text-[0.65rem] font-bold leading-[1.25rem] text-night"
+                      className="min-w-[1.35rem] rounded-full bg-gold px-1.5 text-center font-mono text-[0.68rem] font-medium leading-[1.35rem] text-night"
                       aria-label={`${count} en attente`}
                     >
                       {count}
@@ -194,38 +231,52 @@ export function AdminShell({
     </nav>
   );
 
+  const initials = (user.firstname ?? user.username).slice(0, 1).toUpperCase();
+
   return (
     <div className="flex min-h-screen">
-      {/* Sidebar (desktop) */}
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col bg-gradient-to-b from-navy-deep to-night px-4 py-6 lg:flex">
-        <Link href="/admin" className="mb-6 block px-2">
-          <div className="font-display text-xl tracking-[0.28em] text-white">ONLY&nbsp;VIEW</div>
-          <div className="mt-0.5 text-[0.55rem] font-semibold uppercase tracking-[0.35em] text-gold">
-            Administration
-          </div>
+      {/* Sidebar (desktop): quiet, on the page's own warm ground */}
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-slate-200 bg-[#efebe3] px-3 py-5 lg:flex">
+        <Link href="/admin" className="mb-6 flex items-baseline gap-2.5 px-3">
+          <span className="font-display text-[1.35rem] tracking-[0.24em] text-slate-900">ONLY&nbsp;VIEW</span>
+          <span className="admin-label text-gold-dark">Admin</span>
         </Link>
-        <div className="flex-1 overflow-y-auto">
+        <div className="-mx-1 flex-1 overflow-y-auto px-1">
           <NavLinks />
         </div>
-        <div className="mt-4 border-t border-white/10 pt-4">
-          <div className="px-2 text-xs text-white/60">
-            {user.firstname ?? user.username}
-            <span className="ml-1.5 rounded bg-white/10 px-1.5 py-0.5 text-[0.6rem] uppercase">
-              {user.role}
+        <div className="mt-4 border-t border-slate-200 pt-4">
+          <a
+            href="/"
+            target="_blank"
+            rel="noopener"
+            className="mb-2 flex min-h-[36px] items-center gap-3 rounded-lg px-3 text-[0.86rem] text-slate-600 hover:bg-white/70 hover:text-slate-900"
+          >
+            <ExternalLink aria-hidden strokeWidth={1.5} className="h-[1.05rem] w-[1.05rem] text-slate-400" />
+            Voir le site
+          </a>
+          <div className="flex items-center gap-3 px-3 py-2">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 font-display text-sm text-white">
+              {initials}
             </span>
-          </div>
-          <div className="mt-2 flex gap-1 px-1">
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm font-medium text-slate-800">{user.firstname ?? user.username}</div>
+              <div className="admin-label text-slate-400">{user.role}</div>
+            </div>
             <button
               onClick={() => setPwdOpen(true)}
-              className="flex-1 rounded-lg px-2 py-1.5 text-left text-xs text-white/60 hover:bg-white/10 hover:text-white"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-white hover:text-slate-800"
+              aria-label="Mot de passe"
+              title="Mot de passe"
             >
-              Mot de passe
+              <KeyRound className="h-4 w-4" strokeWidth={1.5} />
             </button>
             <button
               onClick={logout}
-              className="flex-1 rounded-lg px-2 py-1.5 text-left text-xs text-white/60 hover:bg-white/10 hover:text-white"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-white hover:text-slate-800"
+              aria-label="Déconnexion"
+              title="Déconnexion"
             >
-              Déconnexion
+              <LogOut className="h-4 w-4" strokeWidth={1.5} />
             </button>
           </div>
         </div>
@@ -233,46 +284,48 @@ export function AdminShell({
 
       {/* Mobile top bar */}
       <div
-        className="fixed inset-x-0 top-0 z-40 flex items-center justify-between bg-navy-deep px-4 lg:hidden"
+        className="fixed inset-x-0 top-0 z-40 flex items-center justify-between border-b border-slate-200 bg-[#f6f3ed]/90 px-4 backdrop-blur-xl lg:hidden"
         style={{ paddingTop: "max(0.5rem, env(safe-area-inset-top))", paddingBottom: "0.5rem" }}
       >
-        <Link href="/admin" className="-mx-2 flex h-11 items-center px-2 font-display text-lg tracking-[0.25em] text-white">
-          ONLY&nbsp;VIEW
+        <Link href="/admin" className="-mx-2 flex h-11 items-baseline gap-2 px-2 pt-2.5">
+          <span className="font-display text-lg tracking-[0.22em] text-slate-900">ONLY&nbsp;VIEW</span>
+          <span className="admin-label text-gold-dark">Admin</span>
         </Link>
-        <button
-          onClick={() => setMenuOpen((v) => !v)}
-          className="flex h-11 items-center rounded-lg bg-white/10 px-4 text-sm text-white"
-          aria-expanded={menuOpen}
+        {/* the menu lives in the tab bar below; up here, the way back to the site */}
+        <a
+          href="/"
+          target="_blank"
+          rel="noopener"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-600"
+          aria-label="Voir le site"
         >
-          {menuOpen ? "✕" : "☰"} Menu
-          {!menuOpen && pending > 0 && (
-            <span className="ml-2 min-w-[1.25rem] rounded-full bg-gold px-1.5 text-center text-[0.65rem] font-bold leading-[1.25rem] text-night">
-              {pending}
-            </span>
-          )}
-        </button>
+          <ExternalLink className="h-4 w-4" strokeWidth={1.5} aria-hidden />
+        </a>
       </div>
       {menuOpen && (
         <div
-          className="fixed inset-0 z-30 overflow-y-auto overscroll-contain bg-night px-4 pt-20 lg:hidden"
-          style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
+          className="fixed inset-0 z-30 overflow-y-auto overscroll-contain bg-[#efebe3] px-3 pt-20 lg:hidden"
+          style={{ paddingBottom: "calc(5.5rem + env(safe-area-inset-bottom))" }}
         >
           <NavLinks />
-          <div className="mt-6 flex gap-2">
+          <div className="mt-6 grid grid-cols-3 gap-2 border-t border-slate-200 pt-4">
+            <a href="/" target="_blank" rel="noopener" className="flex min-h-[44px] items-center justify-center gap-2 rounded-full border border-slate-300 bg-white text-sm text-slate-700">
+              <ExternalLink className="h-4 w-4" strokeWidth={1.5} /> Site
+            </a>
             <button
               onClick={() => {
                 setMenuOpen(false);
                 setPwdOpen(true);
               }}
-              className="flex-1 rounded-xl bg-white/10 px-3 py-2.5 text-sm text-white/80"
+              className="flex min-h-[44px] items-center justify-center gap-2 rounded-full border border-slate-300 bg-white text-sm text-slate-700"
             >
-              Mot de passe
+              <KeyRound className="h-4 w-4" strokeWidth={1.5} /> Mot de passe
             </button>
             <button
               onClick={logout}
-              className="flex-1 rounded-xl bg-white/10 px-3 py-2.5 text-sm text-white/80"
+              className="flex min-h-[44px] items-center justify-center gap-2 rounded-full border border-slate-300 bg-white text-sm text-slate-700"
             >
-              Déconnexion
+              <LogOut className="h-4 w-4" strokeWidth={1.5} /> Sortir
             </button>
           </div>
         </div>
@@ -280,11 +333,66 @@ export function AdminShell({
 
       {/* Content */}
       <main
-        className="min-h-screen w-full min-w-0 overflow-x-hidden px-4 pb-16 pt-16 lg:ml-60 lg:px-8 lg:pt-8"
-        style={{ paddingBottom: "max(4rem, env(safe-area-inset-bottom))" }}
+        className="min-h-screen w-full min-w-0 overflow-x-hidden px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-20 lg:ml-64 lg:px-10 lg:pb-16 lg:pt-9"
       >
-        {children}
+        <div className="mx-auto max-w-[1400px]">{children}</div>
       </main>
+
+      {/* Phone tab bar, as in the hosting apps: the daily screens a thumb away,
+          the rest of the back office behind "Menu" (with what waits for an answer) */}
+      <nav
+        aria-label="Raccourcis"
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-[#f6f3ed]/92 backdrop-blur-xl lg:hidden"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      >
+        <div className="mx-auto grid max-w-md grid-cols-5">
+          {TABS.map((tab) => {
+            const active =
+              !menuOpen &&
+              (tab.href === "/admin" ? pathname === "/admin" : pathname === tab.href || pathname.startsWith(tab.href + "/"));
+            const count = tab.badge ? badges[tab.badge] : 0;
+            const Icon = tab.icon;
+            return (
+              <Link
+                key={tab.href}
+                href={tab.href}
+                onClick={() => setMenuOpen(false)}
+                aria-current={active ? "page" : undefined}
+                className={`relative flex h-[3.6rem] flex-col items-center justify-center gap-1 text-[0.66rem] ${
+                  active ? "font-medium text-slate-900" : "text-slate-500"
+                }`}
+              >
+                <Icon aria-hidden strokeWidth={1.5} className={`h-[1.3rem] w-[1.3rem] ${active ? "text-gold-dark" : ""}`} />
+                {tab.label}
+                {count > 0 && (
+                  <span className="absolute left-1/2 top-1.5 ml-2 min-w-[1.15rem] rounded-full bg-gold px-1 text-center font-mono text-[0.6rem] leading-[1.15rem] text-night">
+                    {count}
+                  </span>
+                )}
+              </Link>
+            );
+          })}
+          <button
+            onClick={() => setMenuOpen((v) => !v)}
+            aria-expanded={menuOpen}
+            className={`relative flex h-[3.6rem] flex-col items-center justify-center gap-1 text-[0.66rem] ${
+              menuOpen ? "font-medium text-slate-900" : "text-slate-500"
+            }`}
+          >
+            {menuOpen ? (
+              <X aria-hidden strokeWidth={1.5} className="h-[1.3rem] w-[1.3rem] text-gold-dark" />
+            ) : (
+              <Menu aria-hidden strokeWidth={1.5} className="h-[1.3rem] w-[1.3rem]" />
+            )}
+            Menu
+            {!menuOpen && badges.concierge > 0 && (
+              <span className="absolute left-1/2 top-1.5 ml-2 min-w-[1.15rem] rounded-full bg-gold px-1 text-center font-mono text-[0.6rem] leading-[1.15rem] text-night">
+                {badges.concierge}
+              </span>
+            )}
+          </button>
+        </div>
+      </nav>
 
       {/* Change password modal */}
       <Modal

@@ -50,7 +50,7 @@ export function ConciergeRequestsInbox() {
           <Spinner />
         ) : items.length === 0 ? (
           <p className="py-8 text-center text-sm text-slate-400">
-            {scope === "open" ? "Aucune demande en attente 🎉" : "Aucune demande"}
+            {scope === "open" ? "Aucune demande en attente" : "Aucune demande"}
           </p>
         ) : (
           <ConciergeRequestList

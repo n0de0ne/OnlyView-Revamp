@@ -85,7 +85,7 @@ export function LoyaltyBoard() {
                     <tr key={a.id} className="border-b border-slate-100 last:border-0">
                       <td className="py-3 pr-3">
                         <span className="font-semibold text-slate-800">
-                          {a.client.firstname} {a.client.lastname} {a.client.isVip && "⭐"}
+                          {a.client.firstname} {a.client.lastname} {a.client.isVip && "· VIP"}
                         </span>
                         <div className="text-xs text-slate-400">{a.client.email}</div>
                       </td>

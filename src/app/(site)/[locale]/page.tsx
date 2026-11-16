@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 import { GoldenHour } from "@/components/site/golden-hour/GoldenHour";
-import { Tilt } from "@/components/motion/Tilt";
 import { isLocale, localePath, type Locale } from "@/lib/i18n";
-import { getContent, getIcons } from "@/lib/site-content";
+import { getContent, getIcons, villaFacts } from "@/lib/site-content";
 import { ICON_SLOTS } from "@/lib/icon-slots";
 import { LineIcon } from "@/components/LineIcon";
 import {
@@ -24,8 +24,10 @@ import { getContact } from "@/lib/contact";
 import { getRateConfig } from "@/lib/settings";
 import { getApprovedTestimonials } from "@/lib/testimonials";
 import { usd } from "@/lib/money";
-import { HomeHero } from "@/components/site/HomeHero";
+import { Masthead } from "@/components/site/ov/Masthead";
+import { SectionHead } from "@/components/site/ov/EditorialHero";
 import { KeyFacts } from "@/components/site/KeyFacts";
+import { Testimonials } from "@/components/site/ov/Testimonials";
 
 export const revalidate = 60;
 
@@ -56,37 +58,47 @@ export default async function HomePage({
   const { locale: raw } = await params;
   const locale = (isLocale(raw) ? raw : "en") as Locale;
   const t = await getContent(locale);
+  const villa = villaFacts();
 
   const [loyalty, photos, rates, testimonials, contact, icons] = await Promise.all([
     isLoyaltyEnabled(),
     getPhotos(),
     getRateConfig(),
-    getApprovedTestimonials(3),
+    getApprovedTestimonials(5),
     getContact(),
     getIcons(),
   ]);
   const { whatsappUrl, sameAs } = contact;
 
   const spaces = [
-    { cat: "living", title: t.spaces.living, desc: t.spaces.livingDesc },
     { cat: "pool-terrace", title: t.spaces.pool, desc: t.spaces.poolDesc },
+    { cat: "living", title: t.spaces.living, desc: t.spaces.livingDesc },
     { cat: "bedroom1", title: t.spaces.bedrooms, desc: t.spaces.bedroomsDesc },
     { cat: "kitchen", title: t.spaces.kitchen, desc: t.spaces.kitchenDesc },
-    { cat: "night", title: t.spaces.night, desc: t.spaces.nightDesc },
     { cat: "exterior", title: t.spaces.exterior, desc: t.spaces.exteriorDesc },
-  ];
+  ]
+    .map((s) => ({ ...s, photo: firstOf(photos, s.cat) }))
+    .filter((s) => s.photo);
 
   const amenityKeys = Object.keys(ICON_SLOTS.amenities.items) as Array<keyof typeof icons.amenities>;
   const amenities = amenityKeys.map((k) => [icons.amenities[k], t.amenities[k]] as const);
 
   const heroImage = firstOf(photos, "pool-terrace");
+  const nightImage = firstOf(photos, "night");
+  // the spaces below open on the first living-room photo: the introduction takes another
+  const livingImage = photos.filter((p) => p.category === "living")[1] ?? firstOf(photos, "living");
+  const closingImage = photos.filter((p) => p.category === "pool-terrace").at(-1);
   const avgRating =
-    testimonials.length > 0
-      ? testimonials.reduce((s, r) => s + r.rating, 0) / testimonials.length
-      : undefined;
+    testimonials.length > 0 ? testimonials.reduce((s, r) => s + r.rating, 0) / testimonials.length : undefined;
+
+  const seasons = [
+    { label: t.rates.seasonNames.lowSeason, price: rates.lowSeason[2] },
+    { label: t.rates.seasonNames.summer, price: rates.summer[2] },
+    { label: t.rates.seasonNames.winter, price: rates.winter[2] },
+  ];
 
   return (
-    <>
+    <div className="ov-page">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -112,278 +124,298 @@ export default async function HomePage({
         }}
       />
 
-      <HomeHero
+      <Masthead
         locale={locale}
-        tagline={t.hero.tagline}
         location={t.hero.location}
+        tagline={t.hero.tagline}
         cta={t.hero.cta}
         discover={t.hero.discover}
         headingSuffix={t.seo.headingSuffix}
         fallbackImage={heroImage?.url ?? "/media/photos/pool-terrace/pool-terrace-01.webp"}
+        sunsetLabel={t.hero.sunsetTonight}
+        sunsetEyebrow={t.goldenHour.eyebrow}
+        sunsetText={t.spaces.nightDesc}
+        sunsetImage={nightImage}
+        lat={villa.lat}
+        lng={villa.lng}
       />
 
-      {/* Intro */}
-      <section id="intro" className="mx-auto max-w-7xl px-5 py-24 lg:px-8 lg:py-32">
-        <div className="grid items-center gap-14 lg:grid-cols-2">
-          <div className="reveal">
-            <p className="eyebrow mb-4">{t.intro.label}</p>
-            <h2 className="section-title mb-7">{t.intro.title}</h2>
-            <p className="max-w-xl leading-relaxed text-ink/70">{t.intro.text}</p>
-
-            <div className="mt-8 grid grid-cols-2 gap-x-6 gap-y-3 text-sm text-ink/80 sm:grid-cols-2">
-              {(["bedrooms", "guests", "pool", "view"] as const).map((k) => (
-                <div key={k} className="flex items-center gap-3">
-                  <LineIcon name={icons.badges[k]} />
-                  {t.badges[k]}
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-10 flex flex-wrap gap-4">
-              <Link href={localePath(locale, "/booking")} className="btn-gold">
+      {/* ── 01 · The promise: an editorial introduction and a pair of views ── */}
+      <section id="intro" className="ov-shell scroll-mt-20 py-24 md:py-36">
+        <p className="ov-label mb-8 text-ink/55">
+          <span className="mr-3 inline-block h-px w-8 translate-y-[-0.25em] bg-gold align-middle" aria-hidden />
+          {t.intro.label}
+        </p>
+        <div className="grid gap-12 lg:grid-cols-12">
+          <div className="reveal lg:col-span-9">
+            <h2 className="ov-h2 max-w-5xl text-ink">{t.intro.title}</h2>
+            <p className="ov-intro mt-8 max-w-5xl text-ink/75">{t.intro.text}</p>
+            <div className="mt-10 flex flex-wrap items-center gap-3">
+              <Link href={localePath(locale, "/villa")} className="ov-btn ov-btn-ink">
                 {t.intro.cta}
               </Link>
-              <Link href={localePath(locale, "/tour")} className="btn-outline">
+              <Link href={localePath(locale, "/tour")} className="ov-btn ov-btn-line">
                 {t.nav.tour}
               </Link>
             </div>
           </div>
+          <ul className="reveal grid grid-cols-2 content-end gap-x-6 gap-y-4 lg:col-span-3 lg:grid-cols-1">
+            {(["bedrooms", "guests", "pool", "view"] as const).map((k) => (
+              <li key={k} className="ov-rule flex items-center gap-3 border-t pt-4 text-sm text-ink/80">
+                <LineIcon name={icons.badges[k]} className="h-5 w-5 text-gold-dark" />
+                {t.badges[k]}
+              </li>
+            ))}
+          </ul>
+        </div>
 
-          <div className="relative reveal">
-            {firstOf(photos, "living") && (
-              <Image
-                src={firstOf(photos, "living")!.url}
-                alt={firstOf(photos, "living")!.alt}
-                width={880}
-                height={620}
-                className="w-full object-cover shadow-2xl shadow-ink/20"
-                sizes="(max-width: 1024px) 100vw, 50vw"
-              />
-            )}
-            <div className="absolute -bottom-6 -left-6 hidden bg-night px-7 py-5 text-white lg:block">
-              <div className="font-display text-3xl text-gold">200 m²</div>
-              <div className="mt-1 text-[0.65rem] uppercase tracking-[0.25em] text-white/70">
-                {t.intro.stat_sunset}
+        {/* two photographs of unequal weight, hung at different heights */}
+        <div className="mt-16 grid grid-cols-12 gap-4 md:mt-24 md:gap-6">
+          {livingImage && (
+            <figure className="reveal col-span-12 md:col-span-7">
+              <div className="ov-photo relative aspect-[4/3]">
+                <Image src={livingImage.url} alt={livingImage.alt} fill sizes="(max-width: 768px) 100vw, 58vw" className="object-cover" />
               </div>
-            </div>
-          </div>
+              <figcaption className="ov-label mt-3 text-ink/50">{t.spaces.living}</figcaption>
+            </figure>
+          )}
+          {nightImage && (
+            <figure className="reveal col-span-10 col-start-3 md:col-span-4 md:col-start-9 md:mt-40">
+              <div className="ov-photo relative aspect-[4/5]">
+                <Image src={nightImage.url} alt={nightImage.alt} fill sizes="(max-width: 768px) 84vw, 33vw" className="object-cover" />
+              </div>
+              <figcaption className="ov-label mt-3 text-ink/50">{t.intro.stat_sunset}</figcaption>
+            </figure>
+          )}
         </div>
       </section>
 
-      {/* The facts, in plain text — what answer engines quote */}
-      <KeyFacts title={t.seo.factsTitle}
-        label={t.seo.factsLabel}
-        summary={t.seo.factsSummary}
-        toggle={t.seo.factsToggle}
-        facts={t.seo.facts}
-        icons={icons.facts} />
-
-      {/* Spaces */}
-      <section className="bg-sand-dark py-24 lg:py-32">
-        <div className="mx-auto max-w-7xl px-5 lg:px-8">
-          <div className="mb-14 flex flex-wrap items-end justify-between gap-6">
-            <div>
-              <p className="eyebrow mb-4">{t.spaces.label}</p>
-              <h2 className="section-title">{t.spaces.title}</h2>
+      {/* ── 02 · The figures: a staggered ledger, not a row of small stats ── */}
+      <section className="ov-shell pb-16 md:pb-36" aria-label={t.seo.factsTitle}>
+        {/* two columns from the phone up: four tall single rows read as a list on a phone */}
+        <div className="ov-rule grid grid-cols-2 border-t">
+          {t.intro.figures.map((f, i) => (
+            <div
+              key={f.value + i}
+              className={`ov-rule reveal flex min-h-[11rem] flex-col justify-between gap-4 border-b py-5 md:min-h-[22rem] md:gap-8 md:py-7 ${
+                i % 2 === 0 ? "border-r pr-4 md:pr-10" : "pl-4 md:pl-10 md:pt-24"
+              }`}
+            >
+              <span className="ov-num !text-[clamp(3.1rem,12.5vw,9.5rem)] text-ink/85">
+                {/* ° and ² as small raised marks, not the font's oversized glyphs */}
+                {f.value.split(/([°²³])/).map((part, k) => (/^[°²³]$/.test(part) ? <sup key={k}>{part}</sup> : part))}
+              </span>
+              <span className="max-w-xs text-[0.84rem] leading-snug text-ink/60 md:text-[0.95rem]">{f.text}</span>
             </div>
-            <Link href={localePath(locale, "/tour")} className="btn-outline">
-              {t.spaces.tourCta}
-            </Link>
-          </div>
+          ))}
+        </div>
+      </section>
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {/* ── 03 · The spaces: a hanging gallery of unequal images ── */}
+      <section className="bg-ivory py-16 md:py-36">
+        <div className="ov-shell">
+          <SectionHead
+            label={t.spaces.label}
+            title={t.spaces.title}
+            aside={
+              <Link href={localePath(locale, "/tour")} className="ov-btn ov-btn-line">
+                {t.spaces.tourCta}
+              </Link>
+            }
+          />
+          {/* a phone gets a swipeable row of tall frames (as in a listing app);
+              wider screens the hanging gallery of unequal images */}
+          <div className="scroll-none -mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-5 px-5 pb-2 md:mx-0 md:grid md:snap-none md:grid-cols-12 md:gap-x-6 md:gap-y-20 md:overflow-visible md:px-0 md:pb-0">
             {spaces.map((s, i) => {
-              const photo = firstOf(photos, s.cat);
-              if (!photo) return null;
+              // lead image wide, the rest alternate sides and sizes
+              const layout = [
+                "col-span-12 md:col-span-8",
+                "col-span-12 md:col-span-4 md:mt-48",
+                "col-span-12 md:col-span-5 md:col-start-2",
+                "col-span-12 md:col-span-5 md:col-start-8 md:mt-32",
+                "col-span-12 md:col-span-7 md:col-start-4",
+              ][i];
+              const ratio = [
+                "md:aspect-[16/11]",
+                "md:aspect-[3/4]",
+                "md:aspect-[4/5]",
+                "md:aspect-[4/3]",
+                "md:aspect-[16/9]",
+              ][i];
               return (
-                <Tilt key={s.cat} className={`reveal ${i === 0 ? "sm:col-span-2 sm:row-span-2" : ""}`}>
                 <Link
+                  key={s.cat}
                   href={localePath(locale, `/gallery?c=${s.cat}`)}
-                  className="group relative block h-full overflow-hidden"
+                  className={`group reveal block w-[78%] shrink-0 snap-start md:w-auto ${layout}`}
                 >
-                  <Image
-                    src={photo.url}
-                    alt={photo.alt}
-                    width={i === 0 ? 1200 : 640}
-                    height={i === 0 ? 900 : 480}
-                    sizes={i === 0 ? "(max-width: 640px) 100vw, 66vw" : "(max-width: 640px) 100vw, 33vw"}
-                    className={`w-full object-cover transition-transform duration-700 group-hover:scale-105 ${
-                      i === 0 ? "aspect-[4/3] h-full" : "aspect-[4/3]"
-                    }`}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-                  <div className="absolute bottom-0 left-0 p-6">
-                    <h3 className="font-display text-2xl text-white">{s.title}</h3>
-                    <p className="mt-1 text-xs uppercase tracking-[0.18em] text-white/70">
-                      {s.desc}
-                    </p>
+                  <div className={`ov-photo relative aspect-[4/5] ${ratio}`}>
+                    <Image
+                      src={s.photo!.url}
+                      alt={s.photo!.alt}
+                      fill
+                      sizes={i === 0 ? "(max-width: 768px) 80vw, 66vw" : "(max-width: 768px) 80vw, 42vw"}
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="mt-4 flex items-start justify-between gap-6">
+                    <div>
+                      <h3 className="ov-h3 text-ink">{s.title}</h3>
+                      <p className="mt-1.5 max-w-sm text-sm text-ink/60">{s.desc}</p>
+                    </div>
+                    <ArrowUpRight className="ov-arrow mt-1 h-7 w-7 shrink-0 text-ink/70" strokeWidth={1} aria-hidden />
                   </div>
                 </Link>
-                </Tilt>
               );
             })}
           </div>
         </div>
       </section>
 
-      {/* Amenities */}
-      <section className="mx-auto max-w-7xl px-5 py-24 lg:px-8">
-        <p className="eyebrow mb-4 text-center">{t.amenities.label}</p>
-        <h2 className="section-title mb-14 text-center">{t.amenities.title}</h2>
-        <ul className="grid grid-cols-2 gap-x-8 gap-y-6 sm:grid-cols-3 lg:grid-cols-4">
-          {amenities.map(([icon, label]) => (
+      {/* ── 04 · The view, live: Alan's golden-hour scene ── */}
+      <div id="golden-hour" className="scroll-mt-0">
+        <GoldenHour labels={t.goldenHour} photos={photos} />
+      </div>
+
+      {/* ── 05 · Amenities: a ruled list with the gold line icons ── */}
+      <section className="ov-shell py-24 md:py-32">
+        <SectionHead label={t.amenities.label} title={t.amenities.title} />
+        <ul className="ov-rule grid border-t sm:grid-cols-2 lg:grid-cols-4">
+          {amenities.map(([icon, label], i) => (
             <li
               key={label}
-              className="flex items-center gap-3.5 border-b border-ink/8 pb-4 text-sm text-ink/80"
+              className={`ov-rule flex items-center gap-4 border-b py-5 text-[0.95rem] text-ink/80 sm:pr-6 ${
+                i % 4 !== 3 ? "lg:border-r" : ""
+              } ${i % 4 !== 0 ? "lg:pl-6" : ""}`}
             >
-              <LineIcon name={icon} className="h-6 w-6 text-gold" />
+              <LineIcon name={icon} className="h-6 w-6 shrink-0 text-gold-dark" />
               {label}
             </li>
           ))}
         </ul>
       </section>
 
-      {/* Testimonials */}
+      {/* The facts, in plain text — what answer engines quote */}
+      <KeyFacts
+        title={t.seo.factsTitle}
+        label={t.seo.factsLabel}
+        summary={t.seo.factsSummary}
+        toggle={t.seo.factsToggle}
+        facts={t.seo.facts}
+        icons={icons.facts}
+        className="!bg-paper"
+      />
+
+      {/* ── 06 · Proof: one quote at a time, as a typographic event ── */}
       {testimonials.length > 0 && (
-        <section className="bg-night py-24 text-white lg:py-32">
-          <div className="mx-auto max-w-7xl px-5 lg:px-8">
-            <p className="eyebrow mb-4 text-center">{t.testimonials.label}</p>
-            <h2 className="section-title mb-14 text-center !text-white">
-              {t.testimonials.title}
-            </h2>
-            <div className="grid gap-8 md:grid-cols-3">
-              {testimonials.map((r) => (
-                <figure key={r.id} className="border border-white/10 p-8 reveal">
-                  <div className="mb-4 text-gold" aria-label={`${r.rating}/5`}>
-                    {"★".repeat(r.rating)}
-                    <span className="text-white/20">{"★".repeat(5 - r.rating)}</span>
-                  </div>
-                  <blockquote className="font-display text-lg italic leading-relaxed text-white/85">
-                    “{r.message}”
-                  </blockquote>
-                  <figcaption className="mt-6 text-xs uppercase tracking-[0.2em] text-white/50">
-                    {r.name}
-                    {r.country ? ` · ${r.country}` : ""}
-                  </figcaption>
-                </figure>
+        <Testimonials
+          label={t.testimonials.label}
+          title={t.testimonials.title}
+          cta={t.testimonials.cta}
+          href={localePath(locale, "/reviews")}
+          items={testimonials.map((r) => ({
+            id: r.id,
+            name: r.name,
+            country: r.country,
+            rating: r.rating,
+            message: r.message,
+          }))}
+        />
+      )}
+
+      {/* ── 07 · Rates & location: a deep-sea panel beside a photograph ── */}
+      <section className="ov-shell grid gap-4 py-24 md:gap-6 md:py-32 lg:grid-cols-2">
+        <div className="reveal flex min-h-[34rem] flex-col justify-between rounded-lg bg-sea p-7 text-white md:p-10">
+          <div>
+            <p className="ov-label text-white/55">{t.ratesTeaser.label}</p>
+            <h2 className="ov-h2 mt-5 max-w-md">{t.ratesTeaser.title}</h2>
+            <p className="mt-5 max-w-md text-sm leading-relaxed text-white/70">
+              {loyalty ? t.ratesTeaser.note : t.ratesTeaser.noteNoLoyalty}
+            </p>
+          </div>
+          <div>
+            <dl className="ov-rule-light mb-8 border-t">
+              {seasons.map((s) => (
+                <div key={s.label} className="ov-rule-light flex items-baseline justify-between gap-4 border-b py-3.5">
+                  <dt className="ov-label text-white/60">{s.label}</dt>
+                  <dd className="text-right">
+                    <span className="mr-2 text-xs text-white/50">{t.ratesTeaser.from}</span>
+                    <span className="font-display text-3xl">{usd(s.price)}</span>
+                    <span className="ml-1 text-xs text-white/50">{t.ratesTeaser.perWeek}</span>
+                  </dd>
+                </div>
               ))}
-            </div>
-            <div className="mt-12 text-center">
-              <Link href={localePath(locale, "/reviews")} className="btn-outline-light">
-                {t.testimonials.cta}
+            </dl>
+            <div className="flex flex-wrap gap-3">
+              <Link href={localePath(locale, "/rates")} className="ov-btn ov-btn-glass">
+                {t.ratesTeaser.cta}
+              </Link>
+              <Link href={localePath(locale, "/booking")} className="ov-btn ov-btn-gold">
+                {t.hero.cta}
               </Link>
             </div>
           </div>
-        </section>
-      )}
-
-      {/* Rates teaser */}
-      <section className="mx-auto max-w-7xl px-5 py-24 lg:px-8">
-        <div className="grid items-center gap-12 lg:grid-cols-2">
-          <div>
-            <p className="eyebrow mb-4">{t.ratesTeaser.label}</p>
-            <h2 className="section-title mb-6">{t.ratesTeaser.title}</h2>
-            <p className="max-w-md leading-relaxed text-ink/70">{loyalty ? t.ratesTeaser.note : t.ratesTeaser.noteNoLoyalty}</p>
-            <Link href={localePath(locale, "/rates")} className="btn-gold mt-8">
-              {t.ratesTeaser.cta}
-            </Link>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-3">
-            {[
-              { label: t.rates.seasonNames.lowSeason, price: rates.lowSeason[2] },
-              { label: t.rates.seasonNames.summer, price: rates.summer[2] },
-              { label: t.rates.seasonNames.winter, price: rates.winter[2] },
-            ].map((s) => (
-              <div key={s.label} className="reveal border border-ink/10 bg-white p-6 text-center">
-                <div className="text-[0.65rem] uppercase tracking-[0.25em] text-ink/50">
-                  {s.label}
-                </div>
-                <div className="mt-3 font-display text-3xl text-ink">
-                  {usd(s.price)}
-                </div>
-                <div className="mt-1 text-xs text-ink/50">
-                  {t.ratesTeaser.from} · {t.ratesTeaser.perWeek}
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
-      </section>
 
-      {/* Location */}
-      <section className="bg-sand-dark py-24 lg:py-32">
-        <div className="mx-auto grid max-w-7xl items-center gap-14 px-5 lg:grid-cols-2 lg:px-8">
-          <div className="order-2 lg:order-1">
-            {firstOf(photos, "night") && (
-              <Image
-                src={firstOf(photos, "night")!.url}
-                alt={firstOf(photos, "night")!.alt}
-                width={880}
-                height={620}
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="w-full object-cover shadow-xl"
-              />
-            )}
+        <Link
+          href={localePath(locale, "/pointe-milou")}
+          className="group reveal relative flex min-h-[34rem] flex-col justify-between overflow-hidden rounded-lg p-7 text-white md:p-10"
+        >
+          {nightImage && (
+            <div className="ov-photo absolute inset-0">
+              <Image src={(firstOf(photos, "exterior") ?? nightImage).url} alt="" fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover" aria-hidden />
+            </div>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/15 to-black/65" />
+          <div className="relative">
+            <p className="ov-label text-white/70">{t.location.label}</p>
+            <h2 className="ov-h2 mt-5">{t.location.title}</h2>
+            <p className="mt-5 max-w-md text-sm leading-relaxed text-white/85">{t.location.text}</p>
           </div>
-          <div className="order-1 reveal lg:order-2">
-            <p className="eyebrow mb-4">{t.location.label}</p>
-            <h2 className="section-title mb-6">{t.location.title}</h2>
-            <p className="max-w-lg leading-relaxed text-ink/70">{t.location.text}</p>
-            <ul className="mt-8 space-y-3 text-sm text-ink/80">
+          <div className="relative">
+            <ul className="mb-8 grid gap-2 text-sm text-white/90 sm:grid-cols-2">
               {(["airport", "beach", "gustavia", "restaurants"] as const).map((k) => (
-                <li key={k} className="flex items-center gap-3">
-                  <LineIcon name={icons.location[k]} className="h-[1.1rem] w-[1.1rem] text-gold" />
+                <li key={k} className="flex items-center gap-2.5">
+                  <LineIcon name={icons.location[k]} className="h-[1.05rem] w-[1.05rem] text-gold-light" />
                   {t.location[k]}
                 </li>
               ))}
             </ul>
-            <Link href={localePath(locale, "/pointe-milou")} className="btn-outline mt-9">
+            <span className="ov-btn ov-btn-glass">
               {t.location.mapCta}
-            </Link>
+              <ArrowUpRight className="ov-arrow" aria-hidden />
+            </span>
           </div>
-        </div>
+        </Link>
       </section>
 
-      {/* The view, live */}
-      <GoldenHour labels={t.goldenHour} photos={photos} />
-
-      {/* Final CTA */}
-      <section className="relative overflow-hidden py-28 text-center text-white">
-        {firstOf(photos, "pool-terrace") && (
-          <Image
-            src={photos.filter((p) => p.category === "pool-terrace").at(-1)!.url}
-            alt=""
-            fill
-            sizes="100vw"
-            className="object-cover"
-            aria-hidden
-          />
+      {/* ── 08 · The invitation ── */}
+      <section className="relative overflow-hidden bg-night text-white">
+        {closingImage && (
+          <Image src={closingImage.url} alt="" fill sizes="100vw" className="object-cover opacity-45" aria-hidden />
         )}
-        <div className="absolute inset-0 bg-night/70" />
-        <div className="relative mx-auto max-w-2xl px-5">
-          <h2 className="section-title !text-white">{t.cta.title}</h2>
-          <p className="mt-5 text-white/80">{t.cta.text}</p>
-          <div className="mt-9 flex flex-wrap justify-center gap-4">
-            <Link href={localePath(locale, "/booking")} className="btn-gold">
-              {t.cta.button}
-            </Link>
-            {whatsappUrl ? (
-              <a
-                href={whatsappUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-outline-light"
-              >
-                {t.cta.whatsapp}
-              </a>
-            ) : (
-              <Link href={localePath(locale, "/contact")} className="btn-outline-light">
-                {t.cta.whatsapp}
+        <div className="absolute inset-0 bg-gradient-to-r from-night via-night/80 to-night/20" />
+        <div className="ov-shell relative grid gap-10 py-28 md:py-40 lg:grid-cols-12">
+          <div className="lg:col-span-7">
+            <p className="ov-label text-white/55">{t.hero.location}</p>
+            <h2 className="ov-h1 mt-6">{t.cta.title}</h2>
+            <p className="ov-intro mt-6 max-w-xl text-white/80">{t.cta.text}</p>
+            <div className="mt-10 flex flex-wrap gap-3">
+              <Link href={localePath(locale, "/booking")} className="ov-btn ov-btn-gold">
+                {t.cta.button}
               </Link>
-            )}
+              {whatsappUrl ? (
+                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="ov-btn ov-btn-glass">
+                  {t.cta.whatsapp}
+                </a>
+              ) : (
+                <Link href={localePath(locale, "/contact")} className="ov-btn ov-btn-glass">
+                  {t.cta.whatsapp}
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       </section>
-    </>
+    </div>
   );
 }

@@ -1,5 +1,7 @@
 "use client";
 
+import { KeyRound } from "lucide-react";
+
 import { useCallback, useEffect, useState } from "react";
 import { api, Card, ConfirmButton, fmtDate, Modal, Spinner, useToast } from "./ui";
 
@@ -125,7 +127,7 @@ export function UsersBoard({ currentUserId }: { currentUserId: number }) {
                     <div className="truncate font-semibold text-slate-800">
                       {u.username}
                       {u.id === currentUserId && <span className="ml-1.5 text-xs font-normal text-slate-400">(vous)</span>}
-                      {u.mustChangePassword && <span className="ml-1.5 text-xs text-amber-600">🔑</span>}
+                      {u.mustChangePassword && <KeyRound className="ml-1.5 inline h-3.5 w-3.5 text-amber-600" strokeWidth={1.5} aria-label="Mot de passe initial" />}
                     </div>
                     {(u.firstname || u.lastname) && (
                       <div className="text-xs text-slate-400">{u.firstname} {u.lastname}</div>
@@ -178,9 +180,7 @@ export function UsersBoard({ currentUserId }: { currentUserId: number }) {
                         {ROLES[u.role]?.label ?? u.role}
                       </span>
                       {u.mustChangePassword && (
-                        <span className="ml-1.5 text-xs text-amber-600" title="Doit changer son mot de passe">
-                          🔑
-                        </span>
+                        <KeyRound className="ml-1.5 inline h-3.5 w-3.5 text-amber-600" strokeWidth={1.5} aria-label="Doit changer son mot de passe" />
                       )}
                     </td>
                     <td className="py-3 pr-3 text-xs text-slate-400">

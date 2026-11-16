@@ -40,7 +40,7 @@ export function OwnerSignatureCard() {
   };
 
   return (
-    <Card title="✍️ Signature du propriétaire">
+    <Card title="Signature du propriétaire">
       <p className="text-sm text-slate-500">
         Imprimée dans la case « Propriétaire » de chaque contrat et avenant (PDF et page de signature).
         Image PNG ou JPG, fond blanc ou transparent : elle est recadrée automatiquement.

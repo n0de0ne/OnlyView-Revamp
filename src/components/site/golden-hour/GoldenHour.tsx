@@ -174,26 +174,26 @@ export function GoldenHour({
           </Suspense>
         )}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-night to-transparent" />
-        <p className="pointer-events-none absolute right-5 top-24 text-[0.62rem] uppercase tracking-[0.2em] text-white/60 lg:right-8">
+        <p className="ov-label pointer-events-none absolute right-5 top-24 text-white/65 md:right-10">
           {labels.hint}
         </p>
       </div>
 
-      <div className="relative mx-auto -mt-28 max-w-7xl px-5 pb-16 lg:px-8">
-        <div className="glass-dark p-6 sm:p-8 lg:grid lg:grid-cols-[1fr_auto] lg:items-end lg:gap-10">
+      <div className="ov-shell relative -mt-28 pb-16">
+        <div className="ov-glass-tile rounded-lg p-6 sm:p-8 lg:grid lg:grid-cols-[1fr_auto] lg:items-end lg:gap-12">
           <div>
-            <p className="eyebrow mb-3">{labels.eyebrow}</p>
-            <h2 id="golden-hour" className="font-display text-3xl leading-tight md:text-4xl">
+            <p className="ov-label mb-3 text-gold">{labels.eyebrow}</p>
+            <h2 id="golden-hour" className="ov-h3 text-white md:!text-[2.6rem]">
               {labels.title}
             </h2>
             <p className="mt-3 max-w-xl text-sm leading-relaxed text-white/70">{labels.text}</p>
           </div>
           <div className="mt-6 w-full lg:mt-0 lg:w-96">
             <div className="flex items-baseline justify-between">
-              <label htmlFor="golden-hour-time" className="text-[0.66rem] uppercase tracking-[0.2em] text-white/60">
+              <label htmlFor="golden-hour-time" className="ov-label text-white/60">
                 {labels.hour}
               </label>
-              <motion.span key={fmt(hour)} className="font-display text-3xl text-gold" initial={{ opacity: 0.6 }} animate={{ opacity: 1 }}>
+              <motion.span key={fmt(hour)} className="font-mono text-2xl text-gold" initial={{ opacity: 0.6 }} animate={{ opacity: 1 }}>
                 {fmt(hour)}
               </motion.span>
             </div>
@@ -215,7 +215,7 @@ export function GoldenHour({
             {/* On a phone the five moments plus the transport will not fit one
                 row: the moments wrap onto two lines (nothing is ever cut) and
                 the transport sits under them; from sm up it is one row again. */}
-            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[0.62rem] uppercase tracking-[0.16em] text-white/50 sm:flex-nowrap sm:justify-between sm:gap-2">
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 font-mono text-[0.62rem] uppercase tracking-[0.12em] text-white/55 sm:flex-nowrap sm:justify-between sm:gap-2">
                 {labels.moments.map(([h, label]) => (
                   <button
                     key={label}
@@ -234,7 +234,7 @@ export function GoldenHour({
                 <button
                   type="button"
                   onClick={() => setPlaying((p) => !p)}
-                  className="tap border border-white/25 px-2.5 py-1.5 text-white/80 transition hover:border-gold hover:text-gold sm:py-1"
+                  className="tap rounded-full border border-white/25 px-3 py-1.5 text-white/80 transition hover:border-gold hover:text-gold sm:py-1"
                   aria-pressed={playing}
                 >
                   {playing ? labels.pause : labels.play}
@@ -245,7 +245,7 @@ export function GoldenHour({
                     setSpeed((s) => SPEEDS[(SPEEDS.indexOf(s) + 1) % SPEEDS.length]);
                     setPlaying(true);
                   }}
-                  className="tap border border-white/25 px-2.5 py-1.5 font-semibold text-gold transition hover:border-gold sm:py-1"
+                  className="tap rounded-full border border-white/25 px-3 py-1.5 font-semibold text-gold transition hover:border-gold sm:py-1"
                   aria-label={`${labels.speed} ${speed}×`}
                   title={labels.speed}
                 >

@@ -6,7 +6,7 @@ import { getContent, villaFacts } from "@/lib/site-content";
 import { breadcrumbJsonLd, faqJsonLd, jsonLd, localeUrl, pageMetadata, webPageJsonLd } from "@/lib/seo";
 import { getMapPlaces, getVillaPoint } from "@/lib/map-places";
 import { getPhotos, firstOf } from "@/lib/photos";
-import { PageHero } from "@/components/site/PageHero";
+import { EditorialHero } from "@/components/site/ov/EditorialHero";
 import { CountUp } from "@/components/motion/CountUp";
 import { IslandMap } from "@/components/site/map/IslandMap";
 import type { MapPlaceDTO } from "@/components/site/map/map-meta";
@@ -143,17 +143,17 @@ export default async function MapPage({
           ]),
         }}
       />
-      <PageHero eyebrow={t.map.label} title={t.map.title} intro={t.map.text} image={firstOf(photos, "night")} />
+      <EditorialHero eyebrow={t.map.label} title={t.map.title} intro={t.map.text} image={firstOf(photos, "night")} />
 
       {/* Key figures — the villa page's strip */}
-      <section className="border-b border-ink/10 bg-white">
-        <div className="mx-auto grid max-w-7xl grid-cols-2 divide-x divide-ink/10 px-5 text-center md:grid-cols-4 lg:px-8">
+      <section className="ov-rule border-b">
+        <div className="ov-shell grid grid-cols-2 divide-x divide-ink/10 md:grid-cols-4">
           {figures.map(([n, label]) => (
-            <div key={label} className="px-4 py-8">
-              <div className="font-display text-4xl text-gold">
+            <div key={label} className="px-4 py-8 first:pl-0 md:px-8">
+              <div className="font-display text-[clamp(2.4rem,4vw,3.4rem)] leading-none text-ink/85 [font-variant-numeric:lining-nums]">
                 <CountUp value={n} />
               </div>
-              <div className="mt-1 text-[0.72rem] uppercase tracking-[0.2em] text-ink/50">{label}</div>
+              <div className="ov-label mt-3 text-ink/50">{label}</div>
             </div>
           ))}
         </div>
@@ -161,7 +161,7 @@ export default async function MapPage({
 
       {/* The explorer */}
       <section className="py-16 lg:py-24" aria-labelledby="map-explore">
-        <div className="mx-auto mb-10 max-w-7xl px-5 lg:px-8">
+        <div className="ov-shell mb-10">
           <p className="eyebrow mb-4">{t.map.exploreLabel}</p>
           <h2 id="map-explore" className="section-title">
             {t.map.exploreTitle}
@@ -172,8 +172,8 @@ export default async function MapPage({
       </section>
 
       {/* The beaches, by what you want from them — a ledger */}
-      <section className="border-y border-ink/10 bg-white" aria-labelledby="map-beach-uses">
-        <div className="mx-auto max-w-7xl px-5 py-16 lg:px-8 lg:py-20">
+      <section className="bg-ivory" aria-labelledby="map-beach-uses">
+        <div className="ov-shell py-16 lg:py-20">
           <div className="mb-8 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
             <h2 id="map-beach-uses" className="font-display text-3xl text-ink md:text-4xl">
               {t.map.beachesByUse}
@@ -183,7 +183,7 @@ export default async function MapPage({
           <dl className="grid gap-x-10 border-t border-ink/10 sm:grid-cols-2 lg:grid-cols-3">
             {t.map.beachUses.map(([term, detail]) => (
               <div key={term} className="border-b border-ink/10 py-3.5 text-sm">
-                <dt className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-gold">{term}</dt>
+                <dt className="ov-label text-gold-dark">{term}</dt>
                 <dd className="mt-1 leading-snug text-ink/80">{detail}</dd>
               </div>
             ))}
@@ -192,7 +192,7 @@ export default async function MapPage({
       </section>
 
       {/* The island in words — what "St Barth map" has to answer in text */}
-      <section className="mx-auto max-w-7xl px-5 py-16 lg:px-8 lg:py-20" aria-labelledby="map-areas">
+      <section className="ov-shell py-16 lg:py-20" aria-labelledby="map-areas">
         <p className="eyebrow mb-4">{t.map.label}</p>
         <h2 id="map-areas" className="section-title mb-5 !text-4xl">
           {t.map.areasTitle}
@@ -219,7 +219,7 @@ export default async function MapPage({
       </section>
 
       {/* Questions people ask before they rent the car */}
-      <section className="border-y border-ink/10 bg-white" aria-labelledby="map-faq">
+      <section className="bg-ivory" aria-labelledby="map-faq">
         <div className="mx-auto max-w-3xl px-5 py-16 lg:px-8">
           <h2 id="map-faq" className="section-title mb-8 !text-3xl">
             {t.map.faqTitle}
@@ -227,7 +227,7 @@ export default async function MapPage({
           <div className="divide-y divide-ink/10">
             {t.map.faq.map((item, i) => (
               <details key={i} className="group py-5" open={i === 0}>
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-display text-xl text-ink transition hover:text-gold [&::-webkit-details-marker]:hidden">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-display text-[1.35rem] leading-snug text-ink transition hover:text-gold-dark [&::-webkit-details-marker]:hidden">
                   {item.q}
                   <span className="text-gold transition-transform group-open:rotate-45">+</span>
                 </summary>
@@ -239,7 +239,7 @@ export default async function MapPage({
       </section>
 
       {/* Getting around — the location page's two columns */}
-      <section className="mx-auto max-w-7xl px-5 py-20 lg:px-8 lg:py-28">
+      <section className="ov-shell py-20 lg:py-28">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div className="reveal">
             <p className="eyebrow mb-4">{t.map.label}</p>
@@ -270,7 +270,7 @@ export default async function MapPage({
                 width={900}
                 height={640}
                 sizes="(max-width: 1024px) 100vw, 50vw"
-                className="aspect-[4/3] w-full object-cover shadow-2xl shadow-ink/20"
+                className="aspect-[4/3] w-full object-cover"
               />
             </div>
           )}
@@ -278,7 +278,7 @@ export default async function MapPage({
       </section>
 
       {/* Concierge — the home page's night CTA */}
-      <section className="bg-night py-24 text-center text-white">
+      <section className="bg-sea py-24 text-center text-white md:py-32">
         <div className="mx-auto max-w-3xl px-5">
           <p className="eyebrow mb-4">{t.map.ctaLabel}</p>
           <h2 className="section-title mb-6 !text-white">{t.map.ctaTitle}</h2>

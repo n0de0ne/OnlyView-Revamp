@@ -28,16 +28,16 @@ import {
 } from "./ui";
 
 const CATEGORIES: Record<string, string> = {
-  jardinier: "🌿 Jardinier",
-  electricite: "⚡ Électricité",
-  eau: "💧 Eau",
-  menage: "🧹 Ménage",
-  piscine: "🏊 Piscine",
-  entretien: "🔧 Entretien",
-  assurance: "🛡️ Assurance",
-  taxe: "📋 Taxe / Impôt",
-  internet: "📡 Internet",
-  autre: "📦 Autre",
+  jardinier: "Jardinier",
+  electricite: "Électricité",
+  eau: "Eau",
+  menage: "Ménage",
+  piscine: "Piscine",
+  entretien: "Entretien",
+  assurance: "Assurance",
+  taxe: "Taxe / Impôt",
+  internet: "Internet",
+  autre: "Autre",
 };
 
 interface Expense {
@@ -223,7 +223,7 @@ export function FinanceBoard() {
 
       <div className="grid gap-6 xl:grid-cols-2">
         {/* Recurring */}
-        <Card title="🔄 Frais fixes récurrents">
+        <Card title="Frais fixes récurrents">
           {recurring.length === 0 ? (
             <p className="py-6 text-center text-sm text-slate-400">Aucun frais fixe</p>
           ) : (
@@ -327,7 +327,7 @@ export function FinanceBoard() {
               onChange={(e) => setForm({ ...form, isFixed: e.target.checked })}
               className="accent-navy"
             />
-            🔄 Frais fixe récurrent
+             Frais fixe récurrent
           </label>
           {form.isFixed && (
             <div className="grid grid-cols-2 gap-3 rounded-xl bg-slate-50 p-3">

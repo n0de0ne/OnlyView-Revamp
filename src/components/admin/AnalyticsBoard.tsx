@@ -766,7 +766,7 @@ export function AnalyticsBoard() {
                 </>
               )}
             </Card>
-            <Card title="🔎 Moteurs de recherche">
+            <Card title="Moteurs de recherche">
               <RankTable
                 rows={searchRows}
                 label="Moteur"
@@ -782,7 +782,7 @@ export function AnalyticsBoard() {
             </Card>
           </div>
           <div className="grid gap-5 xl:grid-cols-2">
-            <Card title="🤝 Agences & annonces">
+            <Card title="Agences & annonces">
               <RankTable
                 rows={agencyRows}
                 label="Site"

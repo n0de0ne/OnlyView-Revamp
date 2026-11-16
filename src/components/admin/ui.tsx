@@ -47,18 +47,19 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastCtx.Provider value={{ push }}>
       {children}
-      <div className="pointer-events-none fixed bottom-5 right-5 z-[200] flex flex-col gap-2">
+      <div className="pointer-events-none fixed bottom-[calc(4.6rem+env(safe-area-inset-bottom))] right-4 z-[200] lg:bottom-5 lg:right-5 flex flex-col gap-2">
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`pointer-events-auto rounded-xl px-4 py-3 text-sm font-medium text-white shadow-xl ${
-              t.kind === "success"
-                ? "bg-emerald-600"
-                : t.kind === "error"
-                  ? "bg-red-600"
-                  : "bg-slate-700"
-            }`}
+            role={t.kind === "error" ? "alert" : "status"}
+            className="pointer-events-auto flex items-center gap-3 rounded-full bg-[#1a1714] py-3 pl-4 pr-5 text-sm text-white shadow-[0_12px_32px_-12px_rgba(0,0,0,0.55)]"
           >
+            <span
+              aria-hidden
+              className={`h-2 w-2 shrink-0 rounded-full ${
+                t.kind === "success" ? "bg-emerald-400" : t.kind === "error" ? "bg-red-400" : "bg-gold"
+              }`}
+            />
             {t.message}
           </div>
         ))}
@@ -83,10 +84,10 @@ export function Card({
   className?: string;
 }) {
   return (
-    <div className={`rounded-2xl border border-slate-200 bg-white shadow-sm ${className}`}>
+    <div className={`rounded-xl border border-slate-200 bg-white ${className}`}>
       {(title || action) && (
         <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-3.5">
-          <h2 className="text-sm font-semibold text-slate-700">{title}</h2>
+          <h2 className="text-[0.95rem] font-semibold text-slate-800">{title}</h2>
           {action}
         </div>
       )}
@@ -105,22 +106,22 @@ export const STATUS_LABELS: Record<string, string> = {
 
 export function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
-    option: "bg-amber-100 text-amber-700",
-    confirmed: "bg-red-100 text-red-700",
-    pending: "bg-violet-100 text-violet-700",
-    cancelled: "bg-slate-100 text-slate-500 line-through",
-    blocked: "bg-slate-200 text-slate-600",
+    option: "bg-amber-50 text-amber-800 ring-amber-200",
+    confirmed: "bg-red-50 text-red-800 ring-red-200",
+    pending: "bg-violet-50 text-violet-800 ring-violet-200",
+    cancelled: "bg-slate-50 text-slate-500 ring-slate-200 line-through",
+    blocked: "bg-slate-100 text-slate-600 ring-slate-200",
     // contracts / requests
-    signed: "bg-emerald-100 text-emerald-700",
-    void: "bg-slate-100 text-slate-500",
-    expired: "bg-slate-100 text-slate-500",
-    new: "bg-blue-100 text-blue-700",
-    answered: "bg-amber-100 text-amber-700",
-    converted: "bg-emerald-100 text-emerald-700",
-    declined: "bg-slate-100 text-slate-500",
-    sent: "bg-emerald-100 text-emerald-700",
-    queued: "bg-amber-100 text-amber-700",
-    failed: "bg-red-100 text-red-700",
+    signed: "bg-emerald-50 text-emerald-800 ring-emerald-200",
+    void: "bg-slate-50 text-slate-500 ring-slate-200",
+    expired: "bg-slate-50 text-slate-500 ring-slate-200",
+    new: "bg-sky-50 text-sky-800 ring-sky-200",
+    answered: "bg-amber-50 text-amber-800 ring-amber-200",
+    converted: "bg-emerald-50 text-emerald-800 ring-emerald-200",
+    declined: "bg-slate-50 text-slate-500 ring-slate-200",
+    sent: "bg-emerald-50 text-emerald-800 ring-emerald-200",
+    queued: "bg-amber-50 text-amber-800 ring-amber-200",
+    failed: "bg-red-50 text-red-800 ring-red-200",
   };
   const labels: Record<string, string> = {
     ...STATUS_LABELS,
@@ -137,8 +138,9 @@ export function StatusBadge({ status }: { status: string }) {
   };
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${styles[status] ?? "bg-slate-100 text-slate-600"}`}
+      className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${styles[status] ?? "bg-slate-50 text-slate-600 ring-slate-200"}`}
     >
+      <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
       {labels[status] ?? status}
     </span>
   );
@@ -171,19 +173,19 @@ export function Modal({
   if (!open) return null;
   return (
     <div
-      className="fixed inset-0 z-[150] flex items-end justify-center bg-black/45 backdrop-blur-[2px] sm:items-center sm:p-6"
+      className="fixed inset-0 z-[150] flex items-end justify-center bg-[#1a1714]/45 backdrop-blur-[3px] sm:items-center sm:p-6"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
     >
       <div
-        className={`max-h-[94svh] w-full overflow-y-auto rounded-t-2xl bg-white shadow-2xl sm:rounded-2xl ${
+        className={`max-h-[94svh] w-full overflow-y-auto rounded-t-[1.5rem] bg-white shadow-[0_30px_80px_-20px_rgba(26,23,20,0.5)] sm:rounded-2xl ${
           wide ? "sm:max-w-3xl" : "sm:max-w-lg"
         }`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-white/95 px-5 py-3.5 backdrop-blur">
-          <h2 className="text-sm font-semibold text-slate-800">{title}</h2>
+          <h2 className="font-display text-xl font-medium text-slate-900">{title}</h2>
           <button
             onClick={onClose}
             className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700"
@@ -275,10 +277,10 @@ export function SeasonPicker({
   options.sort((a, b) => b - a);
 
   return (
-    <div className="flex min-w-0 max-w-full items-center gap-1 rounded-xl border border-slate-300 bg-white p-0.5">
+    <div className="flex min-w-0 max-w-full items-center gap-1 rounded-full border border-slate-300 bg-white p-0.5">
       <button
         onClick={() => onChange(season - 1)}
-        className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-500 sm:h-8 sm:w-8 hover:bg-slate-100"
+        className="flex h-10 w-10 items-center justify-center rounded-full text-slate-500 sm:h-8 sm:w-8 hover:bg-slate-100"
         aria-label="Saison précédente"
       >
         ‹
@@ -299,7 +301,7 @@ export function SeasonPicker({
       </select>
       <button
         onClick={() => onChange(season + 1)}
-        className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-500 sm:h-8 sm:w-8 hover:bg-slate-100"
+        className="flex h-10 w-10 items-center justify-center rounded-full text-slate-500 sm:h-8 sm:w-8 hover:bg-slate-100"
         aria-label="Saison suivante"
       >
         ›

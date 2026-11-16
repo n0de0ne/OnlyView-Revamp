@@ -5,7 +5,7 @@ import { breadcrumbJsonLd, jsonLd, pageMetadata } from "@/lib/seo";
 import { getBookedRanges } from "@/lib/availability";
 import { todayISO, addDays } from "@/lib/dates";
 import { BookingWidget } from "@/components/site/BookingWidget";
-import { PageHero } from "@/components/site/PageHero";
+import { EditorialHero } from "@/components/site/ov/EditorialHero";
 
 export const dynamic = "force-dynamic";
 
@@ -62,8 +62,8 @@ export default async function BookingPage({
           ),
         }}
       />
-      <PageHero eyebrow={t.nav.booking} title={t.booking.title} intro={t.booking.intro} compact />
-      <section className="mx-auto max-w-7xl px-4 py-6 md:px-5 md:py-14 lg:px-8">
+      <EditorialHero eyebrow={t.nav.booking} title={t.booking.title} intro={t.booking.intro} compact />
+      <section className="ov-shell pb-10 md:pb-24">
         <BookingWidget locale={locale} initialBookings={bookings} />
       </section>
     </>

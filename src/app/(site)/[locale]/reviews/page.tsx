@@ -4,7 +4,7 @@ import { getContent } from "@/lib/site-content";
 import { breadcrumbJsonLd, jsonLd, pageMetadata, reviewsJsonLd } from "@/lib/seo";
 import { getApprovedTestimonials } from "@/lib/testimonials";
 import { formatDate } from "@/lib/dates";
-import { PageHero } from "@/components/site/PageHero";
+import { EditorialHero } from "@/components/site/ov/EditorialHero";
 import { ReviewForm } from "@/components/site/ReviewForm";
 
 // rendered per request: a build has no database, and an ISR snapshot of an
@@ -62,27 +62,24 @@ export default async function ReviewsPage({
           ]),
         }}
       />
-      <PageHero
+      <EditorialHero
         eyebrow={t.nav.reviews}
         title={t.reviews.title}
-        intro={
-          avg
-            ? `★ ${avg}/5 — ${reviews.length} ${locale === "fr" ? "avis" : "reviews"} · ${t.reviews.intro}`
-            : t.reviews.intro
-        }
+        intro={t.reviews.intro}
+        meta={avg ? `★ ${avg}/5 · ${reviews.length} ${locale === "fr" ? "avis" : "reviews"}` : undefined}
       />
-      <section className="mx-auto max-w-5xl px-5 py-16 lg:px-8">
-        <div className="columns-1 gap-6 md:columns-2 [&>figure]:mb-6">
+      <section className="ov-shell pb-20 md:pb-28">
+        <div className="ov-rule columns-1 gap-12 border-t pt-4 md:columns-2 [&>figure]:mb-4">
           {reviews.map((r) => (
-            <figure key={r.id} className="break-inside-avoid border border-ink/10 bg-white p-7">
-              <div className="mb-3 text-gold" aria-label={`${r.rating}/5`}>
+            <figure key={r.id} className="ov-rule break-inside-avoid border-b py-8">
+              <div className="mb-4 text-sm tracking-[0.25em] text-gold" aria-label={`${r.rating}/5`}>
                 {"★".repeat(r.rating)}
                 <span className="text-ink/15">{"★".repeat(5 - r.rating)}</span>
               </div>
-              <blockquote className="font-display text-lg italic leading-relaxed text-ink/85">
+              <blockquote className="font-display text-[1.3rem] italic leading-[1.45] text-ink/85">
                 “{r.message}”
               </blockquote>
-              <figcaption className="mt-5 flex items-center justify-between text-xs uppercase tracking-[0.18em] text-ink/45">
+              <figcaption className="ov-label mt-6 flex items-center justify-between gap-4 text-ink/45">
                 <span>
                   {r.name}
                   {r.country ? ` · ${r.country}` : ""}
@@ -92,8 +89,10 @@ export default async function ReviewsPage({
             </figure>
           ))}
         </div>
-        <div className="mt-14 max-w-2xl">
-          <ReviewForm locale={locale} />
+        <div className="mt-20 grid gap-10 lg:grid-cols-12">
+          <div className="lg:col-span-7">
+            <ReviewForm locale={locale} />
+          </div>
         </div>
       </section>
     </>

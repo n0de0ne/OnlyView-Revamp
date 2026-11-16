@@ -124,12 +124,12 @@ export function AvailabilityCalendar({
       <div key={mOffset} className={`w-full ${mOffset > 0 ? "hidden lg:block" : ""}`}>
         <div className="mb-2 flex items-center justify-between lg:mb-3 lg:block lg:text-center">
           {mOffset === 0 && <span className="lg:hidden">{prevButton}</span>}
-          <span className="font-display text-xl lg:text-lg">
+          <span className="font-display text-xl [font-variant-numeric:lining-nums] lg:text-[1.35rem]">
             {monthNames[m]} {y}
           </span>
           {mOffset === 0 && <span className="lg:hidden">{nextButton}</span>}
         </div>
-        <div className="grid grid-cols-7 gap-y-1 text-center text-[0.72rem] uppercase text-ink/40 lg:text-[0.65rem]">
+        <div className="grid grid-cols-7 gap-y-1 text-center font-mono text-[0.68rem] uppercase text-ink/40 lg:text-[0.62rem]">
           {dayNames.map((n, i) => (
             <div key={i}>{n}</div>
           ))}
@@ -149,15 +149,15 @@ export function AvailabilityCalendar({
               cell.date > range.start &&
               cell.date < range.end;
 
-            let cls = "bg-st-free/12 text-ink hover:bg-gold/25";
+            let cls = "text-ink hover:bg-gold/20";
             if (past) cls = "text-ink/25 cursor-default";
             else if (booked && s?.status === "confirmed")
-              cls = "bg-st-confirmed/85 text-white cursor-not-allowed";
-            else if (booked) cls = "bg-st-option/85 text-white cursor-not-allowed";
+              cls = "bg-ink/[0.05] text-ink/25 line-through cursor-not-allowed";
+            else if (booked) cls = "bg-st-option/15 text-ink/40 line-through decoration-st-option cursor-not-allowed";
             else if (isCheckoutOnly)
-              cls = "bg-gradient-to-br from-st-confirmed/60 from-50% to-st-free/15 to-50% text-ink hover:bg-gold/25";
-            if (selStart || selEnd) cls = "bg-gold text-white font-semibold";
-            else if (inSel) cls = "bg-gold/30 text-ink";
+              cls = "bg-gradient-to-br from-ink/10 from-50% to-transparent to-50% text-ink hover:bg-gold/20";
+            if (selStart || selEnd) cls = "bg-ink text-white font-medium";
+            else if (inSel) cls = "bg-gold/25 text-ink";
 
             return (
               <button
@@ -177,7 +177,7 @@ export function AvailabilityCalendar({
   };
 
   const navCls =
-    "flex h-11 w-11 items-center justify-center rounded-full border border-ink/15 text-lg transition hover:border-gold hover:text-gold disabled:opacity-30 lg:h-9 lg:w-9 lg:text-base";
+    "flex h-11 w-11 items-center justify-center rounded-full border border-ink/15 text-lg transition hover:border-ink hover:bg-ink hover:text-white disabled:opacity-30 lg:h-9 lg:w-9 lg:text-base";
   const prevButton = (
     <button
       onClick={() => setOffset((o) => Math.max(0, o - 1))}
@@ -200,13 +200,13 @@ export function AvailabilityCalendar({
   const legendRow = (
     <>
       <span className="flex items-center gap-1.5">
-        <span className="h-2.5 w-2.5 rounded-full bg-st-free/30 lg:h-3 lg:w-3" /> {legend.free}
+        <span className="h-2.5 w-2.5 rounded-full border border-ink/30 bg-white lg:h-3 lg:w-3" /> {legend.free}
       </span>
       <span className="flex items-center gap-1.5">
-        <span className="h-2.5 w-2.5 rounded-full bg-st-option lg:h-3 lg:w-3" /> {legend.option}
+        <span className="h-2.5 w-2.5 rounded-full bg-st-option/50 lg:h-3 lg:w-3" /> {legend.option}
       </span>
       <span className="flex items-center gap-1.5">
-        <span className="h-2.5 w-2.5 rounded-full bg-st-confirmed lg:h-3 lg:w-3" /> {legend.booked}
+        <span className="h-2.5 w-2.5 rounded-full bg-ink/15 lg:h-3 lg:w-3" /> {legend.booked}
       </span>
     </>
   );
@@ -215,7 +215,7 @@ export function AvailabilityCalendar({
     <div>
       <div className="mb-4 hidden items-center justify-between lg:flex">
         {prevButton}
-        <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-[0.65rem] uppercase tracking-wider text-ink/60">
+        <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 font-mono text-[0.62rem] uppercase tracking-[0.12em] text-ink/60">
           {legendRow}
         </div>
         {nextButton}

@@ -338,7 +338,7 @@ export function MapPlacesBoard({ villa }: { villa: LatLng }) {
                         {wps.length ? (
                           <span title={p.waypoints ?? ""}>
                             {wps.length} point{wps.length > 1 ? "s" : ""}
-                            {p.walkFromLastWaypoint ? " · 🚶 à pied" : ""}
+                            {p.walkFromLastWaypoint ? " · à pied" : ""}
                           </span>
                         ) : (
                           <span className="text-slate-300">direct</span>
@@ -470,7 +470,7 @@ export function MapPlacesBoard({ villa }: { villa: LatLng }) {
               {editing.draft.category === "restaurant" && (
                 <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
                   <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    🛎️ Conciergerie — espace client
+                     Conciergerie — espace client
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="afield">
@@ -544,8 +544,8 @@ export function MapPlacesBoard({ villa }: { villa: LatLng }) {
                 <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Clic sur la carte :</span>
                 {(
                   [
-                    ["pin", "📍 place le repère"],
-                    ["via", "🔶 ajoute un point de passage"],
+                    ["pin", "place le repère"],
+                    ["via", "ajoute un point de passage"],
                   ] as const
                 ).map(([m, label]) => (
                   <button
@@ -648,7 +648,7 @@ export function MapPlacesBoard({ villa }: { villa: LatLng }) {
                     onChange={(e) => patch({ walkFromLastWaypoint: e.target.checked })}
                   />
                   <span>
-                    🚶 On se gare au dernier point et on finit à pied (Colombier, Anse des Cayes…) — la fin du trajet est
+                     On se gare au dernier point et on finit à pied (Colombier, Anse des Cayes…) — la fin du trajet est
                     tracée en pointillés.
                   </span>
                 </label>

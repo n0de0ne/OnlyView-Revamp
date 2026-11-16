@@ -12,7 +12,13 @@
  *  - the clouds drift and the trees move in the breeze,
  *  - the hour sinks the sun behind the hills, turns the sky violet then
  *    navy, brings the stars out and lights the pool from below,
- *  - the pointer leans the picture in depth (sky far, pool near).
+ *  - the pointer leans the picture in depth (sky far, pool near),
+ *  - life on the bay, kept to scale and to the island's rules: a yacht
+ *    swinging at anchor (anchor light and cabin lights after dark), a
+ *    motor yacht crossing far out with its wake and navigation lights, and
+ *    a small commuter plane climbing out of St-Jean from behind the left
+ *    headland. Gustaf III only operates in daylight, so no plane takes off
+ *    once the sun is down.
  *
  * Nothing synthetic is painted over the horizon: the hills, the vegetation
  * and the colours of the light are the photograph's own.
@@ -40,6 +46,17 @@ export interface SceneControls {
   /** touches on the water, consumed by the scene */
   taps: Tap[];
 }
+
+/**
+ * The craft on the bay, in texture uv (y up) and "aspect units" (uv × 4:3
+ * horizontally, so a length reads the same in x and y). Placed on open water
+ * the masks call sea, sized from the photograph: the far ridge is ~3 km away,
+ * so a 15 m yacht at ~700 m spans about 1.6% of the frame.
+ */
+const YACHT = new THREE.Vector4(0.53, 0.452, 0.021, 1);
+const CRUISER = { from: 0.355, to: 0.565, y: 0.4745, length: 0.0105, crossing: 150, pause: 45 };
+/** the climb-out: from behind the left headland (St-Jean) up and toward the terrace */
+const FLIGHT = { from: [0.1, 0.512], to: [0.6, 0.78], seconds: 40, size: [0.0055, 0.0095], lastTakeoff: 17.95 };
 
 /** the phases of the evening for an hour of the day */
 export function phases(hour: number) {
@@ -75,6 +92,10 @@ const FRAG = /* glsl */ `
   uniform vec2 uParallax;
   uniform vec2 uSun;
   uniform vec4 uRipples[4];
+  uniform vec4 uYacht;   // anchored sailing yacht: uv x, waterline uv y, hull length (aspect units), swing
+  uniform vec4 uCruiser; // crossing motor yacht: uv x, waterline uv y, hull length, visibility
+  uniform vec4 uPlane;   // climbing plane: uv x, uv y, length (aspect units), visibility
+  uniform float uPlaneAngle;
   varying vec2 vUv;
 
   // the pool's far edge, printed by scripts/golden-mask.mjs (texture space, y up):
@@ -113,6 +134,55 @@ const FRAG = /* glsl */ `
     vec2 i = floor(p), f = fract(p);
     f = f * f * (3.0 - 2.0 * f);
     return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
+  }
+
+
+  // ---- small craft, drawn in their own units with analytic antialiasing:
+  // a few pixels wide on screen, so every edge is a coverage, never a step
+  float cover1(float d, float px) { return clamp(0.5 - d / px, 0.0, 1.0); }
+  float boxC(vec2 p, vec2 lo, vec2 hi, float px) {
+    vec2 d = max(lo - p, p - hi);
+    return cover1(max(d.x, d.y), px);
+  }
+  float segD(vec2 p, vec2 a, vec2 b) {
+    vec2 pa = p - a, ba = b - a;
+    float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
+    return length(pa - ba * h);
+  }
+  // a thin line keeps its true (sub-pixel) width as a fainter coverage
+  float lineC(vec2 p, vec2 a, vec2 b, float w, float px) {
+    return cover1(segD(p, a, b) - w * 0.5, px) * clamp(w / px + 0.2, 0.0, 1.0);
+  }
+  // sloop at anchor, bow to the right, sails furled: hull, coachroof, mast, boom, forestay
+  float yachtShape(vec2 p, float px) {
+    const float TOP = 0.11;
+    float xs = -0.47 + (TOP - p.y) * 0.25;
+    float xb = 0.37 + p.y * 1.15;
+    float hull = cover1(-min(min(p.x - xs, xb - p.x), min(p.y, TOP - p.y)), px);
+    float roof = boxC(p, vec2(-0.24, TOP - 0.01), vec2(0.10, TOP + 0.065), px);
+    float mast = lineC(p, vec2(-0.03, TOP), vec2(-0.03, 1.32), 0.018, px);
+    float boom = lineC(p, vec2(-0.40, 0.25), vec2(-0.03, 0.27), 0.04, px);
+    float stay = lineC(p, vec2(-0.03, 1.30), vec2(0.47, TOP), 0.006, px) * 0.6;
+    return max(max(hull, roof), max(max(mast, boom), stay));
+  }
+  // motor yacht: long low hull, two decks of superstructure, a short mast
+  float cruiserShape(vec2 p, float px) {
+    const float TOP = 0.12;
+    float xs = -0.5;
+    float xb = 0.42 + p.y * 0.7;
+    float hull = cover1(-min(min(p.x - xs, xb - p.x), min(p.y, TOP - p.y)), px);
+    float deck1 = boxC(p, vec2(-0.40, TOP - 0.01), vec2(0.18 - (p.y - TOP) * 0.6, TOP + 0.09), px);
+    float deck2 = boxC(p, vec2(-0.28, TOP + 0.08), vec2(0.02 - (p.y - TOP - 0.08) * 0.8, TOP + 0.15), px);
+    float mast = lineC(p, vec2(-0.12, TOP + 0.15), vec2(-0.12, 0.40), 0.02, px);
+    return max(max(hull, deck1), max(deck2, mast));
+  }
+  // high-wing twin turboprop in profile, flying toward +x
+  float planeShape(vec2 p, float px) {
+    float body = cover1(segD(p, vec2(-0.40, 0.0), vec2(0.42, 0.0)) - 0.06, px);
+    float fin = cover1(-min(min(p.y, 0.26 - p.y), min(p.x + 0.50, -0.30 - p.x - p.y * 0.35)), px);
+    float wing = boxC(p, vec2(-0.08, 0.04), vec2(0.16, 0.085), px);
+    float gear = lineC(p, vec2(0.05, -0.05), vec2(0.02, -0.12), 0.03, px);
+    return max(max(body, fin), max(wing, gear));
   }
 
   void main() {
@@ -330,6 +400,89 @@ const FRAG = /* glsl */ `
     float star = smoothstep(0.13, 0.0, length(f - off)) * step(0.935, h) * (0.55 + 0.45 * sin(t * (2.0 + h * 4.0) + h * 40.0));
     g += sky * star * uNight * uNight * smoothstep(0.55, 0.75, uv.y) * vec3(0.9, 0.95, 1.0);
 
+
+    // ---- life on the bay. Drawn after the grade of the evening, each with
+    // its own colour through the hours: grey-white against the light at
+    // golden hour, violet silhouettes at dusk, near black at night with
+    // only their lights. Nothing is drawn over the vegetation, the pool or
+    // the terrace (they are nearer than the bay); the plane only shows
+    // against open sky, so the ridge hides it until it climbs clear.
+    float nearer = clamp(veg + pool + deck, 0.0, 1.0);
+    vec3 craftDay = vec3(0.50, 0.49, 0.50);
+    vec3 craftDusk = vec3(0.20, 0.17, 0.25);
+    vec3 craftNight = vec3(0.025, 0.03, 0.045);
+    vec3 craftCol = mix(mix(craftDay, craftDusk, uDusk), craftNight, uNight);
+    float lit = max(uDusk * 0.7, uNight); // navigation and anchor lights on
+    vec2 asp = vec2(1.333, 1.0);
+
+    // the yacht at anchor: it rides the swell and swings a little on its chain
+    {
+      vec2 q = (uv - uYacht.xy) * asp / uYacht.z;
+      float ang = 0.03 * sin(t * 0.9) + 0.015 * sin(t * 0.37);
+      q.y -= 0.015 * sin(t * 1.25);
+      q = mat2(cos(ang), -sin(ang), sin(ang), cos(ang)) * q;
+      q.x *= uYacht.w; // which way she lies to the wind
+      float px = max(fwidth(q.x), 1e-4);
+      float body = yachtShape(q, px) * (1.0 - nearer);
+      // a warm line of light along the sheer while the sun is up
+      float rim = boxC(q, vec2(-0.46, 0.095), vec2(0.48, 0.11), px) * (1.0 - uDusk);
+      vec3 col = craftCol + rim * vec3(0.35, 0.22, 0.1);
+      g = mix(g, col, body * (0.92 - 0.1 * uNight));
+      // its reflection, broken by the swell
+      vec2 r = vec2(q.x + sin(q.y * 38.0 + t * 2.6) * 0.03, -q.y);
+      float refl = yachtShape(r, px) * exp(q.y * 3.5) * step(q.y, 0.0) * sea;
+      g = mix(g, craftCol * 0.8, refl * 0.35 * (1.0 - nearer));
+      // after dark: the white anchor light at the masthead, its long trembling
+      // streak on the water, and warm light in the cabin portholes
+      vec2 top = q - vec2(-0.03, 1.36);
+      float lamp = exp(-dot(top, top) / (px * px * 3.0)) + exp(-dot(top, top) / (px * px * 40.0)) * 0.25;
+      g += lamp * vec3(1.0, 0.97, 0.9) * lit * (1.0 - nearer);
+      float streakA = exp(-pow((q.x + 0.03) / (px * 2.5), 2.0)) * step(q.y, -0.02) * exp(q.y * 1.4)
+        * (0.35 + 0.65 * noise(vec2(q.x * 30.0, q.y * 14.0 + t * 1.6)));
+      g += streakA * vec3(1.0, 0.95, 0.85) * 0.35 * lit * sea * (1.0 - nearer);
+      float ports = boxC(q, vec2(-0.20, 0.135), vec2(0.06, 0.155), px) * step(0.5, fract(q.x * 9.0 + 0.2));
+      g += ports * vec3(1.0, 0.72, 0.4) * 0.6 * uNight * (1.0 - nearer);
+    }
+
+    // the motor yacht crossing far out: a white wake trails it on the water
+    if (uCruiser.w > 0.001) {
+      vec2 q = (uv - uCruiser.xy) * asp / uCruiser.z;
+      q.y -= 0.01 * sin(t * 1.6);
+      float px = max(fwidth(q.x), 1e-4);
+      float body = cruiserShape(q, px) * (1.0 - nearer) * uCruiser.w;
+      g = mix(g, craftCol * 1.05, body * 0.9);
+      float wake = exp(-pow(q.y / 0.05, 2.0)) * smoothstep(-0.2, -0.55, q.x) * exp((q.x + 0.5) * 0.55)
+        * (0.5 + 0.5 * noise(vec2(q.x * 9.0 - t * 2.0, q.y * 40.0)));
+      wake += exp(-pow((q.y + 0.01) / 0.03, 2.0)) * exp(-pow((q.x - 0.45) / 0.08, 2.0)) * 0.8; // the bow wave
+      g += wake * sea * uCruiser.w * (1.0 - nearer) * mix(vec3(0.45, 0.42, 0.38), vec3(0.05, 0.05, 0.07), uNight);
+      // masthead (white), starboard side light (green: the bow points right, its
+      // right side faces the terrace) and a stern light
+      vec2 m1 = q - vec2(-0.12, 0.43);
+      vec2 m2 = q - vec2(0.12, 0.17);
+      vec2 m3 = q - vec2(-0.49, 0.14);
+      float s2 = px * px * 3.0;
+      g += (exp(-dot(m1, m1) / s2) * vec3(1.0, 0.97, 0.9) + exp(-dot(m2, m2) / s2) * vec3(0.3, 1.0, 0.45)
+          + exp(-dot(m3, m3) / s2) * vec3(1.0, 0.95, 0.85) * 0.8) * lit * uCruiser.w * (1.0 - nearer);
+    }
+
+    // the plane climbing out of St-Jean
+    if (uPlane.w > 0.001) {
+      vec2 q = (uv - uPlane.xy) * asp / uPlane.z;
+      float a = -uPlaneAngle;
+      q = mat2(cos(a), -sin(a), sin(a), cos(a)) * q;
+      float px = max(fwidth(q.x), 1e-4);
+      float body = planeShape(q, px) * sky * uPlane.w;
+      // far away and against the light: a dark shape softened by the haze
+      g = mix(g, mix(vec3(0.16, 0.15, 0.18), g, 0.25), body * 0.9);
+      // red beacon on the roof and a white strobe on the tail, blinking
+      vec2 b1 = q - vec2(0.05, 0.11);
+      vec2 b2 = q - vec2(-0.48, 0.27);
+      float s2 = px * px * 1.2;
+      float beacon = step(0.82, fract(t * 0.95)) * exp(-dot(b1, b1) / s2);
+      float strobe = (step(0.93, fract(t * 0.7)) + step(0.93, fract(t * 0.7 - 0.1))) * exp(-dot(b2, b2) / s2);
+      g += (beacon * vec3(1.0, 0.18, 0.12) + strobe * vec3(1.0)) * sky * uPlane.w * 0.8;
+    }
+
     // ---- the grade, in this same pass (an EffectComposer would cost a full
     // render target per effect for what three lines do here). Kept light: the
     // colours are the photograph's and must stay its own.
@@ -368,6 +521,8 @@ function Picture({
   const shift = useRef(new THREE.Vector2());
   const nextRipple = useRef(0);
   const ready = useRef(false);
+  /** clock time of the current take-off, or null between flights */
+  const flight = useRef<{ start: number | null; next: number }>({ start: null, next: 4 });
 
   useEffect(() => {
     // the masks were traced on a 4:3 frame; any other shape means the wrong file was served
@@ -400,6 +555,10 @@ function Picture({
       uParallax: { value: new THREE.Vector2() },
       uSun: { value: SUN.clone() },
       uRipples: { value: [0, 1, 2, 3].map(() => new THREE.Vector4(0, 0, 0, 0)) },
+      uYacht: { value: YACHT.clone() },
+      uCruiser: { value: new THREE.Vector4(0, 0, CRUISER.length, 0) },
+      uPlane: { value: new THREE.Vector4(0, 0, 0.006, 0) },
+      uPlaneAngle: { value: 0 },
     }),
     // the textures are loaded once per photo
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -454,6 +613,41 @@ function Picture({
       nextRipple.current++;
     }
     if (c.taps.length > 8) c.taps.splice(0, c.taps.length - 8);
+
+    // the motor yacht: a slow crossing (≈10 knots at that distance), a pause, again
+    const cycle = CRUISER.crossing + CRUISER.pause;
+    const k = ((t + 30) % cycle) / CRUISER.crossing;
+    const cr: THREE.Vector4 = u.uCruiser.value;
+    if (k <= 1) {
+      cr.set(
+        THREE.MathUtils.lerp(CRUISER.from, CRUISER.to, k),
+        CRUISER.y,
+        CRUISER.length,
+        THREE.MathUtils.smoothstep(k, 0, 0.06) * (1 - THREE.MathUtils.smoothstep(k, 0.94, 1))
+      );
+    } else cr.w = 0;
+
+    // take-offs: daylight only, one every minute or so
+    const f = flight.current;
+    if (f.start === null && t >= f.next && hour < FLIGHT.lastTakeoff) f.start = t;
+    const pl: THREE.Vector4 = u.uPlane.value;
+    if (f.start !== null) {
+      const s = (t - f.start) / FLIGHT.seconds;
+      if (s > 1) {
+        f.start = null;
+        f.next = t + 22 + Math.random() * 25;
+        pl.w = 0;
+      } else {
+        // steep at first, then flattening as it gains height
+        const x = THREE.MathUtils.lerp(FLIGHT.from[0], FLIGHT.to[0], s);
+        const climb = 1 - Math.pow(1 - s, 1.5);
+        const y = THREE.MathUtils.lerp(FLIGHT.from[1], FLIGHT.to[1], climb);
+        const dy = (FLIGHT.to[1] - FLIGHT.from[1]) * 1.5 * Math.pow(1 - s, 0.5);
+        const dx = (FLIGHT.to[0] - FLIGHT.from[0]) * (4 / 3);
+        pl.set(x, y, THREE.MathUtils.lerp(FLIGHT.size[0], FLIGHT.size[1], s), 1 - THREE.MathUtils.smoothstep(s, 0.9, 1));
+        u.uPlaneAngle.value = Math.atan2(dy, dx) * 0.8;
+      }
+    } else pl.w = 0;
   });
 
   return (

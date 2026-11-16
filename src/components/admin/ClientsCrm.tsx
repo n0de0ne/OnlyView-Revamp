@@ -158,8 +158,8 @@ export function ClientsCrm({ loyaltyEnabled = false }: { loyaltyEnabled?: boolea
                 >
                   <div className="min-w-0">
                     <div className="truncate font-semibold text-slate-800">
-                      {c.isVip && "⭐ "}
-                      {c.blacklisted && "⛔ "}
+                      {c.isVip && "VIP · "}
+                      {c.blacklisted && "Liste noire · "}
                       {c.firstname} {c.lastname}
                       {c.country && <span className="ml-1.5 text-xs font-normal text-slate-400">{c.country}</span>}
                     </div>
@@ -237,8 +237,8 @@ export function ClientsCrm({ loyaltyEnabled = false }: { loyaltyEnabled?: boolea
                       </td>
                     )}
                     <td className="py-3">
-                      {c.isVip && "⭐ "}
-                      {c.blacklisted && "⛔ "}
+                      {c.isVip && "VIP · "}
+                      {c.blacklisted && "Liste noire · "}
                       {c.discountPercent > 0 && (
                         <span className="text-xs text-emerald-600">-{c.discountPercent}%</span>
                       )}
@@ -324,7 +324,7 @@ export function ClientsCrm({ loyaltyEnabled = false }: { loyaltyEnabled?: boolea
               onChange={(e) => setForm({ ...form, isVip: e.target.checked })}
               className="accent-gold"
             />
-            ⭐ Client VIP
+             Client VIP
           </label>
           <label className="flex items-center gap-2 text-sm">
             <input
@@ -333,7 +333,7 @@ export function ClientsCrm({ loyaltyEnabled = false }: { loyaltyEnabled?: boolea
               onChange={(e) => setForm({ ...form, blacklisted: e.target.checked })}
               className="accent-red-600"
             />
-            ⛔ Liste noire
+             Liste noire
           </label>
           {form.blacklisted && (
             <div className="afield sm:col-span-2">

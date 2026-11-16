@@ -4,7 +4,7 @@ import { isLocale, localePath, type Locale } from "@/lib/i18n";
 import { getContent } from "@/lib/site-content";
 import { breadcrumbJsonLd, jsonLd, ownerJsonLd, pageMetadata, webPageJsonLd } from "@/lib/seo";
 import { getContact } from "@/lib/contact";
-import { PageHero } from "@/components/site/PageHero";
+import { EditorialHero } from "@/components/site/ov/EditorialHero";
 import { ContactForm } from "@/components/site/ContactForm";
 
 export const revalidate = 300;
@@ -50,31 +50,31 @@ export default async function ContactPage({
           ]),
         }}
       />
-      <PageHero eyebrow={t.nav.contact} title={t.contact.title} intro={t.contact.intro} />
-      <section className="mx-auto grid max-w-5xl gap-14 px-5 py-16 lg:grid-cols-[1fr_1.3fr] lg:px-8">
-        <div className="space-y-8">
+      <EditorialHero eyebrow={t.nav.contact} title={t.contact.title} intro={t.contact.intro} />
+      <section className="ov-shell grid gap-14 pb-20 md:pb-28 lg:grid-cols-12">
+        <div className="ov-rule space-y-8 border-t pt-8 lg:col-span-5">
           <div>
-            <h2 className="eyebrow mb-3">{t.contact.emailLabel}</h2>
-            <a href={`mailto:${email}`} className="font-display text-2xl text-ink hover:text-gold">
+            <h2 className="ov-label mb-3 text-gold-dark">{t.contact.emailLabel}</h2>
+            <a href={`mailto:${email}`} className="break-all font-display text-[1.7rem] leading-tight text-ink hover:text-gold-dark md:text-3xl">
               {email}
             </a>
           </div>
           {whatsappUrl && (
             <div>
-              <h2 className="eyebrow mb-3">{t.contact.whatsapp}</h2>
+              <h2 className="ov-label mb-3 text-gold-dark">{t.contact.whatsapp}</h2>
               <a
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn-outline"
+                className="ov-btn ov-btn-line"
               >
                 <MessageCircle aria-hidden className="h-4 w-4" strokeWidth={1.5} />
                 {t.cta.whatsapp}
               </a>
             </div>
           )}
-          <div className="border-t border-ink/10 pt-8">
-            <h2 className="eyebrow mb-3">{t.contactOwner.ownerTitle}</h2>
+          <div className="ov-rule border-t pt-8">
+            <h2 className="ov-label mb-3 text-gold-dark">{t.contactOwner.ownerTitle}</h2>
             <p className="leading-relaxed text-ink/75">{t.contactOwner.ownerText}</p>
             <ul className="mt-5 grid gap-3 text-sm text-ink/65 sm:grid-cols-2">
               <li className="flex items-center gap-2.5">
@@ -87,7 +87,7 @@ export default async function ContactPage({
               </li>
             </ul>
           </div>
-          <div className="border-t border-ink/10 pt-8 text-sm leading-relaxed text-ink/60">
+          <div className="ov-rule ov-label border-t pt-8 leading-relaxed text-ink/55">
             Villa ONLY VIEW
             <br />
             Pointe Milou
@@ -97,7 +97,7 @@ export default async function ContactPage({
             French West Indies
           </div>
         </div>
-        <div>
+        <div className="lg:col-span-6 lg:col-start-7">
           <ContactForm locale={locale} />
         </div>
       </section>

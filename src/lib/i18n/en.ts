@@ -93,6 +93,7 @@ export const en = {
     cta: "Check availability",
     discover: "Discover the villa",
     scroll: "Scroll",
+    sunsetTonight: "Sunset tonight",
   },
   badges: {
     bedrooms: "4 Bedrooms",
@@ -109,6 +110,13 @@ export const en = {
     stat_size: "200 m² living space",
     stat_sunset: "Sunset over the bay, every evening",
     stat_wifi: "5 Gbps fiber internet",
+    /** the four large figures under the introduction */
+    figures: [
+      { value: "4", text: "en-suite bedrooms, each with its own bathroom — up to 8 guests" },
+      { value: "180°", text: "of sea from the pool, the terrace and every living space" },
+      { value: "200 m²", text: "of living space opening fully onto the terrace" },
+      { value: "10 min", text: "from Gustaf III airport, 12 from Gustavia, 5 from Lorient beach" },
+    ] as Array<{ value: string; text: string }>,
   },
   spaces: {
     label: "Living Spaces",
@@ -535,6 +543,7 @@ export const en = {
     guestsLabel: "Guests",
     promoLabel: "Promo code",
     promoPlaceholder: "Optional",
+    quoteHint: "Pick your dates for an instant quote",
     quoteTitle: "Your quote",
     nights: "nights",
     rentalRate: "Rental rate",

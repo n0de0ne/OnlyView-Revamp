@@ -76,6 +76,7 @@ export const fr: Dict = {
     cta: "Voir les disponibilités",
     discover: "Découvrir la villa",
     scroll: "Défiler",
+    sunsetTonight: "Coucher du soleil ce soir",
   },
   badges: {
     bedrooms: "4 chambres",
@@ -92,6 +93,12 @@ export const fr: Dict = {
     stat_size: "200 m² d'espace de vie",
     stat_sunset: "Coucher de soleil sur la baie, chaque soir",
     stat_wifi: "Fibre 5 Gbps",
+    figures: [
+      { value: "4", text: "chambres en suite, chacune avec sa salle de bain — jusqu'à 8 personnes" },
+      { value: "180°", text: "de mer depuis la piscine, la terrasse et toutes les pièces à vivre" },
+      { value: "200 m²", text: "à vivre, entièrement ouverts sur la terrasse" },
+      { value: "10 min", text: "de l'aéroport Gustaf III, 12 de Gustavia, 5 de la plage de Lorient" },
+    ],
   },
   spaces: {
     label: "Espaces de vie",
@@ -515,6 +522,7 @@ export const fr: Dict = {
     guestsLabel: "Personnes",
     promoLabel: "Code promo",
     promoPlaceholder: "Optionnel",
+    quoteHint: "Choisissez vos dates pour un devis instantané",
     quoteTitle: "Votre devis",
     nights: "nuits",
     rentalRate: "Loyer",

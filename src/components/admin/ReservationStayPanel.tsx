@@ -1,5 +1,7 @@
 "use client";
 
+import { ConciergeBell, Luggage, Wine } from "lucide-react";
+
 import { useEffect, useState } from "react";
 import type { SerializedReservation } from "@/lib/reservations";
 import type { SerializedReservationExtra } from "@/lib/extras";
@@ -157,7 +159,7 @@ export function ReservationStayPanel({
   return (
     <>
       <Card
-        title="🧳 Arrivée & invités"
+        title={<span className="inline-flex items-center gap-2"><Luggage className="h-4 w-4 text-gold-dark" strokeWidth={1.5} aria-hidden />Arrivée & invités</span>}
         action={
           details.updatedAt && (
             <span className="text-[0.65rem] text-slate-400">mis à jour le {fmtDate(details.updatedAt)}</span>
@@ -196,7 +198,7 @@ export function ReservationStayPanel({
 
       {concierge.length > 0 && (
         <Card
-          title="🛎️ Conciergerie"
+          title={<span className="inline-flex items-center gap-2"><ConciergeBell className="h-4 w-4 text-gold-dark" strokeWidth={1.5} aria-hidden />Conciergerie</span>}
           action={
             concierge.some((i) => i.status === "requested") && (
               <span className="rounded bg-blue-100 px-1.5 py-0.5 text-[0.65rem] font-semibold text-blue-700">
@@ -214,7 +216,7 @@ export function ReservationStayPanel({
       )}
 
       <Card
-        title="🍾 Extras"
+        title={<span className="inline-flex items-center gap-2"><Wine className="h-4 w-4 text-gold-dark" strokeWidth={1.5} aria-hidden />Extras</span>}
         action={
           <button onClick={() => setAddOpen(true)} className="abtn-ghost !px-2.5 !py-1 text-xs">
             + Extra

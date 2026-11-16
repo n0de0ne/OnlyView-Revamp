@@ -4,9 +4,10 @@ import { getContent } from "@/lib/site-content";
 import { breadcrumbJsonLd, imageGalleryJsonLd, jsonLd, pageMetadata } from "@/lib/seo";
 import { getPhotos, PHOTO_CATEGORIES } from "@/lib/photos";
 import { GalleryGrid } from "@/components/site/gallery/GalleryGrid";
-import { PageHero } from "@/components/site/PageHero";
+import { EditorialHero } from "@/components/site/ov/EditorialHero";
 
-export const revalidate = 300;
+// reads ?c= on the server: rendered per request (an ISR render of /fr/gallery threw DYNAMIC_SERVER_USAGE → 500)
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -51,13 +52,14 @@ export default async function GalleryPage({
           ]),
         }}
       />
-      <PageHero
+      <EditorialHero
         eyebrow={t.nav.gallery}
         title={t.meta.titleGallery.split("—")[0].trim()}
         intro={t.meta.descGallery}
+        meta={`${photos.length} ${t.gallery.photos}`}
       />
-      <section className="mx-auto max-w-7xl px-5 py-14 lg:px-8">
-        <p className="mb-10 max-w-3xl leading-relaxed text-ink/70">{t.galleryIntro}</p>
+      <section className="ov-shell pb-16 md:pb-24">
+        <p className="ov-body ov-rule mb-10 max-w-3xl border-t pt-8">{t.galleryIntro}</p>
         <GalleryGrid
           photos={photos}
           categories={[...PHOTO_CATEGORIES]}

@@ -4,7 +4,8 @@ import { isLocale, localePath, type Locale } from "@/lib/i18n";
 import { getContent } from "@/lib/site-content";
 import { breadcrumbJsonLd, itemListJsonLd, jsonLd, pageMetadata, webPageJsonLd } from "@/lib/seo";
 import { getGuides } from "@/lib/guides";
-import { PageHero } from "@/components/site/PageHero";
+import { EditorialHero } from "@/components/site/ov/EditorialHero";
+import { ArrowUpRight } from "lucide-react";
 import { KeyFacts } from "@/components/site/KeyFacts";
 
 export const revalidate = 3600;
@@ -69,10 +70,11 @@ export default async function GuideIndex({
           ]),
         }}
       />
-      <PageHero
+      <EditorialHero
         eyebrow={t.nav.guide}
         title={fr ? "Guide St Barth" : "St Barth Guide"}
         intro={t.guideIntro}
+        meta={`${GUIDES.length + 2} ${fr ? "chapitres" : "chapters"}`}
       />
       {/* the island in eleven lines — the block an answer engine quotes for "St Barth guide" */}
       <KeyFacts
@@ -81,63 +83,56 @@ export default async function GuideIndex({
         summary={t.guideHub.facts.slice(0, 4).map(([, d]) => d).join(" · ")}
         toggle={t.seo.factsToggle}
         facts={Object.fromEntries(t.guideHub.facts.map(([term, detail], i) => [String(i), [term, detail]]))}
-        className="border-b border-ink/10"
+        className="ov-rule border-y"
       />
-      <section className="mx-auto max-w-5xl px-5 py-16 lg:px-8">
-        <div className="grid gap-6 sm:grid-cols-2">
-          <Link
-            href={localePath(locale, "/pointe-milou")}
-            className="group border border-gold/50 bg-sand p-8 transition hover:border-gold"
-          >
-            <p className="eyebrow mb-3">{t.pointeMilou.label}</p>
-            <h2 className="font-display text-2xl leading-snug transition group-hover:text-gold">
-              {t.guideHub.pointeMilouCard}
-            </h2>
-            <p className="mt-3 text-sm leading-relaxed text-ink/65">{t.guideHub.pointeMilouText}</p>
-            <span className="mt-5 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-gold">
-              {t.common.readMore} →
-            </span>
-          </Link>
-          <Link
-            href={localePath(locale, "/map")}
-            className="group border border-gold/50 bg-sand p-8 transition hover:border-gold"
-          >
-            <p className="eyebrow mb-3">{t.map.label}</p>
-            <h2 className="font-display text-2xl leading-snug transition group-hover:text-gold">
-              {fr ? "Carte interactive de l'île" : "Interactive island map"}
-            </h2>
-            <p className="mt-3 text-sm leading-relaxed text-ink/65">{t.map.directoryIntro}</p>
-            <span className="mt-5 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-gold">
-              {t.nav.map} →
-            </span>
-          </Link>
-          {GUIDES.map((g) => (
+      <section className="ov-shell py-20 md:py-28">
+        {/* the two chapters closest to the villa, set apart */}
+        <div className="grid gap-4 md:grid-cols-2">
+          {([
+            [localePath(locale, "/pointe-milou"), t.pointeMilou.label, t.guideHub.pointeMilouCard, t.guideHub.pointeMilouText, t.common.readMore],
+            [localePath(locale, "/map"), t.map.label, fr ? "Carte interactive de l'île" : "Interactive island map", t.map.directoryIntro, t.nav.map],
+          ] as const).map(([href, label, title, text, cta], i) => (
             <Link
-              key={g.slug}
-              href={localePath(locale, `/guide/${g.slug}`)}
-              className="group border border-ink/10 bg-white p-8 transition hover:border-gold"
+              key={href}
+              href={href}
+              className={`group flex min-h-[20rem] flex-col justify-between rounded-2xl p-7 md:p-9 ${i === 0 ? "bg-sea text-white" : "bg-ivory text-ink"}`}
             >
-              <p className="eyebrow mb-3">
-                {g.category === "practical"
-                  ? fr
-                    ? "Pratique"
-                    : "Practical"
-                  : fr
-                    ? "L'île"
-                    : "The island"}
-              </p>
-              <h2 className="font-display text-2xl leading-snug transition group-hover:text-gold">
-                {fr ? g.title.fr : g.title.en}
-              </h2>
-              <p className="mt-3 text-sm leading-relaxed text-ink/65">
-                {fr ? g.description.fr : g.description.en}
-              </p>
-              <span className="mt-5 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-gold">
-                {t.common.readMore} →
-              </span>
+              <div className="flex items-start justify-between gap-4">
+                <p className={`ov-label ${i === 0 ? "text-gold" : "text-gold-dark"}`}>{label}</p>
+                <ArrowUpRight className="ov-arrow h-6 w-6 shrink-0" strokeWidth={1.25} aria-hidden />
+              </div>
+              <div>
+                <h2 className="ov-h3 max-w-md">{title}</h2>
+                <p className={`mt-3 max-w-md text-[0.95rem] leading-relaxed ${i === 0 ? "text-white/70" : "text-ink/65"}`}>{text}</p>
+                <span className="ov-link mt-6">{cta}</span>
+              </div>
             </Link>
           ))}
         </div>
+
+        {/* the other chapters, as a table of contents */}
+        <ol className="ov-rule mt-16 border-t md:mt-24">
+          {GUIDES.map((g, i) => (
+            <li key={g.slug}>
+              <Link
+                href={localePath(locale, `/guide/${g.slug}`)}
+                className="ov-rule group grid gap-3 border-b py-7 md:grid-cols-12 md:items-baseline md:gap-8 md:py-9"
+              >
+                <span className="ov-label text-ink/40 md:col-span-1">{String(i + 1).padStart(2, "0")}</span>
+                <span className="ov-label text-gold-dark md:col-span-2">
+                  {g.category === "practical" ? (fr ? "Pratique" : "Practical") : fr ? "L'île" : "The island"}
+                </span>
+                <span className="font-display text-[1.7rem] leading-tight text-ink transition group-hover:text-gold-dark md:col-span-5 md:text-[2rem]">
+                  {fr ? g.title.fr : g.title.en}
+                </span>
+                <span className="text-[0.92rem] leading-relaxed text-ink/60 md:col-span-3">
+                  {fr ? g.description.fr : g.description.en}
+                </span>
+                <ArrowUpRight className="ov-arrow hidden h-5 w-5 justify-self-end text-ink/50 md:col-span-1 md:block" strokeWidth={1.25} aria-hidden />
+              </Link>
+            </li>
+          ))}
+        </ol>
       </section>
     </>
   );
